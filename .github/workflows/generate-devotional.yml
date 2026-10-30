@@ -1,0 +1,43 @@
+name: Gerar e Avaliar Devocional Diário
+
+on:
+  schedule:
+    # Executa todos os dias às 22:00 UTC (19:00 Horário de Brasília) para preparar o devocional do dia seguinte
+    - cron: '0 22 * * *'
+  workflow_dispatch:
+    inputs:
+      target_date:
+        description: 'Data alvo do devocional (YYYY-MM-DD)'
+        required: false
+        default: ''
+
+jobs:
+  generate-and-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar Dependências
+        run: npm ci
+
+      - name: Executar Pipeline de Geração e Auditoria Teológica (8 Critérios)
+        env:
+          GEMINI_WRITER_API_KEY: ${{ secrets.GEMINI_WRITER_API_KEY }}
+          GEMINI_REVIEWER_API_KEY: ${{ secrets.GEMINI_REVIEWER_API_KEY }}
+          EDITORIAL_POLICY: 'REVIEW'
+        run: |
+          echo "Iniciando pipeline do Amanhecer..."
+          node scripts/select-passage/select.js ${{ github.event.inputs.target_date }}
+
+      - name: Salvar Artefatos de Avaliação
+        uses: actions/upload-artifact@v4
+        with:
+          name: editorial-evaluations
+          path: editorial/evaluations/

@@ -1,0 +1,43 @@
+name: Web Push Notifications Scheduler
+
+on:
+  schedule:
+    # 06:06 Horário de Brasília (America/Sao_Paulo) -> 09:06 UTC (Versículo do Dia)
+    - cron: '6 9 * * *'
+    # 06:00 Brasília -> 09:00 UTC (Lembrete Matinal se versículo desativado)
+    - cron: '0 9 * * *'
+    # 11:00 Brasília -> 14:00 UTC (Lembrete Meio-dia)
+    - cron: '0 14 * * *'
+    # 16:00 Brasília -> 19:00 UTC (Lembrete Tarde)
+    - cron: '0 19 * * *'
+    # 21:00 Brasília -> 00:00 UTC (Lembrete Noite)
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      type:
+        description: 'Tipo de notificação ("daily-verse" ou "reminder")'
+        required: true
+        default: 'daily-verse'
+      slot:
+        description: 'Slot de lembrete (ex: 06:00, 11:00, 16:00, 21:00)'
+        required: false
+        default: '11:00'
+
+jobs:
+  dispatch-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Executar Envio Seguro de Web Push
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ "${{ github.event.inputs.type }}" = "reminder" ]; then
+            echo "Disparando Lembrete de Leitura (${{ github.event.inputs.slot }})..."
+            curl -X POST "${APP_URL:-https://amanhecer.app}/api/push/send-reminders?slot=${{ github.event.inputs.slot }}" \
+              -H "Authorization: Bearer $CRON_SECRET"
+          else
+            echo "Disparando Notificação do Versículo do Dia (06:06)..."
+            curl -X POST "${APP_URL:-https://amanhecer.app}/api/push/send-daily-verse" \
+              -H "Authorization: Bearer $CRON_SECRET"
+          fi

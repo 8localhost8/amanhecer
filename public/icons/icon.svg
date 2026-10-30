@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#072a49" />
+      <stop offset="50%" stop-color="#0b416e" />
+      <stop offset="85%" stop-color="#1e3a5f" />
+      <stop offset="100%" stop-color="#ca8a04" />
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="50%" cy="65%" r="45%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="1" />
+      <stop offset="40%" stop-color="#facc15" stop-opacity="0.85" />
+      <stop offset="80%" stop-color="#eab308" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#eab308" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="mountainBack" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="goldCross" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#fef08a" />
+    </linearGradient>
+  </defs>
+
+  <!-- Sky Background -->
+  <rect width="512" height="512" rx="112" fill="url(#skyGrad)" />
+
+  <!-- Sun Rays & Glow -->
+  <circle cx="256" cy="310" r="190" fill="url(#sunGlow)" />
+  
+  <!-- Subtle Ray Beams -->
+  <g opacity="0.4" stroke="#fef08a" stroke-width="3" stroke-linecap="round">
+    <line x1="256" y1="310" x2="256" y2="80" />
+    <line x1="256" y1="310" x2="120" y2="130" />
+    <line x1="256" y1="310" x2="392" y2="130" />
+    <line x1="256" y1="310" x2="60" y2="240" />
+    <line x1="256" y1="310" x2="452" y2="240" />
+  </g>
+
+  <!-- Sun Disk -->
+  <circle cx="256" cy="310" r="72" fill="#fef08a" />
+  <circle cx="256" cy="310" r="64" fill="#fde047" />
+
+  <!-- Distant Mountains -->
+  <path d="M 0 430 L 140 330 L 260 410 L 400 310 L 512 390 L 512 512 L 0 512 Z" fill="url(#mountainBack)" opacity="0.9" />
+
+  <!-- Bible / Book & Light Horizon at base -->
+  <path d="M 96 460 C 180 430, 250 445, 256 450 C 262 445, 332 430, 416 460 L 416 480 C 332 455, 262 468, 256 472 C 250 468, 180 455, 96 480 Z" fill="#fde047" opacity="0.95" />
+
+  <!-- Elegant Clean Cross centered with dawn glow -->
+  <g filter="drop-shadow(0 4px 12px rgba(0,0,0,0.5))">
+    <!-- Vertical beam -->
+    <rect x="250" y="160" width="12" height="130" rx="3" fill="url(#goldCross)" />
+    <!-- Horizontal beam -->
+    <rect x="220" y="200" width="72" height="12" rx="3" fill="url(#goldCross)" />
+  </g>
+</svg>

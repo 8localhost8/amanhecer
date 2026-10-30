@@ -1,0 +1,33 @@
+name: Publicar Conteúdo Aprovado
+
+on:
+  schedule:
+    # Executa às 03:00 UTC (00:00 Horário de Brasília) no início do dia editorial
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      target_date:
+        description: 'Data a ser publicada (YYYY-MM-DD)'
+        required: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar Dependências
+        run: npm ci
+
+      - name: Validar e Publicar Conteúdo
+        env:
+          EDITORIAL_POLICY: 'REVIEW'
+        run: |
+          node scripts/publish-devotional/publish.js ${{ github.event.inputs.target_date }}

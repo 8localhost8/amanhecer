@@ -1,0 +1,36 @@
+{
+  "name": "Amanhecer — Devocional Diário",
+  "short_name": "Amanhecer",
+  "description": "Um momento com Deus, todos os dias. Devocional cristão diário, gratuito e fundamentado na Bíblia.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#072a49",
+  "theme_color": "#072a49",
+  "orientation": "portrait",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["lifestyle", "books", "education"],
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
