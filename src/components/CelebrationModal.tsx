@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { CheckCircle2, Heart, Share2, Sparkles, X } from 'lucide-react';
+import { CheckCircle2, Share2, X } from 'lucide-react';
 import { DevotionalPublic } from '../services/ai/schemas';
 
 interface CelebrationModalProps {
@@ -12,12 +12,12 @@ interface CelebrationModalProps {
 export const CelebrationModal: React.FC<CelebrationModalProps> = ({ isOpen, onClose, devotional }) => {
   useEffect(() => {
     if (isOpen) {
-      // Fire subtle, joyful confetti with gold and sky dawn colors
+      // Subtle confetti in sage, sand, and cream tones
       confetti({
-        particleCount: 50,
-        spread: 60,
+        particleCount: 40,
+        spread: 55,
         origin: { y: 0.7 },
-        colors: ['#38abf8', '#0e90e6', '#facc15', '#fef08a', '#ffffff'],
+        colors: ['#82917B', '#D9C7A3', '#50604B', '#F7F3EA', '#CAD5C4'],
       });
     }
   }, [isOpen]);
@@ -33,9 +33,7 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({ isOpen, onCl
           text,
           url: window.location.href,
         });
-      } catch {
-        // User cancelled or unsupported
-      }
+      } catch {}
     } else {
       navigator.clipboard.writeText(text);
       alert('Texto copiado para a área de transferência!');
@@ -44,39 +42,39 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({ isOpen, onCl
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-graphite-950/70 backdrop-blur-xs animate-fade-in"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-white dark:bg-midnight-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl relative overflow-hidden text-center">
+      <div className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl max-w-sm w-full p-6 shadow-xl relative overflow-hidden text-center">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-full"
+          className="absolute top-4 right-4 text-graphite-400 hover:text-graphite-700 dark:hover:text-graphite-200 p-1.5 rounded-full"
           aria-label="Fechar"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
-        <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-4 ring-8 ring-emerald-50 dark:ring-emerald-900/20">
-          <CheckCircle2 className="w-8 h-8" />
+        <div className="w-14 h-14 rounded-full bg-sage-100 dark:bg-sage-900/60 text-sage-800 dark:text-sage-300 flex items-center justify-center mx-auto mb-3.5 ring-6 ring-sage-50 dark:ring-sage-950/40">
+          <CheckCircle2 className="w-7 h-7" />
         </div>
 
-        <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-          Leitura Concluída!
+        <h3 className="text-xl font-bold font-serif text-graphite-700 dark:text-graphite-50">
+          Leitura Concluída
         </h3>
 
-        <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
-          Parabéns por reservar esse momento com Deus hoje. Que a Palavra dEle habite ricamente em seu coração e guie cada um dos seus passos.
+        <p className="text-xs text-graphite-500 dark:text-graphite-400 mt-1.5 leading-relaxed">
+          Que a Palavra de Deus habite ricamente em seu coração e ilumine as suas decisões hoje.
         </p>
 
-        <div className="mt-4 p-3 bg-slate-50 dark:bg-midnight-950 rounded-2xl border border-slate-100 dark:border-slate-800 text-left">
-          <span className="text-[10px] font-bold text-dawn-600 dark:text-dawn-400 uppercase tracking-wider block">
-            Devocional de Hoje
+        <div className="mt-4 p-3.5 bg-cream-50 dark:bg-graphite-900 rounded-2xl border border-sand-200/60 dark:border-graphite-700 text-left">
+          <span className="text-[10px] font-bold text-sage-700 dark:text-sage-400 uppercase tracking-wider block">
+            Devocional Lido
           </span>
-          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+          <p className="text-sm font-semibold font-serif text-graphite-700 dark:text-graphite-100 truncate mt-0.5">
             {devotional.title}
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-graphite-400">
             {devotional.verseOfTheDay.reference}
           </p>
         </div>
@@ -84,15 +82,15 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({ isOpen, onCl
         <div className="mt-5 space-y-2">
           <button
             onClick={handleShare}
-            className="w-full py-3 px-4 bg-dawn-600 hover:bg-dawn-700 text-white font-semibold rounded-2xl shadow-lg shadow-dawn-600/20 flex items-center justify-center space-x-2 text-sm transition-all active:scale-95"
+            className="w-full py-3 px-4 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-xs flex items-center justify-center space-x-2 text-xs transition-all active:scale-95"
           >
-            <Share2 className="w-4 h-4" />
+            <Share2 className="w-3.5 h-3.5" />
             <span>Compartilhar Bênção</span>
           </button>
 
           <button
             onClick={onClose}
-            className="w-full py-2.5 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-2xl text-xs transition-all"
+            className="w-full py-2.5 px-4 bg-sand-100 dark:bg-graphite-700 hover:bg-sand-200 text-graphite-600 dark:text-graphite-300 font-semibold rounded-full text-xs transition-all"
           >
             Voltar ao Início
           </button>

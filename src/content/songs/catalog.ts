@@ -9,6 +9,16 @@ export interface ChristianSong {
   theologicalAlignmentNotes: string;
 }
 
+export function buildYouTubeSearchUrl(title: string, artist: string): string {
+  const query = `${title} ${artist}`.trim();
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+}
+
+export function buildSpotifySearchUrl(title: string, artist: string): string {
+  const query = `${title} ${artist}`.trim();
+  return `https://open.spotify.com/search/${encodeURIComponent(query)}`;
+}
+
 export const VERIFIED_SONGS_CATALOG: ChristianSong[] = [
   {
     id: 'song-001',
@@ -16,8 +26,8 @@ export const VERIFIED_SONGS_CATALOG: ChristianSong[] = [
     artist: 'Harpa Cristã / Bill & Gloria Gaither',
     theme: 'Esperança, Ressurreição e Confiança no Amanhã',
     recommendationReason: 'Hino clássico que conforta o coração ao lembrar que o Cristo ressurreto sustenta o nosso futuro.',
-    youtubeUrl: 'https://www.youtube.com/watch?v=kY31FwJ5U7Q',
-    spotifyUrl: 'https://open.spotify.com/search/porque%20ele%20vive',
+    youtubeUrl: buildYouTubeSearchUrl('Porque Ele Vive', 'Harpa Cristã Bill Gloria Gaither'),
+    spotifyUrl: buildSpotifySearchUrl('Porque Ele Vive', 'Harpa Cristã'),
     theologicalAlignmentNotes: 'Centrado na ressurreição de Cristo e na paz contra o medo do amanhã.'
   },
   {
@@ -26,8 +36,8 @@ export const VERIFIED_SONGS_CATALOG: ChristianSong[] = [
     artist: 'Thomas Chisholm / Harpa Cristã',
     theme: 'Fidelidade de Deus e Misericórdias Matinais',
     recommendationReason: 'Inspirado diretamente em Lamentações 3:22-23, celebra a fidelidade incondicional do Senhor.',
-    youtubeUrl: 'https://www.youtube.com/watch?v=0k1WdO8Y4w4',
-    spotifyUrl: 'https://open.spotify.com/search/grande%20e%20a%20tua%20fidelidade',
+    youtubeUrl: buildYouTubeSearchUrl('Grande é a Tua Fidelidade', 'Harpa Cristã'),
+    spotifyUrl: buildSpotifySearchUrl('Grande é a Tua Fidelidade', 'Harpa Cristã'),
     theologicalAlignmentNotes: 'Exaltação da graça divina renovada diariamente, sem triunfalismo material.'
   },
   {
@@ -36,8 +46,8 @@ export const VERIFIED_SONGS_CATALOG: ChristianSong[] = [
     artist: 'Nivea Soares',
     theme: 'O Amor Incondicional de Deus',
     recommendationReason: 'Baseado na certeza de Romanos 8:38-39 de que nada nos separará do amor do Pai.',
-    youtubeUrl: 'https://www.youtube.com/watch?v=6P3B8B8U3Qk',
-    spotifyUrl: 'https://open.spotify.com/search/o%20teu%20amor%20nao%20falha%20nivea%20soares',
+    youtubeUrl: buildYouTubeSearchUrl('O Teu Amor Não Falha', 'Nivea Soares'),
+    spotifyUrl: buildSpotifySearchUrl('O Teu Amor Não Falha', 'Nivea Soares'),
     theologicalAlignmentNotes: 'Reconhece a soberania de Deus em meio às tempestades da vida.'
   },
   {
@@ -46,8 +56,8 @@ export const VERIFIED_SONGS_CATALOG: ChristianSong[] = [
     artist: 'Cantor Cristão',
     theme: 'Soberania e Provisão Espiritual',
     recommendationReason: 'Louvor solene que recorda a presença contínua de Deus ao longo de todas as estações.',
-    youtubeUrl: 'https://www.youtube.com/watch?v=vV7Y1J1Q8W8',
-    spotifyUrl: 'https://open.spotify.com/search/tu%20es%20fiel%20senhor',
+    youtubeUrl: buildYouTubeSearchUrl('Tu És Fiel Senhor', 'Cantor Cristão'),
+    spotifyUrl: buildSpotifySearchUrl('Tu És Fiel Senhor', 'Cantor Cristão'),
     theologicalAlignmentNotes: 'Enfatiza a imutabilidade do caráter de Deus.'
   },
   {
@@ -56,8 +66,8 @@ export const VERIFIED_SONGS_CATALOG: ChristianSong[] = [
     artist: 'Voz da Verdade',
     theme: 'Cuidado Pastoral de Jesus',
     recommendationReason: 'Expressão devocional inspirada no Salmo 23, trazendo refrigério e paz interior.',
-    youtubeUrl: 'https://www.youtube.com/watch?v=aZ1X2Y3W4V5',
-    spotifyUrl: 'https://open.spotify.com/search/ele%20me%20guia%20salmo%2023',
+    youtubeUrl: buildYouTubeSearchUrl('Ele Me Guia Salmo 23', 'Voz da Verdade'),
+    spotifyUrl: buildSpotifySearchUrl('Ele Me Guia Salmo 23', 'Voz da Verdade'),
     theologicalAlignmentNotes: 'Foco no Bom Pastor que conduz por veredas de justiça.'
   },
   {
@@ -66,8 +76,8 @@ export const VERIFIED_SONGS_CATALOG: ChristianSong[] = [
     artist: 'John Newton',
     theme: 'Salvação pela Graça',
     recommendationReason: 'O hino atemporal que resume a maravilha de sermos alcançados pela graça redentora.',
-    youtubeUrl: 'https://www.youtube.com/watch?v=CDdvReNKKuk',
-    spotifyUrl: 'https://open.spotify.com/search/amazing%20grace%20portugues',
+    youtubeUrl: buildYouTubeSearchUrl('Amazing Grace Graça Sublime', 'John Newton Português'),
+    spotifyUrl: buildSpotifySearchUrl('Amazing Grace Português', 'Harpa'),
     theologicalAlignmentNotes: 'Sublinha a salvação exclusivamente pela graça mediante a fé (Efésios 2:8-9).'
   },
   {
@@ -76,8 +86,8 @@ export const VERIFIED_SONGS_CATALOG: ChristianSong[] = [
     artist: 'Reuben Morgan / Tradução Hillsong',
     theme: 'Paz e Descanso no Poder Soberano',
     recommendationReason: 'Canção serena que convida a alma a aquietar-se e confiar na soberania divina.',
-    youtubeUrl: 'https://www.youtube.com/watch?v=mO0K5B2P1N8',
-    spotifyUrl: 'https://open.spotify.com/search/descansarei',
+    youtubeUrl: buildYouTubeSearchUrl('Descansarei', 'Hillsong Português'),
+    spotifyUrl: buildSpotifySearchUrl('Descansarei', 'Hillsong'),
     theologicalAlignmentNotes: 'Harmoniza com o Salmo 46: "Aquietai-vos e sabei que eu sou Deus".'
   },
   {
@@ -86,8 +96,8 @@ export const VERIFIED_SONGS_CATALOG: ChristianSong[] = [
     artist: 'Martinho Lutero',
     theme: 'Deus como Refúgio e Fortaleza',
     recommendationReason: 'Hino histórico da Reforma Protestante baseado no Salmo 46, fortalecendo a convicção na vitória de Cristo.',
-    youtubeUrl: 'https://www.youtube.com/watch?v=W0q0nU4zG9U',
-    spotifyUrl: 'https://open.spotify.com/search/castelo%20forte%20e%20nosso%20deus',
+    youtubeUrl: buildYouTubeSearchUrl('Castelo Forte é Nosso Deus', 'Martinho Lutero'),
+    spotifyUrl: buildSpotifySearchUrl('Castelo Forte é Nosso Deus', 'Cantor Cristão'),
     theologicalAlignmentNotes: 'Cristocêntrico, proclama a suficiência de Cristo contra as forças espirituais.'
   }
 ];

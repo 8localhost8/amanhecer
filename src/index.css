@@ -8,35 +8,46 @@
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #F7F3EA;
+  color: #383B35;
+}
+
+.dark body {
+  background-color: #191C1A;
+  color: #F2EFE7;
 }
 
 /* Devotional reading text typography */
 .devotional-reading-content {
   font-size: var(--font-reading-size);
   line-height: var(--font-reading-line-height);
-  font-family: 'Lora', Georgia, serif;
+  letter-spacing: -0.01em;
 }
 
-/* Smooth transitions for theme toggle */
+/* Smooth transitions for theme toggle & interactions */
 *, *::before, *::after {
-  transition-property: background-color, border-color, color, fill, stroke;
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow, transform;
   transition-duration: 200ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Accessibility focus ring */
 :focus-visible {
-  outline: 3px solid #0e90e6;
-  outline-offset: 3px;
+  outline: 2px solid #50604B;
+  outline-offset: 2px;
+}
+
+.dark :focus-visible {
+  outline: 2px solid #AFC3A7;
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -44,10 +55,15 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.4);
+  background: rgba(130, 145, 123, 0.3);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.6);
+  background: rgba(130, 145, 123, 0.5);
+}
+
+/* Safe area insets for iOS devices */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
 }

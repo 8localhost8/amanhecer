@@ -1,5 +1,5 @@
-import React from 'react';
-import { Sparkles, Download, ArrowRight, HelpCircle, ShieldCheck, Heart, BookOpen, Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { Download, ArrowRight, HelpCircle, Check, Smartphone, CheckCircle2 } from 'lucide-react';
 
 interface LandingPageProps {
   onEnterApp: () => void;
@@ -12,105 +12,137 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onOpenHelp,
   deferredPrompt,
 }) => {
+  const [installSuccessMessage, setInstallSuccessMessage] = useState<string | null>(null);
+
   const handleInstallClick = async () => {
     if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-      if (choice.outcome === 'accepted') {
-        onEnterApp();
+      try {
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if (choice.outcome === 'accepted') {
+          // Success: Show peaceful feedback, DO NOT redirect inside the browser window
+          setInstallSuccessMessage('Aplicativo instalado com sucesso! Abra o Amanhecer direto pelo ícone na tela inicial do seu aparelho.');
+        }
+      } catch (err) {
+        console.warn('Erro ao acionar prompt de instalação:', err);
+        onOpenHelp();
       }
     } else {
+      // If prompt is unavailable (e.g. iOS Safari or already handled), open illustrated instructions
       onOpenHelp();
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between py-8 px-4 max-w-md mx-auto text-center animate-fade-in">
+    <div className="min-h-screen flex flex-col justify-between py-6 px-4 max-w-sm mx-auto text-center animate-fade-in">
       {/* Top Bar with ? Help */}
-      <div className="flex items-center justify-between w-full">
+      <div className="flex items-center justify-between w-full pt-1">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-xl bg-dawn-600 p-0.5">
-            <img src="/icons/icon.svg" alt="" className="w-full h-full object-contain" />
+          <div className="w-7 h-7 rounded-full bg-sage-800 text-cream-50 flex items-center justify-center">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
+              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+            </svg>
           </div>
-          <span className="text-base font-bold font-serif text-slate-900 dark:text-white">
+          <span className="text-sm font-bold font-serif text-graphite-700 dark:text-graphite-100">
             Amanhecer
           </span>
         </div>
 
         <button
           onClick={onOpenHelp}
-          className="flex items-center space-x-1 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 transition-colors"
+          className="flex items-center space-x-1 px-3 py-1.5 rounded-full bg-sand-200/80 dark:bg-graphite-800 text-graphite-700 dark:text-graphite-200 text-xs font-medium hover:bg-sand-300/80 transition-colors"
           title="Ajuda de instalação"
+          aria-label="Abrir ajuda de instalação"
         >
-          <HelpCircle className="w-3.5 h-3.5 text-dawn-600 dark:text-dawn-400" />
+          <HelpCircle className="w-3.5 h-3.5 text-sage-700 dark:text-sage-300" />
           <span>Ajuda (?)</span>
         </button>
       </div>
 
-      {/* Hero Section */}
-      <div className="my-auto py-8 space-y-6">
-        <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-dawn-700 via-dawn-500 to-gold-400 p-1 shadow-2xl shadow-dawn-500/25 mx-auto flex items-center justify-center">
-          <div className="w-full h-full rounded-[22px] bg-slate-950 flex items-center justify-center">
-            <img src="/icons/icon.svg" alt="Amanhecer" className="w-14 h-14 object-contain" />
-          </div>
+      {/* Main Hero (Matching Screen 1 of UX Reference) */}
+      <div className="my-auto py-6 space-y-5">
+        {/* Organic Minimalist Art: Sun & Olive Branch */}
+        <div className="relative w-44 h-44 mx-auto rounded-full bg-sand-100 dark:bg-graphite-850 flex items-center justify-center overflow-hidden border border-sand-200 dark:border-graphite-700 shadow-xs">
+          {/* Gentle sun disk */}
+          <div className="absolute top-4 right-8 w-10 h-10 rounded-full bg-sand-300 dark:bg-sand-500/50" />
+          
+          {/* Layered sage hills */}
+          <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute bottom-0 w-full h-full">
+            <path d="M0 160 C50 120, 120 140, 200 110 L200 200 L0 200 Z" fill="#AFC3A7" opacity="0.5" />
+            <path d="M0 180 C60 145, 140 165, 200 140 L200 200 L0 200 Z" fill="#82917B" opacity="0.65" />
+            <path d="M0 195 C70 170, 130 185, 200 165 L200 200 L0 200 Z" fill="#50604B" opacity="0.85" />
+          </svg>
+
+          {/* Minimalist olive branch */}
+          <svg viewBox="0 0 24 24" fill="none" stroke="#253525" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-16 h-16 relative z-10 text-sage-900 dark:text-cream-50 -translate-y-2">
+            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+          </svg>
         </div>
 
-        <div className="space-y-2">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight font-serif">
+        {/* Brand & Purpose */}
+        <div className="space-y-1.5">
+          <h1 className="text-3xl font-bold font-serif text-graphite-700 dark:text-graphite-50 tracking-tight">
             Amanhecer
           </h1>
-          <p className="text-base sm:text-lg font-medium text-dawn-600 dark:text-dawn-400">
-            "Seu momento diário com a Palavra de Deus."
+          <p className="text-xs uppercase tracking-widest text-sage-700 dark:text-sage-300 font-semibold">
+            Devocional Diário
           </p>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
-            Gratuito. Sem cadastro. Simples de usar.
+          <p className="text-sm font-serif italic text-graphite-600 dark:text-graphite-300 pt-1">
+            "Um momento com Deus, todos os dias."
           </p>
         </div>
 
-        {/* Feature Highlights */}
-        <div className="bg-slate-50 dark:bg-midnight-900/90 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 text-left text-xs text-slate-600 dark:text-slate-300 space-y-2.5 max-w-sm mx-auto">
+        {/* Subtle Feature Pills */}
+        <div className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-4 text-left text-xs text-graphite-600 dark:text-graphite-300 space-y-2 shadow-xs">
           <div className="flex items-center space-x-2">
-            <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-            <span>Devocional diário baseado no cânon protestante de 66 livros</span>
+            <Check className="w-3.5 h-3.5 text-sage-600 dark:text-sage-400 flex-shrink-0" />
+            <span>Fundamentado no cânon bíblico de 66 livros</span>
           </div>
           <div className="flex items-center space-x-2">
-            <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-            <span>Versículo do dia às 06:06 e lembretes serenos de leitura</span>
+            <Check className="w-3.5 h-3.5 text-sage-600 dark:text-sage-400 flex-shrink-0" />
+            <span>Versículo do dia às 06:06 e lembretes serenos</span>
           </div>
           <div className="flex items-center space-x-2">
-            <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-            <span>Acesso offline, favoritos e diário pessoal sem criar conta</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-            <span>Avaliação crítica com nota mínima 90/100 contra distorções</span>
+            <Check className="w-3.5 h-3.5 text-sage-600 dark:text-sage-400 flex-shrink-0" />
+            <span>100% Gratuito, sem cadastro e sem anúncios</span>
           </div>
         </div>
 
-        {/* Call to Action Buttons */}
-        <div className="space-y-3 pt-2 max-w-sm mx-auto w-full">
+        {/* Installation Success Notice (if user just installed) */}
+        {installSuccessMessage && (
+          <div className="p-3.5 rounded-2xl bg-sage-100 dark:bg-sage-900/60 border border-sage-300 dark:border-sage-700 text-xs text-sage-900 dark:text-sage-200 flex items-start space-x-2 text-left">
+            <CheckCircle2 className="w-4 h-4 text-sage-700 dark:text-sage-300 flex-shrink-0 mt-0.5" />
+            <p>{installSuccessMessage}</p>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="space-y-2.5 pt-1">
+          {/* Primary Action: Instalar Aplicativo */}
           <button
             onClick={handleInstallClick}
-            className="w-full py-4 px-6 bg-dawn-600 hover:bg-dawn-700 text-white font-bold rounded-2xl shadow-xl shadow-dawn-600/30 flex items-center justify-center space-x-2 text-sm sm:text-base transition-all active:scale-98"
+            className="w-full py-3.5 px-6 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-sm flex items-center justify-center space-x-2 text-sm transition-all active:scale-95"
           >
-            <Download className="w-5 h-5" />
+            <Download className="w-4 h-4" />
             <span>Instalar Aplicativo</span>
           </button>
 
+          {/* Secondary Action: Usar no Navegador */}
           <button
             onClick={onEnterApp}
-            className="w-full py-3 px-6 bg-slate-100 dark:bg-midnight-950 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold rounded-2xl text-xs sm:text-sm transition-all flex items-center justify-center space-x-1.5"
+            className="w-full py-3 px-6 bg-transparent hover:bg-sand-200/60 dark:hover:bg-graphite-800 text-graphite-600 dark:text-graphite-300 font-medium rounded-full text-xs transition-all flex items-center justify-center space-x-1.5"
           >
             <span>Usar no navegador</span>
-            <ArrowRight className="w-4 h-4 text-slate-400" />
+            <ArrowRight className="w-3.5 h-3.5 text-graphite-400" />
           </button>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="pt-6 text-[11px] text-slate-400 dark:text-slate-500 space-y-1">
-        <p>Amanhecer 2.0 • Devocional Diário Cristão</p>
-        <p>100% Gratuito • Sem Anúncios • Fundamentado na Bíblia</p>
+      <footer className="pt-2 text-[10px] text-graphite-400 dark:text-graphite-400">
+        <p>Amanhecer 2.0 • Sem fins lucrativos • Para a glória de Deus</p>
       </footer>
     </div>
   );

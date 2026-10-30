@@ -32,9 +32,15 @@ export const App: React.FC = () => {
     (window.navigator as any).standalone === true
   );
 
-  // Determine initial view: if standalone or already visited, open directly in 'home'
+  // Determine initial view:
+  // 1. If installed/standalone -> open directly in 'home'
+  // 2. If in regular browser and user previously selected "Usar no navegador" in this session -> 'home'
+  // 3. Otherwise -> 'landing'
   const [currentView, setCurrentView] = useState<AppView | 'landing'>(() => {
-    if (isStandalone || preferences.onboardingCompleted) {
+    if (isStandalone) {
+      return 'home';
+    }
+    if (typeof window !== 'undefined' && sessionStorage.getItem('amanhecer_use_browser') === 'true') {
       return 'home';
     }
     return 'landing';
@@ -134,6 +140,9 @@ export const App: React.FC = () => {
   };
 
   const handleEnterAppFromLanding = () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('amanhecer_use_browser', 'true');
+    }
     setCurrentView('home');
     if (!preferences.onboardingCompleted) {
       setIsOnboardingOpen(true);
@@ -142,7 +151,7 @@ export const App: React.FC = () => {
 
   if (currentView === 'landing') {
     return (
-      <main className="min-h-screen bg-slate-50 dark:bg-midnight-950 text-slate-800 dark:text-slate-100">
+      <main className="min-h-screen bg-cream-100 dark:bg-graphite-950 text-graphite-700 dark:text-graphite-50">
         <LandingPage
           onEnterApp={handleEnterAppFromLanding}
           onOpenHelp={() => setIsInstallModalOpen(true)}
@@ -158,7 +167,7 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-midnight-950 text-slate-800 dark:text-slate-100 transition-colors">
+    <div className="min-h-screen flex flex-col bg-cream-100 dark:bg-graphite-950 text-graphite-700 dark:text-graphite-50 transition-colors">
       <Navbar
         currentView={currentView}
         onNavigate={(view) => setCurrentView(view)}
@@ -168,7 +177,7 @@ export const App: React.FC = () => {
         isOffline={isOffline}
       />
 
-      <main className="flex-1 max-w-2xl w-full mx-auto px-4 pt-4 pb-20">
+      <main className="flex-1 max-w-xl w-full mx-auto px-4 pt-4 pb-20">
         {currentView === 'home' && (
           <HomePage
             devotional={devotional}
@@ -227,7 +236,7 @@ export const App: React.FC = () => {
         {currentView === 'audit' && <EvaluationDashboardPage />}
       </main>
 
-      {/* Bottom Bar Navigation */}
+      {/* Floating Bottom Bar Navigation (Matching UX Reference) */}
       <BottomNav
         currentView={currentView as AppView}
         onNavigate={(view) => {

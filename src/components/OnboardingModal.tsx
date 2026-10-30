@@ -18,9 +18,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   const [theme, setTheme] = useState<AppTheme>(initialPreferences.theme);
   const [fontSizePreset, setFontSizePreset] = useState<FontSizePreset>(initialPreferences.fontSizePreset);
   const [fineFontSize, setFineFontSize] = useState<number>(initialPreferences.fineFontSize);
-  const [dailyVerseEnabled, setDailyVerseEnabled] = useState<boolean>(initialPreferences.dailyVerseEnabled);
-  const [reminderEnabled, setReminderEnabled] = useState<boolean>(initialPreferences.reminderEnabled);
-  const [pushRequested, setPushRequested] = useState<boolean>(false);
+  const [dailyVerseEnabled] = useState<boolean>(initialPreferences.dailyVerseEnabled);
+  const [reminderEnabled] = useState<boolean>(initialPreferences.reminderEnabled);
 
   if (!isOpen) return null;
 
@@ -47,14 +46,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   };
 
   const handleActivatePush = async () => {
-    setPushRequested(true);
     await requestAndSubscribePush();
     saveUserPreferences({
       notificationsEnabled: true,
       dailyVerseEnabled,
       reminderEnabled,
     });
-    setStep(3);
+    finishOnboarding();
   };
 
   const handleSkipPush = () => {
@@ -80,240 +78,214 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-graphite-950/75 backdrop-blur-xs animate-fade-in"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-white dark:bg-midnight-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl relative overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl max-w-sm w-full p-6 shadow-xl relative overflow-hidden flex flex-col max-h-[92vh]">
         {/* Progress indicator */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex space-x-1.5">
             {[1, 2, 3].map((s) => (
               <div
                 key={s}
-                className={`h-1.5 rounded-full transition-all ${
+                className={`h-1 rounded-full transition-all ${
                   s === step
-                    ? 'w-8 bg-dawn-600 dark:bg-dawn-400'
+                    ? 'w-7 bg-sage-800 dark:bg-sage-400'
                     : s < step
-                    ? 'w-4 bg-dawn-300 dark:bg-dawn-800'
-                    : 'w-4 bg-slate-200 dark:bg-slate-800'
+                    ? 'w-3.5 bg-sage-300 dark:bg-sage-700'
+                    : 'w-3.5 bg-sand-200 dark:bg-graphite-700'
                 }`}
               />
             ))}
           </div>
-          <span className="text-xs font-semibold text-slate-400">Etapa {step} de 3</span>
+          <span className="text-[10px] font-semibold text-graphite-400">Etapa {step} de 3</span>
         </div>
 
         {/* Step 1: Boas-vindas */}
         {step === 1 && (
-          <div className="flex flex-col items-center text-center py-4 space-y-4 my-auto">
-            <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-dawn-700 via-dawn-500 to-gold-400 p-1 shadow-xl shadow-dawn-500/20 flex items-center justify-center">
-              <div className="w-full h-full rounded-[22px] bg-slate-900 flex items-center justify-center">
-                <Sparkles className="w-9 h-9 text-gold-300" />
-              </div>
+          <div className="flex flex-col items-center text-center py-3 space-y-4 my-auto">
+            <div className="w-16 h-16 rounded-full bg-sand-100 dark:bg-graphite-700 text-sage-800 dark:text-sage-300 flex items-center justify-center shadow-xs">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8">
+                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+                <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+              </svg>
             </div>
 
-            <div className="space-y-1.5">
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                Bem-vindo ao Amanhecer!
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold font-serif text-graphite-700 dark:text-graphite-50">
+                Bem-vindo ao Amanhecer
               </h1>
-              <p className="text-base text-dawn-600 dark:text-dawn-400 font-medium">
+              <p className="text-xs text-sage-700 dark:text-sage-300 font-serif italic">
                 "Um momento com Deus, todos os dias."
               </p>
             </div>
 
-            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-sm">
-              Seu devocional cristão gratuito, sem cadastro, sem anúncios e com fidelidade inegociável às Escrituras Sagradas.
+            <p className="text-xs text-graphite-500 dark:text-graphite-400 leading-relaxed max-w-xs">
+              Devocionais diários com fidelidade bíblica, leitura serena e sem necessidade de cadastro ou senhas.
             </p>
 
             <button
               onClick={() => setStep(2)}
-              className="w-full mt-4 py-3.5 px-6 bg-dawn-600 hover:bg-dawn-700 text-white font-semibold rounded-2xl shadow-lg shadow-dawn-600/30 flex items-center justify-center space-x-2 transition-all active:scale-98"
+              className="w-full mt-2 py-3.5 px-6 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-xs flex items-center justify-center space-x-2 text-xs transition-all active:scale-95"
             >
               <span>Continuar</span>
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         )}
 
         {/* Step 2: Preferências de Leitura */}
         {step === 2 && (
-          <div className="flex flex-col py-2 space-y-5 overflow-y-auto pr-1">
+          <div className="flex flex-col py-1 space-y-4 overflow-y-auto">
             <div className="text-left">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+              <h2 className="text-xl font-bold font-serif text-graphite-700 dark:text-graphite-50">
                 Preferências de Leitura
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-[11px] text-graphite-400 mt-0.5">
                 Ajuste para o seu maior conforto visual
               </p>
             </div>
 
-            {/* Theme Selector */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            {/* Tema */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-graphite-600 dark:text-graphite-300">
                 Tema de visualização
               </label>
               <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => handleThemeChange('light')}
-                  className={`py-2 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center justify-center space-y-1 border transition-all ${
+                  className={`py-2 px-2 rounded-2xl text-xs font-semibold flex flex-col items-center justify-center space-y-1 border transition-all ${
                     theme === 'light'
-                      ? 'border-dawn-500 bg-dawn-50 text-dawn-700 dark:bg-dawn-950/60'
-                      : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+                      ? 'border-sage-600 bg-sage-50 text-sage-900 dark:bg-sage-900/60 font-bold'
+                      : 'border-sand-200 dark:border-graphite-700 text-graphite-500'
                   }`}
                 >
-                  <Sun className="w-4 h-4 text-amber-500" />
+                  <Sun className="w-3.5 h-3.5 text-amber-600" />
                   <span>Claro</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleThemeChange('dark')}
-                  className={`py-2 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center justify-center space-y-1 border transition-all ${
+                  className={`py-2 px-2 rounded-2xl text-xs font-semibold flex flex-col items-center justify-center space-y-1 border transition-all ${
                     theme === 'dark'
-                      ? 'border-dawn-500 bg-dawn-950 text-dawn-300'
-                      : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+                      ? 'border-sage-500 bg-graphite-850 text-sage-200 font-bold'
+                      : 'border-sand-200 dark:border-graphite-700 text-graphite-500'
                   }`}
                 >
-                  <Moon className="w-4 h-4 text-dawn-400" />
+                  <Moon className="w-3.5 h-3.5 text-sage-300" />
                   <span>Escuro</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleThemeChange('auto')}
-                  className={`py-2 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center justify-center space-y-1 border transition-all ${
+                  className={`py-2 px-2 rounded-2xl text-xs font-semibold flex flex-col items-center justify-center space-y-1 border transition-all ${
                     theme === 'auto'
-                      ? 'border-dawn-500 bg-dawn-50 dark:bg-dawn-950/60 text-dawn-700 dark:text-dawn-300'
-                      : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+                      ? 'border-sage-600 bg-sage-50 dark:bg-graphite-850 text-sage-900 dark:text-sage-200 font-bold'
+                      : 'border-sand-200 dark:border-graphite-700 text-graphite-500'
                   }`}
                 >
-                  <Sparkles className="w-4 h-4 text-slate-400" />
-                  <span>Automático</span>
+                  <Sparkles className="w-3.5 h-3.5 text-graphite-400" />
+                  <span>Auto</span>
                 </button>
               </div>
             </div>
 
-            {/* Font Size Selector */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center space-x-1">
-                  <Type className="w-3.5 h-3.5" />
-                  <span>Tamanho da letra ({fineFontSize}px)</span>
-                </label>
-              </div>
+            {/* Tamanho da Fonte */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-graphite-600 dark:text-graphite-300 flex items-center space-x-1">
+                <Type className="w-3.5 h-3.5" />
+                <span>Tamanho da letra ({fineFontSize}px)</span>
+              </label>
 
-              <div className="grid grid-cols-4 gap-1.5">
+              <div className="grid grid-cols-4 gap-1">
                 {(['small', 'medium', 'large', 'xlarge'] as FontSizePreset[]).map((preset) => (
                   <button
                     key={preset}
                     type="button"
                     onClick={() => handleFontSizePresetChange(preset)}
-                    className={`py-2 px-1 rounded-xl text-xs font-medium border text-center transition-all ${
+                    className={`py-1.5 px-1 rounded-full text-[11px] font-medium border text-center transition-all ${
                       fontSizePreset === preset
-                        ? 'border-dawn-500 bg-dawn-50 dark:bg-dawn-950 text-dawn-700 dark:text-dawn-300 font-bold'
-                        : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+                        ? 'border-sage-600 bg-sage-100 text-sage-900 dark:bg-sage-900/60 font-bold'
+                        : 'border-sand-200 dark:border-graphite-700 text-graphite-500'
                     }`}
                   >
                     {preset === 'small' && 'Pequena'}
                     {preset === 'medium' && 'Média'}
                     {preset === 'large' && 'Grande'}
-                    {preset === 'xlarge' && 'Muito grande'}
+                    {preset === 'xlarge' && 'Muito'}
                   </button>
                 ))}
               </div>
 
-              {/* Fine tuning slider */}
-              <div className="pt-2">
+              <div className="pt-1">
                 <input
                   type="range"
                   min="16"
                   max="32"
                   value={fineFontSize}
                   onChange={handleSliderChange}
-                  className="w-full accent-dawn-600 cursor-pointer"
-                  aria-label="Ajuste fino do tamanho da fonte"
+                  className="w-full accent-sage-700 cursor-pointer"
                 />
-                <div className="flex justify-between text-[10px] text-slate-400 mt-0.5">
-                  <span>16px</span>
-                  <span>24px</span>
-                  <span>32px</span>
-                </div>
               </div>
             </div>
 
-            {/* Real Text Preview */}
-            <div className="bg-slate-50 dark:bg-midnight-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
-              <span className="text-[11px] font-bold text-dawn-600 dark:text-dawn-400 uppercase tracking-wider block mb-1">
-                Prévia do Texto Bíblico:
-              </span>
+            {/* Prévia */}
+            <div className="bg-cream-50 dark:bg-graphite-900 p-3.5 rounded-2xl border border-sand-200/80 dark:border-graphite-700">
               <p
                 style={{ fontSize: `${fineFontSize}px`, lineHeight: 1.6 }}
-                className="font-serif text-slate-800 dark:text-slate-100 italic"
+                className="font-serif text-graphite-700 dark:text-graphite-100 italic"
               >
-                "Confia no SENHOR de todo o teu coração e não te estribes no teu próprio entendimento."
+                "Confia no SENHOR de todo o teu coração..."
               </p>
-              <span className="text-xs text-slate-500 dark:text-slate-400 block mt-2 font-sans font-medium">
-                — Provérbios 3:5
-              </span>
             </div>
 
             <button
               onClick={() => setStep(3)}
-              className="w-full mt-2 py-3.5 px-6 bg-dawn-600 hover:bg-dawn-700 text-white font-semibold rounded-2xl shadow-lg shadow-dawn-600/30 flex items-center justify-center space-x-2 transition-all active:scale-98"
+              className="w-full py-3 px-6 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-xs flex items-center justify-center space-x-2 text-xs transition-all active:scale-95"
             >
               <span>Continuar</span>
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         )}
 
         {/* Step 3: Notificações */}
         {step === 3 && (
-          <div className="flex flex-col py-2 space-y-4 my-auto">
-            <div className="w-14 h-14 rounded-2xl bg-dawn-100 dark:bg-dawn-950/80 text-dawn-600 dark:text-dawn-400 flex items-center justify-center mx-auto">
-              <Bell className="w-7 h-7" />
+          <div className="flex flex-col py-1 space-y-3.5 my-auto">
+            <div className="w-12 h-12 rounded-full bg-sage-100 dark:bg-sage-900/60 text-sage-800 dark:text-sage-300 flex items-center justify-center mx-auto shadow-xs">
+              <Bell className="w-6 h-6" />
             </div>
 
             <div className="text-center space-y-1">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+              <h2 className="text-xl font-bold font-serif text-graphite-700 dark:text-graphite-50">
                 Notificações Diárias
               </h2>
-              <p className="text-xs text-slate-600 dark:text-slate-300">
-                Gostaria de receber um versículo todas as manhãs e lembretes para seu devocional?
+              <p className="text-xs text-graphite-500 dark:text-graphite-400">
+                Deseja receber o versículo matinal e lembretes discretos?
               </p>
             </div>
 
-            <div className="bg-slate-50 dark:bg-midnight-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 space-y-2">
+            <div className="bg-sand-50 dark:bg-graphite-900 p-3.5 rounded-2xl border border-sand-200/60 dark:border-graphite-700 text-xs text-graphite-600 dark:text-graphite-300 space-y-2">
               <div className="flex items-start space-x-2">
-                <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                <p>
-                  <strong className="text-slate-800 dark:text-slate-200">Versículo às 06:06:</strong> Comece o dia inspirado pela Palavra.
-                </p>
+                <Check className="w-3.5 h-3.5 text-sage-700 flex-shrink-0 mt-0.5" />
+                <p><strong>06:06 da manhã:</strong> Versículo do Dia no seu aparelho.</p>
               </div>
               <div className="flex items-start space-x-2">
-                <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                <p>
-                  <strong className="text-slate-800 dark:text-slate-200">Lembretes serenos:</strong> Se você não tiver lido, receberá lembretes às 11:00, 16:00 e 21:00.
-                </p>
+                <Check className="w-3.5 h-3.5 text-sage-700 flex-shrink-0 mt-0.5" />
+                <p><strong>Parada automática:</strong> Lembretes cessam imediatamente ao concluir a leitura.</p>
               </div>
               <div className="flex items-start space-x-2">
-                <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                <p>
-                  <strong className="text-slate-800 dark:text-slate-200">Parada automática:</strong> Ao concluir a leitura, os lembretes restantes do dia param imediatamente.
-                </p>
-              </div>
-              <div className="flex items-start space-x-2">
-                <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                <p>
-                  <strong className="text-slate-800 dark:text-slate-200">100% Opcional:</strong> Pode ser desativado a qualquer momento nas configurações.
-                </p>
+                <Check className="w-3.5 h-3.5 text-sage-700 flex-shrink-0 mt-0.5" />
+                <p><strong>Opcional:</strong> Desative a qualquer momento nos ajustes.</p>
               </div>
             </div>
 
-            <div className="space-y-2 pt-2">
+            <div className="space-y-2 pt-1">
               <button
                 onClick={handleActivatePush}
-                className="w-full py-3.5 px-6 bg-dawn-600 hover:bg-dawn-700 text-white font-semibold rounded-2xl shadow-lg shadow-dawn-600/30 flex items-center justify-center space-x-2 transition-all active:scale-98"
+                className="w-full py-3.5 px-6 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-xs flex items-center justify-center space-x-2 text-xs transition-all active:scale-95"
               >
                 <Bell className="w-4 h-4" />
                 <span>Ativar Notificações</span>
@@ -321,7 +293,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
               <button
                 onClick={handleSkipPush}
-                className="w-full py-2.5 px-4 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 text-xs font-semibold rounded-2xl transition-all"
+                className="w-full py-2 px-4 text-graphite-400 hover:text-graphite-700 dark:hover:text-graphite-200 text-xs font-semibold rounded-full transition-all"
               >
                 Agora não
               </button>

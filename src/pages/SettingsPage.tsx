@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon, Sparkles, Type, Bell, ShieldCheck, Heart, Info, BookOpen, Send } from 'lucide-react';
+import { Sun, Moon, Sparkles, Type, Bell, ShieldCheck, BookOpen, Send } from 'lucide-react';
 import { UserPreferences, saveUserPreferences, FontSizePreset, AppTheme } from '../storage/preferences';
 import { getPushStatus, requestAndSubscribePush, unsubscribePush, PushStatus } from '../services/notifications/push-client';
 
@@ -84,68 +84,68 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
   };
 
   return (
-    <div className="space-y-8 pb-28 animate-fade-in">
+    <div className="space-y-6 pb-28 animate-fade-in max-w-xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+        <h1 className="text-2xl sm:text-3xl font-bold font-serif text-graphite-700 dark:text-graphite-50 tracking-tight">
           Configurações
         </h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Personalize sua experiência devocional, visual e de avisos
+        <p className="text-xs text-graphite-400 dark:text-graphite-400 mt-0.5">
+          Personalize sua experiência de leitura e lembretes diários
         </p>
       </div>
 
-      {/* 1. Aparência e Tema */}
-      <section className="bg-white dark:bg-midnight-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4">
-        <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center space-x-2">
-          <Sun className="w-4 h-4 text-amber-500" />
+      {/* 1. Tema */}
+      <section className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3.5">
+        <h2 className="text-xs font-bold text-graphite-400 dark:text-graphite-400 uppercase tracking-wider flex items-center space-x-2">
+          <Sun className="w-3.5 h-3.5 text-sage-600 dark:text-sage-400" />
           <span>Tema de Exibição</span>
         </h2>
 
         <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => handleThemeChange('light')}
-            className={`py-3 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center justify-center space-y-1.5 border transition-all ${
+            className={`py-2.5 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center justify-center space-y-1 border transition-all ${
               preferences.theme === 'light'
-                ? 'border-dawn-500 bg-dawn-50 text-dawn-700 dark:bg-dawn-950 font-bold shadow-sm'
-                : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+                ? 'border-sage-600 bg-sage-50 text-sage-900 dark:bg-sage-900/60 font-bold shadow-xs'
+                : 'border-sand-200 dark:border-graphite-700 text-graphite-500'
             }`}
           >
-            <Sun className="w-5 h-5 text-amber-500" />
+            <Sun className="w-4 h-4 text-amber-600" />
             <span>Claro</span>
           </button>
           <button
             onClick={() => handleThemeChange('dark')}
-            className={`py-3 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center justify-center space-y-1.5 border transition-all ${
+            className={`py-2.5 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center justify-center space-y-1 border transition-all ${
               preferences.theme === 'dark'
-                ? 'border-dawn-500 bg-dawn-950 text-dawn-300 font-bold shadow-sm'
-                : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+                ? 'border-sage-500 bg-graphite-850 text-sage-200 font-bold shadow-xs'
+                : 'border-sand-200 dark:border-graphite-700 text-graphite-500'
             }`}
           >
-            <Moon className="w-5 h-5 text-dawn-400" />
+            <Moon className="w-4 h-4 text-sage-300" />
             <span>Escuro</span>
           </button>
           <button
             onClick={() => handleThemeChange('auto')}
-            className={`py-3 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center justify-center space-y-1.5 border transition-all ${
+            className={`py-2.5 px-3 rounded-2xl text-xs font-semibold flex flex-col items-center justify-center space-y-1 border transition-all ${
               preferences.theme === 'auto'
-                ? 'border-dawn-500 bg-dawn-50 dark:bg-dawn-950 text-dawn-700 dark:text-dawn-300 font-bold shadow-sm'
-                : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+                ? 'border-sage-600 bg-sage-50 dark:bg-graphite-850 text-sage-900 dark:text-sage-200 font-bold shadow-xs'
+                : 'border-sand-200 dark:border-graphite-700 text-graphite-500'
             }`}
           >
-            <Sparkles className="w-5 h-5 text-slate-400" />
+            <Sparkles className="w-4 h-4 text-graphite-400" />
             <span>Automático</span>
           </button>
         </div>
       </section>
 
-      {/* 2. Tamanho da Fonte para Leitura Acessível */}
-      <section className="bg-white dark:bg-midnight-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4">
+      {/* 2. Tamanho da Fonte */}
+      <section className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3.5">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center space-x-2">
-            <Type className="w-4 h-4 text-dawn-600 dark:text-dawn-400" />
+          <h2 className="text-xs font-bold text-graphite-400 dark:text-graphite-400 uppercase tracking-wider flex items-center space-x-2">
+            <Type className="w-3.5 h-3.5 text-sage-600 dark:text-sage-400" />
             <span>Tamanho da Letra</span>
           </h2>
-          <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+          <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-sand-100 dark:bg-graphite-700 text-graphite-600 dark:text-graphite-300">
             {preferences.fineFontSize}px
           </span>
         </div>
@@ -155,10 +155,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
             <button
               key={preset}
               onClick={() => handleFontSizePresetChange(preset)}
-              className={`py-2 px-1 rounded-xl text-xs font-semibold border text-center transition-all ${
+              className={`py-2 px-1 rounded-full text-xs font-semibold border text-center transition-all ${
                 preferences.fontSizePreset === preset
-                  ? 'border-dawn-500 bg-dawn-50 dark:bg-dawn-950 text-dawn-700 dark:text-dawn-300 font-bold'
-                  : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+                  ? 'border-sage-600 bg-sage-100 text-sage-900 dark:bg-sage-900/60 dark:text-sage-200 font-bold shadow-xs'
+                  : 'border-sand-200 dark:border-graphite-700 text-graphite-500'
               }`}
             >
               {preset === 'small' && 'Pequena'}
@@ -176,34 +176,34 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
             max="32"
             value={preferences.fineFontSize}
             onChange={handleSliderChange}
-            className="w-full accent-dawn-600 cursor-pointer"
+            className="w-full accent-sage-700 cursor-pointer"
           />
-          <div className="flex justify-between text-[10px] text-slate-400">
+          <div className="flex justify-between text-[10px] text-graphite-400">
             <span>16px (Padrão)</span>
             <span>24px (Grande)</span>
-            <span>32px (Muito Acessível)</span>
+            <span>32px (Acessível)</span>
           </div>
         </div>
 
-        {/* Real-time preview */}
-        <div className="bg-slate-50 dark:bg-midnight-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-          <span className="text-[10px] font-bold text-dawn-600 dark:text-dawn-400 uppercase tracking-wider block mb-1">
+        {/* Prévia */}
+        <div className="bg-cream-50 dark:bg-graphite-900 p-4 rounded-2xl border border-sand-200/80 dark:border-graphite-700">
+          <span className="text-[10px] font-bold text-sage-700 dark:text-sage-400 uppercase tracking-wider block mb-1">
             Prévia do texto:
           </span>
           <p
-            style={{ fontSize: `${preferences.fineFontSize}px`, lineHeight: 1.6 }}
-            className="font-serif italic text-slate-900 dark:text-slate-100"
+            style={{ fontSize: `${preferences.fineFontSize}px`, lineHeight: 1.65 }}
+            className="font-serif italic text-graphite-700 dark:text-graphite-100"
           >
             "Confia no SENHOR de todo o teu coração e não te estribes no teu próprio entendimento."
           </p>
         </div>
       </section>
 
-      {/* 3. Notificações Web Push */}
-      <section className="bg-white dark:bg-midnight-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4">
+      {/* 3. Notificações */}
+      <section className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3.5">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center space-x-2">
-            <Bell className="w-4 h-4 text-dawn-600 dark:text-dawn-400" />
+          <h2 className="text-xs font-bold text-graphite-400 dark:text-graphite-400 uppercase tracking-wider flex items-center space-x-2">
+            <Bell className="w-3.5 h-3.5 text-sage-600 dark:text-sage-400" />
             <span>Notificações Diárias</span>
           </h2>
 
@@ -211,58 +211,58 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
             onClick={handleTogglePushNotifications}
             className={`py-1.5 px-3.5 rounded-full text-xs font-bold transition-all ${
               preferences.notificationsEnabled
-                ? 'bg-emerald-600 text-white'
-                : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                ? 'bg-sage-800 text-cream-50'
+                : 'bg-sand-200 dark:bg-graphite-700 text-graphite-600 dark:text-graphite-300'
             }`}
           >
             {preferences.notificationsEnabled ? 'Ativadas' : 'Desativadas'}
           </button>
         </div>
 
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          Receba versículo matinal e lembretes serenos sem pressão espiritual.
+        <p className="text-xs text-graphite-500 dark:text-graphite-400 leading-relaxed">
+          Receba o versículo matinal e lembretes discretos para cultivar o seu momento com Deus.
         </p>
 
         {preferences.notificationsEnabled && (
-          <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="space-y-3 pt-2 border-t border-sand-100 dark:border-graphite-700">
             <label className="flex items-center justify-between text-xs cursor-pointer">
               <div>
-                <span className="font-semibold text-slate-800 dark:text-slate-200 block">
+                <span className="font-semibold text-graphite-700 dark:text-graphite-200 block">
                   ☀️ Versículo do Dia às 06:06
                 </span>
-                <span className="text-slate-500 dark:text-slate-400 text-[11px]">
-                  Enviado pontualmente todas as manhãs
+                <span className="text-graphite-400 text-[11px]">
+                  Enviado pontualmente toda manhã
                 </span>
               </div>
               <input
                 type="checkbox"
                 checked={preferences.dailyVerseEnabled}
                 onChange={(e) => handleToggleDailyVerse(e.target.checked)}
-                className="w-4 h-4 accent-dawn-600 rounded"
+                className="w-4 h-4 accent-sage-700 rounded"
               />
             </label>
 
             <label className="flex items-center justify-between text-xs cursor-pointer">
               <div>
-                <span className="font-semibold text-slate-800 dark:text-slate-200 block">
+                <span className="font-semibold text-graphite-700 dark:text-graphite-200 block">
                   📖 Lembretes de leitura pendente
                 </span>
-                <span className="text-slate-500 dark:text-slate-400 text-[11px]">
-                  Às 11:00, 16:00 e 21:00 (param imediatamente após a leitura)
+                <span className="text-graphite-400 text-[11px]">
+                  Às 11:00, 16:00 e 21:00 (param após a leitura)
                 </span>
               </div>
               <input
                 type="checkbox"
                 checked={preferences.reminderEnabled}
                 onChange={(e) => handleToggleReminders(e.target.checked)}
-                className="w-4 h-4 accent-dawn-600 rounded"
+                className="w-4 h-4 accent-sage-700 rounded"
               />
             </label>
 
             <button
               onClick={handleSendTestNotification}
               disabled={isTestingPush}
-              className="mt-2 w-full py-2 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl flex items-center justify-center space-x-1.5 transition-all"
+              className="mt-2 w-full py-2.5 px-3 bg-sand-100 dark:bg-graphite-700 hover:bg-sand-200 text-graphite-700 dark:text-graphite-200 text-xs font-semibold rounded-full flex items-center justify-center space-x-1.5 transition-all"
             >
               <Send className="w-3.5 h-3.5" />
               <span>Testar Notificação Agora</span>
@@ -271,34 +271,23 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
         )}
       </section>
 
-      {/* 4. Compromisso Teológico e Bíblico */}
-      <section className="bg-slate-50 dark:bg-midnight-950 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 space-y-3">
-        <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center space-x-2">
-          <BookOpen className="w-4 h-4 text-dawn-600 dark:text-dawn-400" />
-          <span>Fidelidade Bíblica Inegociável</span>
+      {/* 4. Compromisso Teológico */}
+      <section className="bg-sand-50 dark:bg-graphite-850 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 space-y-2.5 text-xs text-graphite-600 dark:text-graphite-300 shadow-xs">
+        <h2 className="text-xs font-bold text-graphite-700 dark:text-graphite-200 uppercase tracking-wider flex items-center space-x-2">
+          <BookOpen className="w-4 h-4 text-sage-700 dark:text-sage-300" />
+          <span>Fidelidade Bíblica</span>
         </h2>
 
-        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-          O Amanhecer adota como autoridade suprema e inerrante a Bíblia Cristã, fundamentada no <strong>cânon protestante de 66 livros</strong>.
-        </p>
-
-        <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1.5 list-disc list-inside">
-          <li>100% gratuito: sem anúncios, planos pagos ou paywalls.</li>
-          <li>Sem teologia da prosperidade ou promessas levianas de riqueza material.</li>
-          <li>Sem manipulação espiritual ou culpa religiosa.</li>
-          <li>Inteligência artificial auditada criticamente com nota de corte 90/100.</li>
-        </ul>
-      </section>
-
-      {/* 5. Privacidade & Dados */}
-      <section className="bg-slate-50 dark:bg-midnight-950 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 space-y-2 text-xs text-slate-600 dark:text-slate-400">
-        <div className="flex items-center space-x-2 text-slate-800 dark:text-slate-200 font-bold">
-          <ShieldCheck className="w-4 h-4 text-emerald-500" />
-          <span>Privacidade Sem Cadastro</span>
-        </div>
         <p className="leading-relaxed">
-          Você utiliza o Amanhecer sem informar e-mail, telefone ou senha. Todo o seu histórico de leitura, favoritos e anotações do diário residem exclusivamente no armazenamento do seu próprio navegador/aparelho.
+          O Amanhecer adota como autoridade inerrante a Bíblia Cristã, fundamentada no <strong>cânon protestante de 66 livros</strong>.
         </p>
+
+        <ul className="space-y-1 list-disc list-inside text-graphite-500 dark:text-graphite-400">
+          <li>100% gratuito: sem anúncios, planos ou cobranças.</li>
+          <li>Sem teologia da prosperidade ou promessas levianas.</li>
+          <li>Sem manipulação espiritual ou culpa religiosa.</li>
+          <li>Avaliação automatizada com corte mínimo de 90/100.</li>
+        </ul>
       </section>
     </div>
   );

@@ -1,0 +1,125 @@
+AMANHECER — DIRETRIZES DE DESIGN E EXPERIÊNCIA DO USUÁRIO (UI/UX)
+Versão 1.0 | Documento para implementação por IA
+
+1. VISÃO DO PRODUTO
+Amanhecer é um aplicativo de devocionais cristãos diários. Sua interface deve favorecer leitura, reflexão, clareza e tranquilidade. O design deve parecer um livro contemporâneo de reflexões, não um dashboard corporativo, uma rede social ou um aplicativo de jogos.
+
+2. DIREÇÃO VISUAL
+Combinar Japanese Minimalism (espaço negativo, equilíbrio, serenidade e simplicidade) com Editorial Minimalism (hierarquia tipográfica, leitura confortável e organização de conteúdo). Adotar Warm Minimalism: tons naturais, superfícies discretas e uma aparência acolhedora.
+Evitar elementos decorativos sem função, excesso de ícones, bordas chamativas, sombras pesadas, gradientes saturados e efeitos de vidro em excesso.
+
+3. PALETA DE CORES
+Modo claro:
+- Fundo principal: #F7F3EA (creme)
+- Fundo secundário: #FFFFFF (branco)
+- Destaques discretos: #D9C7A3 (areia)
+- Cor de ação/acento: #82917B (verde-sálvia)
+- Texto principal: #383B35 (grafite)
+Usar variações mais escuras do verde quando necessário para garantir contraste em botões e links. Não usar verde-sálvia claro como texto pequeno sobre branco sem verificar acessibilidade.
+Modo escuro:
+- Fundo: #191C1A
+- Superfícies: #252A26
+- Texto principal: #F2EFE7
+- Texto secundário: #C2C9BF
+- Acento: #AFC3A7
+Garantir contraste mínimo WCAG AA: 4,5:1 para texto comum e 3:1 para textos grandes e componentes relevantes. Não depender somente de cor para transmitir estados.
+
+4. TIPOGRAFIA
+- Títulos e destaques editoriais: Playfair Display (com fallback serif).
+- Interface, menus, botões e corpo de texto: Inter (com fallback sans-serif).
+- Corpo dos devocionais: preferencialmente Inter, com opção de fonte serifada para leitura, caso a implementação permita.
+- Tamanho base: 16–18 px para leitura no celular, com controle de tamanho de fonte nas configurações.
+- Altura de linha de leitura: 1,6–1,8.
+- Parágrafos curtos, margens confortáveis e largura de texto controlada em telas grandes.
+- Respeitar a configuração de tamanho de fonte do usuário e evitar truncamento.
+
+5. LAYOUT E COMPONENTES
+- Abordagem mobile-first e responsiva.
+- Espaçamento consistente em escala de 4/8 px; preferir 16–24 px nas margens laterais.
+- Cards apenas quando ajudarem a organizar informação; preferir separação por espaços e tipografia.
+- Cantos suavemente arredondados (12–16 px), sem exagero.
+- Ícones simples e consistentes, acompanhados de rótulos quando necessário.
+- Botões primários visualmente claros, com área de toque de pelo menos 44 × 44 px.
+- Manter ações principais fáceis de encontrar, sem menus excessivamente profundos.
+
+6. ESTRUTURA DE NAVEGAÇÃO
+Fluxo principal sugerido:
+Início -> Devocional de hoje -> Confirmação de leitura.
+Acesso secundário a histórico de leituras, configurações e informações do aplicativo.
+Não esconder a leitura diária atrás de banners, pop-ups ou etapas desnecessárias.
+A navegação deve ser previsível e oferecer retorno fácil.
+
+7. TELA INICIAL
+- Saudação discreta e contextual, sem excesso de personalização.
+- Data e identificação clara do devocional do dia.
+- Título editorial com destaque.
+- Referência bíblica e breve introdução, se disponíveis.
+- Ação primária: “Ler devocional”.
+- Indicador de leitura concluída, se aplicável.
+- Sem carrosséis desnecessários ou métricas que desviem o foco espiritual.
+
+8. EXPERIÊNCIA DE LEITURA
+A leitura é a função central do aplicativo.
+- Apresentar título, referência bíblica, texto bíblico, reflexão e eventual oração/aplicação com hierarquia consistente.
+- Garantir espaço entre blocos e parágrafos.
+- Permitir ajuste de fonte e tema sem perder o ponto da leitura, quando possível.
+- Evitar elementos fixos que cubram o texto.
+- Ao final, apresentar botão explícito “Concluí a leitura de hoje”.
+- Após a confirmação, mostrar feedback sutil de sucesso, sem animação exagerada.
+- Não marcar como lido apenas por abrir ou rolar a página.
+- Evitar confirmação duplicada; manter o estado persistente conforme o sistema de dados do projeto.
+
+9. PRIMEIRO ACESSO / ONBOARDING
+O primeiro acesso deve ser curto e útil:
+- Boas-vindas com explicação breve do propósito.
+- Escolha de tema: claro, escuro ou seguir o sistema.
+- Ajuste de tamanho da fonte com prévia de texto.
+- Explicação objetiva das notificações e pedido de permissão no momento adequado.
+- Opção de rever preferências nas configurações.
+Não obrigar o usuário a passar por telas promocionais.
+
+10. NOTIFICAÇÕES E ESTADOS
+O projeto prevê o versículo do dia às 06:06 e lembretes de leitura a partir das 06:00, com intervalos de cinco horas enquanto o devocional do dia não estiver confirmado como lido.
+- Mostrar claramente essas preferências e permitir que o usuário controle as notificações.
+- Respeitar permissões do sistema e limitações técnicas da plataforma.
+- Não enviar lembretes após confirmação de leitura daquele dia.
+- Usar linguagem respeitosa, sem culpa ou pressão.
+- Projetar estados de carregamento, sem conexão, erro, conteúdo indisponível e leitura concluída com mensagens simples e ações de recuperação.
+
+11. MICROINTERAÇÕES E MOVIMENTO
+- Transições discretas de 150–300 ms, quando adequadas.
+- Preferir fade e pequenos deslocamentos suaves.
+- Feedback tátil apenas quando suportado e pertinente.
+- Respeitar a preferência de redução de movimento do sistema.
+- Evitar parallax intenso, animações contínuas, efeitos chamativos e bloqueios artificiais.
+
+12. ACESSIBILIDADE
+- Navegação compatível com teclado e tecnologias assistivas.
+- Rótulos acessíveis em controles e botões.
+- Foco visível e ordem lógica de navegação.
+- Contraste adequado em ambos os temas.
+- Texto ampliável sem quebra do layout.
+- Não transmitir informações exclusivamente por cores, gestos ou animações.
+- Linguagem clara em erros e instruções.
+
+13. INSTALAÇÃO (SE FOR PWA)
+A página de instalação deve seguir a mesma identidade visual.
+- Explicar em poucas palavras o benefício do aplicativo.
+- Ter ação principal de instalação quando o navegador oferecer suporte.
+- Disponibilizar ícone “?” com instruções específicas para cada plataforma.
+- Não prometer instalação automática em navegadores que não suportem o recurso.
+- Apresentar instruções manuais simples quando necessário.
+
+14. REGRAS DE IMPLEMENTAÇÃO PARA A IA
+- Tratar estas diretrizes como a identidade visual do Amanhecer.
+- Preservar funcionalidades existentes; não alterar regras de negócio para fins estéticos.
+- Criar tokens de design para cores, tipografia, espaçamento, bordas e estados.
+- Reutilizar componentes consistentes.
+- Garantir responsividade em celulares pequenos, tablets e desktop.
+- Verificar visualmente as telas nos modos claro e escuro.
+- Priorizar legibilidade e acessibilidade acima de efeitos visuais.
+- Se houver conflito entre estética e clareza, escolher clareza.
+- Não inventar funcionalidades ou conteúdo bíblico; usar as especificações e fontes do projeto.
+
+15. RESULTADO ESPERADO
+Uma experiência digital serena, editorial, acolhedora e contemporânea. O usuário deve conseguir abrir o Amanhecer, encontrar o devocional do dia, ler confortavelmente e confirmar a leitura sem distrações. A interface deve apoiar o conteúdo, nunca competir com ele.

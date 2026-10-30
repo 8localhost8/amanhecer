@@ -9,183 +9,197 @@ interface InstallModalProps {
 
 export const InstallModal: React.FC<InstallModalProps> = ({ isOpen, onClose, deferredPrompt }) => {
   const [activeTab, setActiveTab] = useState<'android' | 'ios' | 'desktop'>('android');
+  const [installed, setInstalled] = useState(false);
 
   if (!isOpen) return null;
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const choiceResult = await deferredPrompt.userChoice;
-      if (choiceResult.outcome === 'accepted') {
-        onClose();
+      try {
+        deferredPrompt.prompt();
+        const choiceResult = await deferredPrompt.userChoice;
+        if (choiceResult.outcome === 'accepted') {
+          setInstalled(true);
+          setTimeout(() => {
+            onClose();
+          }, 1500);
+        }
+      } catch (e) {
+        console.warn(e);
       }
     }
   };
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-graphite-950/70 backdrop-blur-xs animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="install-modal-title"
     >
-      <div className="bg-white dark:bg-midnight-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative overflow-hidden">
+      <div className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl max-w-md w-full p-6 shadow-xl relative overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-dawn-100 dark:bg-dawn-950/80 text-dawn-600 dark:text-dawn-400 flex items-center justify-center">
-              <HelpCircle className="w-6 h-6" />
+        <div className="flex items-center justify-between pb-3.5 border-b border-sand-100 dark:border-graphite-700/80">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-9 h-9 rounded-full bg-sage-100 dark:bg-sage-900/60 text-sage-800 dark:text-sage-300 flex items-center justify-center">
+              <HelpCircle className="w-5 h-5" />
             </div>
             <div>
-              <h2 id="install-modal-title" className="text-xl font-bold text-slate-900 dark:text-white">
+              <h2 id="install-modal-title" className="text-base font-bold font-serif text-graphite-700 dark:text-graphite-50">
                 Como Instalar o Amanhecer
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Acesse mesmo offline e sem cadastro
+              <p className="text-[11px] text-graphite-400 dark:text-graphite-400">
+                Para leitura offline e acesso instantâneo
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 rounded-full focus:ring-2 focus:ring-dawn-500"
-            aria-label="Fechar ajuda de instalação"
+            className="text-graphite-400 hover:text-graphite-700 dark:hover:text-graphite-200 p-1.5 rounded-full"
+            aria-label="Fechar"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Platform Selector Tabs */}
-        <div className="flex bg-slate-100 dark:bg-midnight-950 p-1 rounded-2xl mt-4">
+        <div className="flex bg-sand-100 dark:bg-graphite-850 p-1 rounded-full mt-4">
           <button
             onClick={() => setActiveTab('android')}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all ${
+            className={`flex-1 py-1.5 px-3 rounded-full text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all ${
               activeTab === 'android'
-                ? 'bg-white dark:bg-slate-800 text-dawn-600 dark:text-dawn-400 shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-white dark:bg-graphite-800 text-sage-900 dark:text-sage-200 shadow-xs'
+                : 'text-graphite-500 hover:text-graphite-800 dark:text-graphite-400 dark:hover:text-white'
             }`}
           >
-            <Smartphone className="w-4 h-4" />
+            <Smartphone className="w-3.5 h-3.5" />
             <span>Android</span>
           </button>
           <button
             onClick={() => setActiveTab('ios')}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all ${
+            className={`flex-1 py-1.5 px-3 rounded-full text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all ${
               activeTab === 'ios'
-                ? 'bg-white dark:bg-slate-800 text-dawn-600 dark:text-dawn-400 shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-white dark:bg-graphite-800 text-sage-900 dark:text-sage-200 shadow-xs'
+                : 'text-graphite-500 hover:text-graphite-800 dark:text-graphite-400 dark:hover:text-white'
             }`}
           >
-            <Apple className="w-4 h-4" />
-            <span>iPhone / iPad</span>
+            <Apple className="w-3.5 h-3.5" />
+            <span>iPhone</span>
           </button>
           <button
             onClick={() => setActiveTab('desktop')}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all ${
+            className={`flex-1 py-1.5 px-3 rounded-full text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all ${
               activeTab === 'desktop'
-                ? 'bg-white dark:bg-slate-800 text-dawn-600 dark:text-dawn-400 shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-white dark:bg-graphite-800 text-sage-900 dark:text-sage-200 shadow-xs'
+                : 'text-graphite-500 hover:text-graphite-800 dark:text-graphite-400 dark:hover:text-white'
             }`}
           >
-            <Monitor className="w-4 h-4" />
+            <Monitor className="w-3.5 h-3.5" />
             <span>Computador</span>
           </button>
         </div>
 
         {/* Instructions Body */}
-        <div className="mt-5 space-y-4 text-sm text-slate-700 dark:text-slate-300">
+        <div className="mt-4 space-y-3 text-xs text-graphite-600 dark:text-graphite-300">
           {activeTab === 'android' && (
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3 bg-slate-50 dark:bg-midnight-950 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/60">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-dawn-600 text-white text-xs font-bold flex items-center justify-center">1</span>
+            <div className="space-y-2.5">
+              <div className="flex items-start space-x-2.5 bg-sand-50 dark:bg-graphite-850/60 p-3 rounded-2xl border border-sand-200/60 dark:border-graphite-700/60">
+                <span className="w-5 h-5 rounded-full bg-sage-800 text-cream-50 font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
                 <div>
-                  <p className="font-semibold text-slate-900 dark:text-white">Toque no menu do Chrome</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Toque nos três pontinhos verticais (⋮) no canto superior direito do navegador.</p>
+                  <p className="font-semibold text-graphite-700 dark:text-graphite-100">Abra o menu do Chrome</p>
+                  <p className="text-[11px] text-graphite-400 dark:text-graphite-400 mt-0.5">Toque nos três pontinhos verticais (⋮) no canto superior direito.</p>
                 </div>
               </div>
-              <div className="flex items-start space-x-3 bg-slate-50 dark:bg-midnight-950 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/60">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-dawn-600 text-white text-xs font-bold flex items-center justify-center">2</span>
+              <div className="flex items-start space-x-2.5 bg-sand-50 dark:bg-graphite-850/60 p-3 rounded-2xl border border-sand-200/60 dark:border-graphite-700/60">
+                <span className="w-5 h-5 rounded-full bg-sage-800 text-cream-50 font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
                 <div>
-                  <p className="font-semibold text-slate-900 dark:text-white">Selecione "Instalar aplicativo"</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Ou "Adicionar à tela inicial" caso a opção anterior não esteja visível.</p>
+                  <p className="font-semibold text-graphite-700 dark:text-graphite-100">Toque em "Instalar aplicativo"</p>
+                  <p className="text-[11px] text-graphite-400 dark:text-graphite-400 mt-0.5">Ou "Adicionar à tela inicial" no menu de opções.</p>
                 </div>
               </div>
-              <div className="flex items-start space-x-3 bg-slate-50 dark:bg-midnight-950 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/60">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-dawn-600 text-white text-xs font-bold flex items-center justify-center">3</span>
+              <div className="flex items-start space-x-2.5 bg-sand-50 dark:bg-graphite-850/60 p-3 rounded-2xl border border-sand-200/60 dark:border-graphite-700/60">
+                <span className="w-5 h-5 rounded-full bg-sage-800 text-cream-50 font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
                 <div>
-                  <p className="font-semibold text-slate-900 dark:text-white">Confirme a instalação</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">O ícone do Amanhecer será adicionado junto aos seus aplicativos favoritos.</p>
+                  <p className="font-semibold text-graphite-700 dark:text-graphite-100">Pronto!</p>
+                  <p className="text-[11px] text-graphite-400 dark:text-graphite-400 mt-0.5">O ícone do Amanhecer aparecerá junto aos seus aplicativos favoritos.</p>
                 </div>
               </div>
 
-              {deferredPrompt && (
+              {deferredPrompt && !installed && (
                 <button
                   onClick={handleInstallClick}
-                  className="w-full mt-2 py-3 px-4 bg-dawn-600 hover:bg-dawn-700 text-white font-semibold rounded-2xl shadow-lg shadow-dawn-600/30 flex items-center justify-center space-x-2 transition-all active:scale-95"
+                  className="w-full mt-1 py-3 px-4 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-xs flex items-center justify-center space-x-2 transition-all active:scale-95"
                 >
-                  <CheckCircle2 className="w-5 h-5" />
+                  <CheckCircle2 className="w-4 h-4" />
                   <span>Instalar Agora no Android</span>
                 </button>
+              )}
+
+              {installed && (
+                <div className="p-2.5 bg-sage-100 text-sage-900 rounded-full text-center font-bold text-xs">
+                  ✓ Aplicativo instalado com sucesso!
+                </div>
               )}
             </div>
           )}
 
           {activeTab === 'ios' && (
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3 bg-slate-50 dark:bg-midnight-950 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/60">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-dawn-600 text-white text-xs font-bold flex items-center justify-center">1</span>
+            <div className="space-y-2.5">
+              <div className="flex items-start space-x-2.5 bg-sand-50 dark:bg-graphite-850/60 p-3 rounded-2xl border border-sand-200/60 dark:border-graphite-700/60">
+                <span className="w-5 h-5 rounded-full bg-sage-800 text-cream-50 font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
                 <div>
-                  <p className="font-semibold text-slate-900 dark:text-white flex items-center space-x-1">
+                  <p className="font-semibold text-graphite-700 dark:text-graphite-100 flex items-center space-x-1">
                     <span>Abra no Safari e toque em Compartilhar</span>
-                    <Share2 className="w-4 h-4 text-dawn-500 inline" />
+                    <Share2 className="w-3.5 h-3.5 text-sage-600 inline" />
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">O botão de compartilhamento é o quadrado com uma seta apontando para cima, na barra inferior.</p>
+                  <p className="text-[11px] text-graphite-400 dark:text-graphite-400 mt-0.5">O ícone de quadrado com seta para cima na barra inferior do Safari.</p>
                 </div>
               </div>
-              <div className="flex items-start space-x-3 bg-slate-50 dark:bg-midnight-950 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/60">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-dawn-600 text-white text-xs font-bold flex items-center justify-center">2</span>
+              <div className="flex items-start space-x-2.5 bg-sand-50 dark:bg-graphite-850/60 p-3 rounded-2xl border border-sand-200/60 dark:border-graphite-700/60">
+                <span className="w-5 h-5 rounded-full bg-sage-800 text-cream-50 font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
                 <div>
-                  <p className="font-semibold text-slate-900 dark:text-white flex items-center space-x-1">
+                  <p className="font-semibold text-graphite-700 dark:text-graphite-100 flex items-center space-x-1">
                     <span>Toque em "Adicionar à Tela de Início"</span>
-                    <PlusSquare className="w-4 h-4 text-dawn-500 inline" />
+                    <PlusSquare className="w-3.5 h-3.5 text-sage-600 inline" />
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Role um pouco a lista de opções para encontrar este botão.</p>
+                  <p className="text-[11px] text-graphite-400 dark:text-graphite-400 mt-0.5">Role as opções para baixo até encontrar esta opção.</p>
                 </div>
               </div>
-              <div className="flex items-start space-x-3 bg-slate-50 dark:bg-midnight-950 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/60">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-dawn-600 text-white text-xs font-bold flex items-center justify-center">3</span>
+              <div className="flex items-start space-x-2.5 bg-sand-50 dark:bg-graphite-850/60 p-3 rounded-2xl border border-sand-200/60 dark:border-graphite-700/60">
+                <span className="w-5 h-5 rounded-full bg-sage-800 text-cream-50 font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
                 <div>
-                  <p className="font-semibold text-slate-900 dark:text-white">Toque em "Adicionar"</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">No canto superior direito. Pronto! O app abrirá em tela cheia sem barra de navegador.</p>
+                  <p className="font-semibold text-graphite-700 dark:text-graphite-100">Confirme em "Adicionar"</p>
+                  <p className="text-[11px] text-graphite-400 dark:text-graphite-400 mt-0.5">No canto superior direito. O Amanhecer abrirá como aplicativo independente.</p>
                 </div>
               </div>
             </div>
           )}
 
           {activeTab === 'desktop' && (
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3 bg-slate-50 dark:bg-midnight-950 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/60">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-dawn-600 text-white text-xs font-bold flex items-center justify-center">1</span>
+            <div className="space-y-2.5">
+              <div className="flex items-start space-x-2.5 bg-sand-50 dark:bg-graphite-850/60 p-3 rounded-2xl border border-sand-200/60 dark:border-graphite-700/60">
+                <span className="w-5 h-5 rounded-full bg-sage-800 text-cream-50 font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
                 <div>
-                  <p className="font-semibold text-slate-900 dark:text-white">Localize o ícone de instalação</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">No Chrome ou Edge, clique no ícone de computador com uma seta na barra de endereço (à direita).</p>
+                  <p className="font-semibold text-graphite-700 dark:text-graphite-100">Ícone na barra de endereço</p>
+                  <p className="text-[11px] text-graphite-400 dark:text-graphite-400 mt-0.5">No Chrome ou Edge, clique no ícone de monitor com seta na barra de endereços (à direita).</p>
                 </div>
               </div>
-              <div className="flex items-start space-x-3 bg-slate-50 dark:bg-midnight-950 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/60">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-dawn-600 text-white text-xs font-bold flex items-center justify-center">2</span>
+              <div className="flex items-start space-x-2.5 bg-sand-50 dark:bg-graphite-850/60 p-3 rounded-2xl border border-sand-200/60 dark:border-graphite-700/60">
+                <span className="w-5 h-5 rounded-full bg-sage-800 text-cream-50 font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
                 <div>
-                  <p className="font-semibold text-slate-900 dark:text-white">Clique em "Instalar"</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">O Amanhecer terá sua própria janela limpa e atalho na sua área de trabalho.</p>
+                  <p className="font-semibold text-graphite-700 dark:text-graphite-100">Clique em "Instalar"</p>
+                  <p className="text-[11px] text-graphite-400 dark:text-graphite-400 mt-0.5">O Amanhecer terá janela limpa própria e atalho na sua Área de Trabalho.</p>
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Footer Close Button */}
-        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+        {/* Footer */}
+        <div className="mt-5 pt-3.5 border-t border-sand-100 dark:border-graphite-700/80 flex justify-end">
           <button
             onClick={onClose}
-            className="w-full py-2.5 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold rounded-2xl text-sm transition-all"
+            className="w-full py-2.5 px-4 bg-sand-100 dark:bg-graphite-700 hover:bg-sand-200 text-graphite-700 dark:text-graphite-200 font-semibold rounded-full text-xs transition-all"
           >
             Entendido
           </button>
