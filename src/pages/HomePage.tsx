@@ -40,7 +40,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   }).format(new Date());
 
   const handleShareVerse = async () => {
-    const text = `☀️ Versículo do Dia no Amanhecer:\n"${dailyVerse.text}"\n— ${dailyVerse.reference}\n\nLeia seu devocional diário em: https://amanhecer.app`;
+    const text = `☀️ Versículo do Dia no Amanhecer:\n"${dailyVerse.text}"\n— ${dailyVerse.reference}\n\nLeia seu devocional diário gratuitamente em: https://amanhecer-beta.vercel.app`;
     if (navigator.share) {
       try {
         await navigator.share({ text });

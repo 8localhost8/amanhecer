@@ -235,7 +235,7 @@ export const App: React.FC = () => {
           />
         )}
 
-        {currentView === 'audit' && <EvaluationDashboardPage />}
+        {currentView === 'audit' && <EvaluationDashboardPage devotional={devotional} />}
       </main>
 
       {/* Floating Bottom Bar Navigation (Matching UX Reference) */}

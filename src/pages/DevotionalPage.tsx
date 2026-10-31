@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Clock, Heart, Share2, Headphones, ExternalLink, CheckCircle2, Bookmark, Plus, Minus, Search } from 'lucide-react';
 import { DevotionalPublic } from '../services/ai/schemas';
 import { saveUserPreferences, loadUserPreferences } from '../storage/preferences';
-import { buildYouTubeSearchUrl, buildSpotifySearchUrl } from '../content/songs/catalog';
+import { buildYouTubeSearchUrl, buildSpotifySearchUrl, resolveVerifiedSong } from '../content/songs/catalog';
 
 interface DevotionalPageProps {
   devotional: DevotionalPublic;
@@ -32,7 +32,7 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
   };
 
   const handleShare = async () => {
-    const text = `📖 Devocional: "${devotional.title}"\n${devotional.verseOfTheDay.reference}: "${devotional.verseOfTheDay.text}"\n\nLeia gratuitamente no Amanhecer: https://amanhecer.app`;
+    const text = `📖 Devocional: "${devotional.title}"\n${devotional.verseOfTheDay.reference}: "${devotional.verseOfTheDay.text}"\n\nLeia gratuitamente no Amanhecer: https://amanhecer-beta.vercel.app`;
     if (navigator.share) {
       try {
         await navigator.share({ text });
@@ -43,15 +43,14 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
     }
   };
 
-  // Safe search URLs for music
-  const youtubeUrl = devotional.music
-    ? (devotional.music.youtubeUrl?.includes('search_query=')
-        ? devotional.music.youtubeUrl
-        : buildYouTubeSearchUrl(devotional.music.title, devotional.music.artist))
+  // Strictly resolve verified Christian praise song
+  const verifiedSong = devotional.music || resolveVerifiedSong(devotional.musicId, devotional.theme);
+  const youtubeUrl = verifiedSong
+    ? buildYouTubeSearchUrl(verifiedSong.title, verifiedSong.artist)
     : '';
 
-  const spotifyUrl = devotional.music
-    ? (devotional.music.spotifyUrl || buildSpotifySearchUrl(devotional.music.title, devotional.music.artist))
+  const spotifyUrl = verifiedSong
+    ? buildSpotifySearchUrl(verifiedSong.title, verifiedSong.artist)
     : '';
 
   return (
@@ -203,24 +202,24 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
       </section>
 
       {/* Para Ouvir (Music Recommendation with Search Links) */}
-      {devotional.music && (
+      {verifiedSong && (
         <section className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 space-y-3 shadow-xs">
           <div className="flex items-center space-x-2 text-sage-700 dark:text-sage-300 text-xs font-bold uppercase tracking-wider">
             <Headphones className="w-4 h-4" />
-            <span>🎧 Para Ouvir</span>
+            <span>🎧 Louvor Recomendado</span>
           </div>
 
           <div>
             <h4 className="text-base font-bold font-serif text-graphite-700 dark:text-graphite-50">
-              {devotional.music.title}
+              {verifiedSong.title}
             </h4>
             <p className="text-xs text-graphite-500 dark:text-graphite-400">
-              {devotional.music.artist}
+              {verifiedSong.artist}
             </p>
           </div>
 
           <p className="text-xs text-graphite-600 dark:text-graphite-300 italic">
-            "{devotional.music.recommendationReason}"
+            "{verifiedSong.recommendationReason}"
           </p>
 
           <div className="flex flex-wrap gap-2 pt-1">

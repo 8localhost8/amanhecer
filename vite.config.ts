@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.png', 'apple-touch-icon.png', 'icons/*.png', 'intro/*.mp4', 'intro/*.webm'],
+      includeAssets: ['favicon.png', 'apple-touch-icon.png', 'icons/*.png', 'intro/*.mp4', 'intro/*.webm', 'og-image.png', 'preview.png'],
       manifest: {
         name: 'Amanhecer — Devocional Diário',
         short_name: 'Amanhecer',

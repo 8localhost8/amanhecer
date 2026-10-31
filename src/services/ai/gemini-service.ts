@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { BiblicalPassage } from '../../content/passages/catalog';
-import { VERIFIED_SONGS_CATALOG, getSongById } from '../../content/songs/catalog';
+import { VERIFIED_SONGS_CATALOG, getSongById, resolveVerifiedSong } from '../../content/songs/catalog';
 import { DevotionalGeneratedContent, DevotionalGeneratedContentSchema, ReviewerRawResponseSchema, EvaluationResult, DevotionalPublic } from './schemas';
 import { calculateEvaluationScore } from './evaluation-calculator';
 import { validateDevotionalDeterministically } from './deterministic-validator';
@@ -49,8 +49,8 @@ export async function generateAndEvaluateDevotional(
     // 1. Generation Step (Gemini Escritor)
     generatedContent = await callGeminiWriter(writerAi, passage, dateStr, feedback, modelName);
 
-    // 2. Build candidate Devotional
-    const candidateSong = getSongById(generatedContent.musicId) || VERIFIED_SONGS_CATALOG[0];
+    // 2. Build candidate Devotional strictly with a verified real song
+    const candidateSong = resolveVerifiedSong(generatedContent.musicId, generatedContent.theme || passage.theme);
     const candidateDevotional: DevotionalPublic = {
       schemaVersion: 1,
       id: dateStr,
@@ -131,7 +131,7 @@ export async function generateAndEvaluateDevotional(
   }
 
   // If still not approved after max revisions
-  const finalSong = getSongById(generatedContent!.musicId) || VERIFIED_SONGS_CATALOG[0];
+  const finalSong = resolveVerifiedSong(generatedContent?.musicId, generatedContent?.theme || passage.theme);
   const finalDevotional: DevotionalPublic = {
     schemaVersion: 1,
     id: dateStr,
@@ -192,7 +192,7 @@ ${songsList}
 ${feedback ? `\nATENÇÃO - CORREÇÃO EXIGIDA DA REVISÃO ANTERIOR:\n${feedback}\nCorrija pontualmente os problemas identificados acima com máxima fidelidade bíblica.` : ''}
 
 Escreva uma reflexão bíblica responsável, profunda e simples (250 a 400 palavras), uma aplicação prática bíblica e uma oração sincera.
-Escolha estritamente um ID de música do catálogo acima.
+ATENÇÃO PARA A MÚSICA: Escolha ESTRITAMENTE um ID do catálogo acima (ex: "song-001", "song-002", etc.). NUNCA invente títulos, bandas ou canções que não estejam na lista acima.
 Retorne EXCLUSIVAMENTE um JSON puro sem crases com as chaves:
 { "title", "reflection", "application", "prayer", "estimatedMinutes", "musicId", "theme" }
 `;

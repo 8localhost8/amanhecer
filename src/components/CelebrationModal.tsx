@@ -25,13 +25,13 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({ isOpen, onCl
   if (!isOpen) return null;
 
   const handleShare = async () => {
-    const text = `📖 Devocional de Hoje no Amanhecer: "${devotional.title}"\n${devotional.verseOfTheDay.reference}: "${devotional.verseOfTheDay.text.slice(0, 100)}..."\n\nLeia gratuitamente em: https://amanhecer.app`;
+    const text = `📖 Devocional de Hoje no Amanhecer: "${devotional.title}"\n${devotional.verseOfTheDay.reference}: "${devotional.verseOfTheDay.text.slice(0, 100)}..."\n\nLeia gratuitamente em: https://amanhecer-beta.vercel.app`;
     if (navigator.share) {
       try {
         await navigator.share({
           title: devotional.title,
           text,
-          url: window.location.href,
+          url: 'https://amanhecer-beta.vercel.app',
         });
       } catch {}
     } else {
