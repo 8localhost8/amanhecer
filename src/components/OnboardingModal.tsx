@@ -6,15 +6,18 @@ import { requestAndSubscribePush } from '../services/notifications/push-client';
 interface OnboardingModalProps {
   isOpen: boolean;
   onComplete: () => void;
+  onStartFirstDevotional?: () => void;
   initialPreferences: UserPreferences;
 }
 
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   isOpen,
   onComplete,
+  onStartFirstDevotional,
   initialPreferences,
 }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [userName, setUserName] = useState<string>(initialPreferences.userName || '');
   const [theme, setTheme] = useState<AppTheme>(initialPreferences.theme);
   const [fontSizePreset, setFontSizePreset] = useState<FontSizePreset>(initialPreferences.fontSizePreset);
   const [fineFontSize, setFineFontSize] = useState<number>(initialPreferences.fineFontSize);
@@ -52,7 +55,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
       dailyVerseEnabled,
       reminderEnabled,
     });
-    finishOnboarding();
+    finishOnboarding(false);
   };
 
   const handleSkipPush = () => {
@@ -61,19 +64,24 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
       dailyVerseEnabled: false,
       reminderEnabled: false,
     });
-    finishOnboarding();
+    finishOnboarding(false);
   };
 
-  const finishOnboarding = () => {
+  const finishOnboarding = (startReadingImmediately = false) => {
     saveUserPreferences({
       onboardingCompleted: true,
+      userName: userName.trim(),
       theme,
       fontSizePreset,
       fineFontSize,
       dailyVerseEnabled,
       reminderEnabled,
     });
-    onComplete();
+    if (startReadingImmediately && onStartFirstDevotional) {
+      onStartFirstDevotional();
+    } else {
+      onComplete();
+    }
   };
 
   return (
@@ -102,10 +110,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           <span className="text-[10px] font-semibold text-graphite-400">Etapa {step} de 3</span>
         </div>
 
-        {/* Step 1: Boas-vindas */}
+        {/* Step 1: Boas-vindas e Nome */}
         {step === 1 && (
-          <div className="flex flex-col items-center text-center py-3 space-y-4 my-auto">
-            <div className="w-16 h-16 rounded-full overflow-hidden shadow-xs ring-2 ring-sand-200 dark:ring-graphite-700 flex items-center justify-center flex-shrink-0">
+          <div className="flex flex-col items-center text-center py-2 space-y-3.5 my-auto">
+            <div className="w-14 h-14 rounded-full overflow-hidden shadow-xs ring-2 ring-sand-200 dark:ring-graphite-700 flex items-center justify-center flex-shrink-0">
               <img
                 src="/icons/amanhecer-claro.png"
                 alt="Amanhecer"
@@ -119,7 +127,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <h1 className="text-2xl font-bold font-serif text-graphite-700 dark:text-graphite-50">
+              <h1 className="text-xl sm:text-2xl font-bold font-serif text-graphite-700 dark:text-graphite-50">
                 Bem-vindo ao Amanhecer
               </h1>
               <p className="text-xs text-sage-700 dark:text-sage-300 font-serif italic">
@@ -127,17 +135,55 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               </p>
             </div>
 
-            <p className="text-xs text-graphite-500 dark:text-graphite-400 leading-relaxed max-w-xs">
-              Devocionais diários com fidelidade bíblica, leitura serena e sem necessidade de cadastro ou senhas.
-            </p>
+            {/* Pergunta: Como podemos te chamar? */}
+            <div className="w-full text-left space-y-1.5 pt-1">
+              <label htmlFor="user-name-input" className="text-xs font-semibold text-graphite-700 dark:text-graphite-200 block">
+                Como podemos te chamar?
+              </label>
+              <input
+                id="user-name-input"
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="Digite seu nome ou apelido"
+                maxLength={30}
+                className="w-full px-4 py-2.5 rounded-2xl bg-sand-50 dark:bg-graphite-900 border border-sand-200 dark:border-graphite-700 text-sm text-graphite-800 dark:text-graphite-100 placeholder:text-graphite-400 focus:outline-none focus:ring-2 focus:ring-sage-600 transition-all"
+              />
+            </div>
 
-            <button
-              onClick={() => setStep(2)}
-              className="w-full mt-2 py-3.5 px-6 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-xs flex items-center justify-center space-x-2 text-xs transition-all active:scale-95"
-            >
-              <span>Continuar</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            {/* Mensagem personalizada quando preenchido */}
+            {userName.trim() ? (
+              <div className="w-full p-3.5 bg-sage-50 dark:bg-sage-950/60 border border-sage-200 dark:border-sage-800 rounded-2xl text-left space-y-3 animate-fade-in">
+                <p className="text-xs text-sage-900 dark:text-sage-200 font-serif leading-relaxed">
+                  Olá <strong>{userName.trim()}</strong>! Bem-vindo ao Amanhecer, que tal ler o seu primeiro devocional?
+                </p>
+                <div className="space-y-1.5">
+                  <button
+                    onClick={() => finishOnboarding(true)}
+                    className="w-full py-3 px-4 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-xs flex items-center justify-center space-x-2 text-xs transition-all active:scale-95"
+                  >
+                    <span>Ler meu primeiro devocional agora</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setStep(2)}
+                    className="w-full py-1.5 text-[11px] text-graphite-500 dark:text-graphite-400 hover:text-graphite-700 dark:hover:text-graphite-200 transition-colors text-center block"
+                  >
+                    Ajustar tamanho da letra e tema antes →
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="w-full pt-1">
+                <button
+                  onClick={() => setStep(2)}
+                  className="w-full py-3.5 px-6 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-xs flex items-center justify-center space-x-2 text-xs transition-all active:scale-95"
+                >
+                  <span>Continuar</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         )}
 

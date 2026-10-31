@@ -11,6 +11,7 @@ interface HomePageProps {
   onNavigate: (view: any) => void;
   isFav: boolean;
   onToggleFav: () => void;
+  userName?: string;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
@@ -21,6 +22,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   onNavigate,
   isFav,
   onToggleFav,
+  userName = '',
 }) => {
   const hour = new Date().getHours();
   let greeting = 'Bom dia';
@@ -64,7 +66,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             </svg>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-graphite-700 dark:text-graphite-50 font-serif tracking-tight mt-0.5">
-            Paz e Graça
+            {userName.trim() ? `Graça e paz, ${userName.trim()}!` : 'Graça e paz!'}
           </h1>
           <p className="text-xs text-graphite-400 dark:text-graphite-400 capitalize mt-0.5">
             {todayFormatted}

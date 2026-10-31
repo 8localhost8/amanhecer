@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon, Sparkles, Type, Bell, ShieldCheck, BookOpen, Send } from 'lucide-react';
+import { Sun, Moon, Sparkles, Type, Bell, ShieldCheck, BookOpen, Send, User } from 'lucide-react';
 import { UserPreferences, saveUserPreferences, FontSizePreset, AppTheme } from '../storage/preferences';
 import { getPushStatus, requestAndSubscribePush, unsubscribePush, PushStatus } from '../services/notifications/push-client';
 
@@ -93,6 +93,28 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
           Personalize sua experiência de leitura e lembretes diários
         </p>
       </div>
+
+      {/* 0. Nome do Leitor */}
+      <section className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3">
+        <h2 className="text-xs font-bold text-graphite-400 dark:text-graphite-400 uppercase tracking-wider flex items-center space-x-2">
+          <User className="w-3.5 h-3.5 text-sage-600 dark:text-sage-400" />
+          <span>Como podemos te chamar</span>
+        </h2>
+        <input
+          type="text"
+          value={preferences.userName || ''}
+          onChange={(e) => {
+            const updated = saveUserPreferences({ userName: e.target.value });
+            onUpdatePreferences(updated);
+          }}
+          placeholder="Digite seu nome ou apelido"
+          maxLength={30}
+          className="w-full px-4 py-2.5 rounded-2xl bg-sand-50 dark:bg-graphite-900 border border-sand-200 dark:border-graphite-700 text-sm text-graphite-800 dark:text-graphite-100 placeholder:text-graphite-400 focus:outline-none focus:ring-2 focus:ring-sage-600 transition-all"
+        />
+        <p className="text-[11px] text-graphite-400 dark:text-graphite-400">
+          Seu nome é salvo com privacidade unicamente no seu dispositivo.
+        </p>
+      </section>
 
       {/* 1. Tema */}
       <section className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3.5">

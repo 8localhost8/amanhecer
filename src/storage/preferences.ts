@@ -3,6 +3,7 @@ export type FontSizePreset = 'small' | 'medium' | 'large' | 'xlarge';
 
 export interface UserPreferences {
   onboardingCompleted: boolean;
+  userName?: string;
   theme: AppTheme;
   fontSizePreset: FontSizePreset;
   fineFontSize: number; // 16 to 32
@@ -16,6 +17,7 @@ const PREF_STORAGE_KEY = 'amanhecer_user_preferences_v1';
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
   onboardingCompleted: false,
+  userName: '',
   theme: 'auto',
   fontSizePreset: 'medium',
   fineFontSize: 18,

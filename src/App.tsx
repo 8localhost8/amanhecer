@@ -26,6 +26,7 @@ export const App: React.FC = () => {
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => !loadUserPreferences().onboardingCompleted);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
   const [isCelebrationOpen, setIsCelebrationOpen] = useState<boolean>(false);
+  const [isFirstCompletion, setIsFirstCompletion] = useState<boolean>(false);
   const [showIntro, setShowIntro] = useState<boolean>(true);
 
   // Check if opened as standalone PWA
@@ -113,6 +114,8 @@ export const App: React.FC = () => {
   };
 
   const handleCompleteReading = async () => {
+    const wasFirst = completedDates.length === 0;
+    setIsFirstCompletion(wasFirst);
     await saveCompletion(devotional.id, devotional.date);
     setIsCompletedToday(true);
     setIsCelebrationOpen(true);
@@ -189,6 +192,7 @@ export const App: React.FC = () => {
             onNavigate={(view) => setCurrentView(view)}
             isFav={isCurrentFav}
             onToggleFav={handleToggleFav}
+            userName={preferences.userName}
           />
         )}
 
@@ -258,6 +262,11 @@ export const App: React.FC = () => {
           setIsOnboardingOpen(false);
           setPreferences(loadUserPreferences());
         }}
+        onStartFirstDevotional={() => {
+          setIsOnboardingOpen(false);
+          setPreferences(loadUserPreferences());
+          setCurrentView('devotional');
+        }}
         initialPreferences={preferences}
       />
 
@@ -266,6 +275,8 @@ export const App: React.FC = () => {
         isOpen={isCelebrationOpen}
         onClose={() => setIsCelebrationOpen(false)}
         devotional={devotional}
+        isFirstDevotional={isFirstCompletion}
+        userName={preferences.userName}
       />
 
       {/* Help & Installation Modal */}
