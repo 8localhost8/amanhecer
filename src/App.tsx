@@ -12,6 +12,7 @@ import { LandingPage } from './pages/LandingPage';
 import { OnboardingModal } from './components/OnboardingModal';
 import { CelebrationModal } from './components/CelebrationModal';
 import { InstallModal } from './components/InstallModal';
+import { IntroSplash } from './components/IntroSplash';
 
 import { loadUserPreferences, saveUserPreferences, applyThemeAndFont, UserPreferences } from './storage/preferences';
 import { getDevotionalForDate, getAllPublishedDevotionals } from './content/devotionals/vault';
@@ -25,6 +26,7 @@ export const App: React.FC = () => {
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => !loadUserPreferences().onboardingCompleted);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
   const [isCelebrationOpen, setIsCelebrationOpen] = useState<boolean>(false);
+  const [showIntro, setShowIntro] = useState<boolean>(true);
 
   // Check if opened as standalone PWA
   const isStandalone = typeof window !== 'undefined' && (
@@ -272,6 +274,9 @@ export const App: React.FC = () => {
         onClose={() => setIsInstallModalOpen(false)}
         deferredPrompt={deferredPrompt}
       />
+
+      {/* Intro Video Splash Screen (Plays on every app opening) */}
+      {showIntro && <IntroSplash onComplete={() => setShowIntro(false)} />}
     </div>
   );
 };

@@ -38,11 +38,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* Top Bar with ? Help */}
       <div className="flex items-center justify-between w-full pt-1">
         <div className="flex items-center space-x-2">
-          <div className="w-7 h-7 rounded-full bg-sage-800 text-cream-50 flex items-center justify-center">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
-              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-            </svg>
+          <div className="w-7 h-7 rounded-full overflow-hidden shadow-xs ring-1 ring-sand-200 dark:ring-graphite-700 flex items-center justify-center flex-shrink-0">
+            <img
+              src="/icons/amanhecer-claro.png"
+              alt="Amanhecer"
+              className="w-full h-full object-cover block dark:hidden"
+            />
+            <img
+              src="/icons/amanhecer-escuro.png"
+              alt="Amanhecer"
+              className="w-full h-full object-cover hidden dark:block"
+            />
           </div>
           <span className="text-sm font-bold font-serif text-graphite-700 dark:text-graphite-100">
             Amanhecer
@@ -62,23 +68,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
       {/* Main Hero (Matching Screen 1 of UX Reference) */}
       <div className="my-auto py-6 space-y-5">
-        {/* Organic Minimalist Art: Sun & Olive Branch */}
-        <div className="relative w-44 h-44 mx-auto rounded-full bg-sand-100 dark:bg-graphite-850 flex items-center justify-center overflow-hidden border border-sand-200 dark:border-graphite-700 shadow-xs">
-          {/* Gentle sun disk */}
-          <div className="absolute top-4 right-8 w-10 h-10 rounded-full bg-sand-300 dark:bg-sand-500/50" />
-          
-          {/* Layered sage hills */}
-          <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute bottom-0 w-full h-full">
-            <path d="M0 160 C50 120, 120 140, 200 110 L200 200 L0 200 Z" fill="#AFC3A7" opacity="0.5" />
-            <path d="M0 180 C60 145, 140 165, 200 140 L200 200 L0 200 Z" fill="#82917B" opacity="0.65" />
-            <path d="M0 195 C70 170, 130 185, 200 165 L200 200 L0 200 Z" fill="#50604B" opacity="0.85" />
-          </svg>
-
-          {/* Minimalist olive branch */}
-          <svg viewBox="0 0 24 24" fill="none" stroke="#253525" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-16 h-16 relative z-10 text-sage-900 dark:text-cream-50 -translate-y-2">
-            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-          </svg>
+        {/* Official Amanhecer Brand Icon */}
+        <div className="relative w-36 h-36 mx-auto rounded-3xl overflow-hidden shadow-md ring-4 ring-sand-200/80 dark:ring-graphite-700 flex items-center justify-center bg-[#F7F4EB] dark:bg-[#384736]">
+          <img
+            src="/icons/amanhecer-claro.png"
+            alt="Amanhecer"
+            className="w-full h-full object-cover block dark:hidden"
+          />
+          <img
+            src="/icons/amanhecer-escuro.png"
+            alt="Amanhecer"
+            className="w-full h-full object-cover hidden dark:block"
+          />
         </div>
 
         {/* Brand & Purpose */}

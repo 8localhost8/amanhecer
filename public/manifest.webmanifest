@@ -4,8 +4,8 @@
   "description": "Um momento com Deus, todos os dias. Devocional cristão diário, gratuito e fundamentado na Bíblia.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#072a49",
-  "theme_color": "#072a49",
+  "background_color": "#F7F3EA",
+  "theme_color": "#384736",
   "orientation": "portrait",
   "lang": "pt-BR",
   "dir": "ltr",
@@ -28,9 +28,14 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "src": "/icons/amanhecer-claro.png",
+      "sizes": "500x500",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/amanhecer-escuro.png",
+      "sizes": "500x500",
+      "type": "image/png"
     }
   ]
 }

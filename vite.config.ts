@@ -8,13 +8,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'icons/*.png', 'icons/*.svg'],
+      includeAssets: ['favicon.png', 'apple-touch-icon.png', 'icons/*.png', 'intro/*.mp4', 'intro/*.webm'],
       manifest: {
         name: 'Amanhecer — Devocional Diário',
         short_name: 'Amanhecer',
         description: 'Um momento com Deus, todos os dias. Devocional cristão diário gratuito, sem cadastro e fundamentado na Bíblia.',
-        theme_color: '#072a49',
-        background_color: '#072a49',
+        theme_color: '#384736',
+        background_color: '#F7F3EA',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
@@ -34,11 +34,21 @@ export default defineConfig({
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
+          },
+          {
+            src: '/icons/amanhecer-claro.png',
+            sizes: '500x500',
+            type: 'image/png'
+          },
+          {
+            src: '/icons/amanhecer-escuro.png',
+            sizes: '500x500',
+            type: 'image/png'
           }
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,webmanifest,mp4,webm}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

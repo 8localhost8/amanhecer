@@ -41,8 +41,17 @@ export const InstallModal: React.FC<InstallModalProps> = ({ isOpen, onClose, def
         {/* Header */}
         <div className="flex items-center justify-between pb-3.5 border-b border-sand-100 dark:border-graphite-700/80">
           <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 rounded-full bg-sage-100 dark:bg-sage-900/60 text-sage-800 dark:text-sage-300 flex items-center justify-center">
-              <HelpCircle className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-full overflow-hidden shadow-xs ring-1 ring-sand-200 dark:ring-graphite-700 flex items-center justify-center flex-shrink-0">
+              <img
+                src="/icons/amanhecer-claro.png"
+                alt="Amanhecer"
+                className="w-full h-full object-cover block dark:hidden"
+              />
+              <img
+                src="/icons/amanhecer-escuro.png"
+                alt="Amanhecer"
+                className="w-full h-full object-cover hidden dark:block"
+              />
             </div>
             <div>
               <h2 id="install-modal-title" className="text-base font-bold font-serif text-graphite-700 dark:text-graphite-50">

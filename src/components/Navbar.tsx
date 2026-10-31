@@ -28,12 +28,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           className="flex items-center space-x-2.5 text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-600 rounded-xl"
           aria-label="Ir para o início do Amanhecer"
         >
-          {/* Serene organic leaf icon matching reference */}
-          <div className="w-8 h-8 rounded-full bg-sage-800 dark:bg-sage-700 text-cream-50 flex items-center justify-center shadow-xs">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-            </svg>
+          {/* Official Amanhecer leaf icon (Light & Dark theme aware) */}
+          <div className="w-8 h-8 rounded-full overflow-hidden shadow-xs ring-1 ring-sand-200 dark:ring-graphite-700 flex items-center justify-center flex-shrink-0">
+            <img
+              src="/icons/amanhecer-claro.png"
+              alt="Amanhecer"
+              className="w-full h-full object-cover block dark:hidden"
+            />
+            <img
+              src="/icons/amanhecer-escuro.png"
+              alt="Amanhecer"
+              className="w-full h-full object-cover hidden dark:block"
+            />
           </div>
           <div>
             <span className="text-xl font-bold tracking-tight text-graphite-700 dark:text-graphite-50 font-serif">
