@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, Moon, Sparkles, Type, Bell, ShieldCheck, BookOpen, Send, User } from 'lucide-react';
 import { UserPreferences, saveUserPreferences, FontSizePreset, AppTheme } from '../storage/preferences';
+import { TermsAndPrivacyModal } from '../components/TermsAndPrivacyModal';
 import {
   getPushStatus,
   requestAndSubscribePush,
@@ -21,6 +22,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
   const [isTestingPush, setIsTestingPush] = useState(false);
   const [testSuccessMsg, setTestSuccessMsg] = useState<string | null>(null);
   const [browserNotifBlocked, setBrowserNotifBlocked] = useState(false);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
 
   useEffect(() => {
     checkStatus();
@@ -343,7 +345,23 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
           <li>Sem manipulação espiritual ou culpa religiosa.</li>
           <li>Avaliação automatizada com corte mínimo de 90/100.</li>
         </ul>
+
+        <div className="pt-2 border-t border-sand-300/60 dark:border-sand-300/20">
+          <button
+            type="button"
+            onClick={() => setIsTermsOpen(true)}
+            className="inline-flex items-center space-x-1.5 text-xs font-bold text-sage-800 dark:text-cream-100 underline hover:text-sage-950"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-sage-700 dark:text-sand-300" />
+            <span>Ler Termos de Uso e Política de Privacidade (LGPD)</span>
+          </button>
+        </div>
       </section>
+
+      <TermsAndPrivacyModal
+        isOpen={isTermsOpen}
+        onClose={() => setIsTermsOpen(false)}
+      />
     </div>
   );
 };

@@ -20,6 +20,7 @@ import { getDevotionalForDate, getAllPublishedDevotionals } from './content/devo
 import { selectDailyVerse, getSaoPauloDateString } from './services/daily-verse/selection-engine';
 import { saveCompletion, getCompletion, getAllCompletions, toggleFavorite, isFavorite, getAllFavorites } from './storage/db';
 import { syncCompletionWithPushServer, initLocalNotificationScheduler } from './services/notifications/push-client';
+import { recordAppInstallationOnce } from './services/stats/install-counter';
 import { DevotionalPublic } from './services/ai/schemas';
 
 export const App: React.FC = () => {
@@ -72,9 +73,13 @@ export const App: React.FC = () => {
   }, [preferences]);
 
   // Initialize autonomous notification scheduler (06:06 Daily Verse & Reminders)
+  // and record anonymous installation if running as standalone PWA
   useEffect(() => {
     initLocalNotificationScheduler();
-  }, []);
+    if (isStandalone) {
+      recordAppInstallationOnce();
+    }
+  }, [isStandalone]);
 
   // Network offline listener
   useEffect(() => {

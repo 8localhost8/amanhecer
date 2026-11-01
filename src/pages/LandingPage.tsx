@@ -1,5 +1,11 @@
-import React, { useState } from 'react';
-import { Download, ArrowRight, HelpCircle, Check, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Download, ArrowRight, HelpCircle, Check, CheckCircle2, Users, ShieldCheck } from 'lucide-react';
+import {
+  fetchInstallCount,
+  getCachedInstallCount,
+  recordAppInstallationOnce,
+} from '../services/stats/install-counter';
+import { TermsAndPrivacyModal } from '../components/TermsAndPrivacyModal';
 
 interface LandingPageProps {
   onEnterApp: () => void;
@@ -13,6 +19,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   deferredPrompt,
 }) => {
   const [installSuccessMessage, setInstallSuccessMessage] = useState<string | null>(null);
+  const [installCount, setInstallCount] = useState<number>(() => getCachedInstallCount());
+  const [isTermsOpen, setIsTermsOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    let mounted = true;
+    fetchInstallCount().then((count) => {
+      if (mounted) setInstallCount(count);
+    });
+
+    const handleAppInstalled = () => {
+      recordAppInstallationOnce().then((newCount) => {
+        if (mounted) setInstallCount(newCount);
+      });
+    };
+
+    window.addEventListener('appinstalled', handleAppInstalled);
+    return () => {
+      mounted = false;
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
@@ -20,7 +47,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         deferredPrompt.prompt();
         const choice = await deferredPrompt.userChoice;
         if (choice.outcome === 'accepted') {
-          setInstallSuccessMessage('Aplicativo instalado com sucesso! Abra o Amanhecer direto pelo ícone na tela inicial do seu aparelho.');
+          const updatedCount = await recordAppInstallationOnce();
+          setInstallCount(updatedCount);
+          setInstallSuccessMessage(
+            'Aplicativo instalado com sucesso! Abra o Amanhecer direto pelo ícone na tela inicial do seu aparelho.'
+          );
         }
       } catch (err) {
         console.warn('Erro ao acionar prompt de instalação:', err);
@@ -48,26 +79,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               className="w-full h-full object-cover hidden dark:block"
             />
           </div>
-          <span className="text-sm font-bold font-serif text-graphite-700 dark:text-graphite-100">
+          <span className="text-sm font-bold font-serif text-graphite-700 dark:text-cream-50">
             Amanhecer
           </span>
         </div>
 
         <button
           onClick={onOpenHelp}
-          className="flex items-center space-x-1 px-3 py-1.5 rounded-full bg-sand-200/80 dark:bg-graphite-800 text-graphite-700 dark:text-graphite-200 text-xs font-medium hover:bg-sand-300/80 ae-btn"
+          className="flex items-center space-x-1 px-3 py-1.5 rounded-full surface-editorial text-graphite-700 dark:text-cream-100 text-xs font-medium ae-btn"
           title="Ajuda de instalação"
           aria-label="Abrir ajuda de instalação"
         >
-          <HelpCircle className="w-3.5 h-3.5 text-sage-700 dark:text-sage-300" />
+          <HelpCircle className="w-3.5 h-3.5 text-sage-700 dark:text-sand-300" />
           <span>Ajuda (?)</span>
         </button>
       </div>
 
       {/* Main Hero */}
-      <div className="my-auto py-6 space-y-5">
+      <div className="my-auto py-5 space-y-4">
         {/* Official Amanhecer Brand Icon with Spring Pop (Stagger 2) */}
-        <div className="relative w-36 h-36 mx-auto rounded-3xl overflow-hidden shadow-lg ring-4 ring-sand-200/80 dark:ring-graphite-700 flex items-center justify-center bg-[#F7F4EB] dark:bg-[#384736] ae-spring-pop ae-stagger-2 ae-card">
+        <div className="relative w-32 h-32 mx-auto rounded-3xl overflow-hidden shadow-lg ring-4 ring-sand-200/80 dark:ring-sand-300/30 flex items-center justify-center bg-[#F7F4EB] dark:bg-[#384736] ae-spring-pop ae-stagger-2 ae-card">
           <img
             src="/icons/amanhecer-claro.png"
             alt="Amanhecer"
@@ -82,37 +113,57 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
         {/* Brand & Purpose (Stagger 3) */}
         <div className="space-y-1.5 ae-reveal-up ae-stagger-3">
-          <h1 className="text-3xl font-bold font-serif text-graphite-700 dark:text-graphite-50 tracking-tight">
+          <h1 className="text-3xl font-bold font-serif text-graphite-800 dark:text-cream-50 tracking-tight">
             Amanhecer
           </h1>
-          <p className="text-xs uppercase tracking-widest text-sage-700 dark:text-sage-300 font-semibold">
+          <p className="text-xs uppercase tracking-widest text-sage-700 dark:text-sand-300 font-semibold">
             Devocional Diário
           </p>
-          <p className="text-sm font-serif italic text-graphite-600 dark:text-graphite-300 pt-1">
+          <p className="text-sm font-serif italic text-graphite-600 dark:text-cream-200 pt-0.5">
             "Um momento com Deus, todos os dias."
           </p>
+
+          {/* Live Download / Install Counter Badge */}
+          <div className="pt-2 flex justify-center">
+            <div
+              className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full surface-warm-sand text-xs font-semibold text-graphite-800 dark:text-cream-100 shadow-2xs"
+              aria-live="polite"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sage-500 dark:bg-sand-300 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-sage-700 dark:bg-sand-300" />
+              </span>
+              <Users className="w-3.5 h-3.5 text-sage-700 dark:text-sand-300 shrink-0" />
+              <span>
+                <strong className="font-bold text-sage-900 dark:text-sand-200">
+                  {installCount.toLocaleString('pt-BR')}
+                </strong>{' '}
+                {installCount === 1 ? 'pessoa já baixou o app' : 'pessoas já baixaram o app'}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Subtle Feature Pills (Stagger 4) */}
-        <div className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-4 text-left text-xs text-graphite-600 dark:text-graphite-300 space-y-2 shadow-xs ae-reveal-up ae-stagger-4 ae-card">
+        <div className="surface-editorial rounded-3xl p-4 text-left text-xs text-graphite-600 dark:text-cream-100 space-y-2 ae-reveal-up ae-stagger-4 ae-card">
           <div className="flex items-center space-x-2">
-            <Check className="w-3.5 h-3.5 text-sage-600 dark:text-sage-400 flex-shrink-0" />
+            <Check className="w-3.5 h-3.5 text-sage-700 dark:text-sand-300 flex-shrink-0" />
             <span>Fundamentado no cânon bíblico de 66 livros</span>
           </div>
           <div className="flex items-center space-x-2">
-            <Check className="w-3.5 h-3.5 text-sage-600 dark:text-sage-400 flex-shrink-0" />
+            <Check className="w-3.5 h-3.5 text-sage-700 dark:text-sand-300 flex-shrink-0" />
             <span>Versículo do dia às 06:06 e lembretes serenos</span>
           </div>
           <div className="flex items-center space-x-2">
-            <Check className="w-3.5 h-3.5 text-sage-600 dark:text-sage-400 flex-shrink-0" />
+            <Check className="w-3.5 h-3.5 text-sage-700 dark:text-sand-300 flex-shrink-0" />
             <span>100% Gratuito, sem cadastro e sem anúncios</span>
           </div>
         </div>
 
         {/* Installation Success Notice */}
         {installSuccessMessage && (
-          <div className="p-3.5 rounded-2xl bg-sage-100 dark:bg-sage-900/60 border border-sage-300 dark:border-sage-700 text-xs text-sage-900 dark:text-sage-200 flex items-start space-x-2 text-left ae-spring-pop">
-            <CheckCircle2 className="w-4 h-4 text-sage-700 dark:text-sage-300 flex-shrink-0 mt-0.5" />
+          <div className="p-3.5 rounded-2xl bg-sage-100 dark:bg-cream-100/15 border border-sage-300 dark:border-sand-300/40 text-xs text-sage-900 dark:text-cream-100 flex items-start space-x-2 text-left ae-spring-pop">
+            <CheckCircle2 className="w-4 h-4 text-sage-700 dark:text-sand-300 flex-shrink-0 mt-0.5" />
             <p>{installSuccessMessage}</p>
           </div>
         )}
@@ -122,7 +173,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           {/* Primary Action: Instalar Aplicativo */}
           <button
             onClick={handleInstallClick}
-            className="w-full py-3.5 px-6 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-md flex items-center justify-center space-x-2 text-sm ae-btn ae-btn-shimmer"
+            className="w-full py-3.5 px-6 btn-tactile-sage font-bold rounded-full shadow-md flex items-center justify-center space-x-2 text-sm ae-btn ae-btn-shimmer"
           >
             <Download className="w-4 h-4" />
             <span>Instalar Aplicativo</span>
@@ -131,18 +182,40 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           {/* Secondary Action: Usar no Navegador */}
           <button
             onClick={onEnterApp}
-            className="w-full py-3 px-6 bg-transparent hover:bg-sand-200/60 dark:hover:bg-graphite-800 text-graphite-600 dark:text-graphite-300 font-medium rounded-full text-xs flex items-center justify-center space-x-1.5 ae-btn group"
+            className="w-full py-2.5 px-6 bg-transparent hover:bg-sand-200/60 dark:hover:bg-cream-100/10 text-graphite-600 dark:text-sand-200 font-medium rounded-full text-xs flex items-center justify-center space-x-1.5 ae-btn group"
           >
             <span>Usar no navegador</span>
-            <ArrowRight className="w-3.5 h-3.5 text-graphite-400 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-3.5 h-3.5 text-graphite-400 dark:text-sand-300 group-hover:translate-x-1 transition-transform" />
           </button>
+        </div>
+
+        {/* Legal Notice & Terms Trigger (LGPD) */}
+        <div className="pt-1 ae-reveal-up ae-stagger-6">
+          <p className="text-[11px] text-graphite-500 dark:text-sand-300/90 leading-relaxed">
+            Ao baixar ou usar o app, contabilizamos sua instalação de forma anônima conforme nossos{' '}
+            <button
+              type="button"
+              onClick={() => setIsTermsOpen(true)}
+              className="underline font-semibold text-sage-800 dark:text-cream-100 hover:text-sage-950 dark:hover:text-white inline-flex items-center gap-0.5"
+            >
+              <ShieldCheck className="w-3 h-3 inline" />
+              <span>Termos de Uso e Privacidade (LGPD)</span>
+            </button>
+            .
+          </p>
         </div>
       </div>
 
       {/* Footer (Stagger 6) */}
-      <footer className="pt-2 text-[10px] text-graphite-400 dark:text-graphite-400 ae-reveal-up ae-stagger-6">
+      <footer className="pt-2 text-[10px] text-graphite-400 dark:text-sand-300/70 ae-reveal-up ae-stagger-6">
         <p>Amanhecer 2.0 • Sem fins lucrativos • Para a glória de Deus</p>
       </footer>
+
+      {/* Terms of Use & Privacy Policy Modal */}
+      <TermsAndPrivacyModal
+        isOpen={isTermsOpen}
+        onClose={() => setIsTermsOpen(false)}
+      />
     </div>
   );
 };
