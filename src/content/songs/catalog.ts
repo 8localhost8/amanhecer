@@ -302,6 +302,34 @@ export const VERIFIED_SONGS_CATALOG: ChristianSong[] = [
   }
 ];
 
+/**
+ * Deterministic Daily Song selector for a given date string (YYYY-MM-DD).
+ * Guarantees that ALL users see the exact same song on the same day,
+ * that refreshing the page never changes the song, and that consecutive days never repeat.
+ */
+export function getDailyVerifiedSong(dateStr: string): ChristianSong {
+  const cleanDate = (dateStr || '').trim() || new Date().toISOString().slice(0, 10);
+
+  // Parse YYYY-MM-DD into UTC day number since epoch so consecutive days step +1
+  const parts = cleanDate.split('-').map(Number);
+  if (parts.length === 3 && !parts.some(isNaN)) {
+    const utcMs = Date.UTC(parts[0], parts[1] - 1, parts[2]);
+    const dayNumber = Math.floor(utcMs / 86400000);
+    // Coprime step (11 is coprime with 28) so it feels varied day-to-day while cycling all 28 songs without repeats
+    const index = ((dayNumber * 11 + 7) % VERIFIED_SONGS_CATALOG.length + VERIFIED_SONGS_CATALOG.length) % VERIFIED_SONGS_CATALOG.length;
+    return VERIFIED_SONGS_CATALOG[index];
+  }
+
+  // Fallback FNV-1a deterministic hash if date format is non-standard
+  let hash = 2166136261;
+  for (let i = 0; i < cleanDate.length; i++) {
+    hash ^= cleanDate.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  const idx = (hash >>> 0) % VERIFIED_SONGS_CATALOG.length;
+  return VERIFIED_SONGS_CATALOG[idx];
+}
+
 export function getRandomVerifiedSong(excludeId?: string): ChristianSong {
   const pool = excludeId
     ? VERIFIED_SONGS_CATALOG.filter((s) => s.id !== excludeId)

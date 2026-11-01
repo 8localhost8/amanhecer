@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   BookOpen,
   CheckCircle,
@@ -18,7 +18,7 @@ import { DevotionalPublic } from '../services/ai/schemas';
 import { BiblicalPassage } from '../content/passages/catalog';
 import {
   ChristianSong,
-  getRandomVerifiedSong,
+  getDailyVerifiedSong,
   buildYouTubeSearchUrl,
   buildSpotifySearchUrl,
 } from '../content/songs/catalog';
@@ -44,10 +44,8 @@ export const HomePage: React.FC<HomePageProps> = ({
   onToggleFav,
   userName = '',
 }) => {
-  // Pick a random 100% verified existing Christian song on dashboard load
-  const [songOfTheDay] = useState<ChristianSong>(() =>
-    getRandomVerifiedSong()
-  );
+  // Deterministic daily song based on devotional date (same song for all users on the same day)
+  const songOfTheDay: ChristianSong = getDailyVerifiedSong(devotional.date);
 
   const hour = new Date().getHours();
   let greeting = 'Bom dia';
