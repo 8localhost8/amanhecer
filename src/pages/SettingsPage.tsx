@@ -264,18 +264,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
         </p>
 
         {browserNotifBlocked && (
-          <div className="ae-reveal-scale bg-amber-50/90 dark:bg-amber-950/40 p-4 rounded-2xl border border-amber-300 dark:border-amber-800/80 text-xs space-y-2">
-            <p className="font-bold text-amber-900 dark:text-amber-200">
-              ⚠️ Ligue as notificações do seu navegador padrão!
+          <div className="ae-reveal-scale bg-amber-50/90 dark:bg-amber-950/40 p-3.5 rounded-2xl border border-amber-300 dark:border-amber-800/80 text-xs text-amber-900 dark:text-amber-200">
+            <p className="font-semibold">Notificações bloqueadas no aparelho</p>
+            <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
+              Toque no ícone ao lado do link no navegador (ou segure o ícone do app na tela inicial) e mude Notificações para <strong>Permitir</strong>.
             </p>
-            <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
-              Para o app enviar notificações na barra do celular, as notificações do seu <strong>navegador padrão</strong> precisam estar ativadas no Android:
-            </p>
-            <ol className="text-[11px] text-graphite-700 dark:text-graphite-200 space-y-1 list-decimal list-inside leading-relaxed">
-              <li>Vá em <strong>Configurações do Android → Aplicativos → seu Navegador Padrão</strong> (Chrome, Brave, etc.) → <strong>Notificações</strong> e ative.</li>
-              <li>Segure o ícone do <strong>Amanhecer</strong> → <strong>Informações do app (ⓘ) → Notificações</strong> e ative.</li>
-              <li>No navegador padrão: <strong>Menu (⋮) → Configurações → Configurações do site → Notificações</strong> e permita o Amanhecer.</li>
-            </ol>
           </div>
         )}
 
