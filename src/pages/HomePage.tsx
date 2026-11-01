@@ -11,8 +11,6 @@ import {
   Moon,
   Play,
   Headphones,
-  Shuffle,
-  ExternalLink,
   ChevronRight,
   Sparkles,
 } from 'lucide-react';
@@ -47,17 +45,9 @@ export const HomePage: React.FC<HomePageProps> = ({
   userName = '',
 }) => {
   // Pick a random 100% verified existing Christian song on dashboard load
-  const [songOfTheDay, setSongOfTheDay] = useState<ChristianSong>(() =>
+  const [songOfTheDay] = useState<ChristianSong>(() =>
     getRandomVerifiedSong()
   );
-  const [isSpinningSong, setIsSpinningSong] = useState(false);
-
-  const handleShuffleSong = () => {
-    setIsSpinningSong(true);
-    const nextSong = getRandomVerifiedSong(songOfTheDay.id);
-    setSongOfTheDay(nextSong);
-    setTimeout(() => setIsSpinningSong(false), 380);
-  };
 
   const hour = new Date().getHours();
   let greeting = 'Bom dia';
@@ -94,28 +84,29 @@ export const HomePage: React.FC<HomePageProps> = ({
   return (
     <div className="space-y-6 pb-28 max-w-xl mx-auto">
       {/* 1. Top Greeting Header with Dimensional Badges */}
-      <div className="flex items-start justify-between pt-2 ae-reveal-up ae-stagger-1">
-        <div className="space-y-1">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full surface-editorial text-graphite-600 dark:text-graphite-300 text-xs font-medium">
-            <GreetingIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 ae-sun-float" />
+      <div className="space-y-2.5 pt-2 ae-reveal-up ae-stagger-1">
+        <div className="flex items-center justify-between gap-2">
+          <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full surface-editorial text-graphite-700 dark:text-graphite-200 text-xs font-semibold whitespace-nowrap shrink-0">
+            <GreetingIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 ae-sun-float shrink-0" />
             <span>{greeting}</span>
-            <span className="text-sand-400 dark:text-graphite-600">•</span>
-            <span className="capitalize text-graphite-500 dark:text-graphite-400">
-              {todayFormatted}
-            </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold text-graphite-800 dark:text-graphite-50 font-serif tracking-tight pt-1">
-            {userName.trim() ? `Graça e paz, ${userName.trim()}!` : 'Graça e paz!'}
-          </h1>
+          {isCompleted && (
+            <div className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-sage-100/90 dark:bg-sage-900/70 border border-sage-300 dark:border-sage-700 text-sage-900 dark:text-sage-200 text-xs font-bold shadow-sm ae-spring-pop whitespace-nowrap shrink-0">
+              <CheckCircle className="w-3.5 h-3.5 text-sage-700 dark:text-sage-300 shrink-0" />
+              <span>Concluído</span>
+            </div>
+          )}
         </div>
 
-        {isCompleted && (
-          <div className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-sage-100/90 dark:bg-sage-900/70 border border-sage-300 dark:border-sage-700 text-sage-900 dark:text-sage-200 text-xs font-bold shadow-sm ae-spring-pop">
-            <CheckCircle className="w-3.5 h-3.5 text-sage-700 dark:text-sage-300" />
-            <span>Concluído</span>
-          </div>
-        )}
+        <div className="space-y-0.5">
+          <h1 className="text-2xl sm:text-3xl font-bold text-graphite-800 dark:text-graphite-50 font-serif tracking-tight">
+            {userName.trim() ? `Graça e paz, ${userName.trim()}!` : 'Graça e paz!'}
+          </h1>
+          <p className="text-xs font-medium capitalize text-graphite-500 dark:text-graphite-400">
+            {todayFormatted}
+          </p>
+        </div>
       </div>
 
       {/* 2. Hero Card: Devocional de Hoje (Deep Dimensional Sage Surface) */}
@@ -270,63 +261,41 @@ export const HomePage: React.FC<HomePageProps> = ({
         <div className="absolute -right-4 -bottom-4 w-28 h-28 rounded-full border border-sand-300/50 dark:border-graphite-700/50 pointer-events-none" />
 
         <div className="relative z-10 space-y-4">
-          {/* Top Bar: Title + Equalizer + Shuffle Button */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2.5">
-              <div className="w-9 h-9 rounded-2xl btn-tactile-sage flex items-center justify-center shadow-xs">
-                <Headphones className="w-4 h-4 text-cream-50" />
-              </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h2
-                    id="song-of-the-day-heading"
-                    className="text-xs font-bold uppercase tracking-widest text-sage-900 dark:text-sage-200"
-                  >
-                    Música do Dia
-                  </h2>
-                  {/* Animated Equalizer Bars */}
-                  <div className="flex items-end space-x-0.5 h-3.5" aria-hidden="true">
-                    <span className="w-0.5 bg-sage-600 dark:bg-sage-400 rounded-full ae-eq-1" />
-                    <span className="w-0.5 bg-sage-700 dark:bg-sage-300 rounded-full ae-eq-2" />
-                    <span className="w-0.5 bg-sage-600 dark:bg-sage-400 rounded-full ae-eq-3" />
-                  </div>
-                </div>
-                <p className="text-[11px] text-graphite-500 dark:text-graphite-400">
-                  Louvor selecionado para edificar o seu dia
-                </p>
-              </div>
+          {/* Top Bar: Title + Equalizer */}
+          <div className="flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-2xl btn-tactile-sage flex items-center justify-center shadow-xs shrink-0">
+              <Headphones className="w-4 h-4 text-cream-50" />
             </div>
-
-            <button
-              type="button"
-              onClick={handleShuffleSong}
-              className="ae-btn inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-white/85 dark:bg-graphite-800 border border-sand-300/80 dark:border-graphite-700 text-graphite-700 dark:text-graphite-200 hover:border-sage-500 text-[11px] font-semibold shadow-2xs"
-              title="Sortear outra música"
-              aria-label="Sortear outra música do dia"
-            >
-              <Shuffle
-                className={`w-3.5 h-3.5 text-sage-700 dark:text-sage-300 transition-transform duration-300 ${
-                  isSpinningSong ? 'rotate-180 scale-110' : ''
-                }`}
-              />
-              <span>Outra música</span>
-            </button>
+            <div>
+              <div className="flex items-center space-x-2">
+                <h2
+                  id="song-of-the-day-heading"
+                  className="text-xs font-bold uppercase tracking-widest text-sage-900 dark:text-sage-200"
+                >
+                  Música do Dia
+                </h2>
+                {/* Animated Equalizer Bars */}
+                <div className="flex items-end space-x-0.5 h-3.5" aria-hidden="true">
+                  <span className="w-0.5 bg-sage-600 dark:bg-sage-400 rounded-full ae-eq-1" />
+                  <span className="w-0.5 bg-sage-700 dark:bg-sage-300 rounded-full ae-eq-2" />
+                  <span className="w-0.5 bg-sage-600 dark:bg-sage-400 rounded-full ae-eq-3" />
+                </div>
+              </div>
+              <p className="text-[11px] text-graphite-500 dark:text-graphite-400">
+                Louvor selecionado para edificar o seu dia
+              </p>
+            </div>
           </div>
 
           {/* Song Info Box */}
           <div className="p-4 rounded-2xl bg-white/80 dark:bg-graphite-900/70 border border-sand-200/80 dark:border-graphite-700/80 space-y-1.5 shadow-2xs">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <h3 className="text-lg sm:text-xl font-bold font-serif text-graphite-800 dark:text-graphite-50 leading-snug">
-                  {songOfTheDay.title}
-                </h3>
-                <p className="text-xs font-semibold text-sage-700 dark:text-sage-300 mt-0.5">
-                  {songOfTheDay.artist}
-                </p>
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-sand-100 dark:bg-graphite-800 text-graphite-600 dark:text-graphite-300 border border-sand-200 dark:border-graphite-700 flex-shrink-0">
-                Louvor Real
-              </span>
+            <div>
+              <h3 className="text-lg sm:text-xl font-bold font-serif text-graphite-800 dark:text-graphite-50 leading-snug">
+                {songOfTheDay.title}
+              </h3>
+              <p className="text-xs font-semibold text-sage-700 dark:text-sage-300 mt-0.5">
+                {songOfTheDay.artist}
+              </p>
             </div>
 
             <p className="text-xs text-graphite-600 dark:text-graphite-300 italic leading-relaxed pt-1">
@@ -340,22 +309,20 @@ export const HomePage: React.FC<HomePageProps> = ({
               href={youtubeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="ae-btn flex items-center justify-center space-x-2 py-2.5 px-4 rounded-2xl bg-gradient-to-b from-red-600 to-red-700 hover:from-red-500 hover:to-red-700 text-white text-xs font-bold shadow-sm border border-red-500/40"
+              className="ae-btn flex items-center justify-center gap-2 py-3 px-3 rounded-2xl bg-gradient-to-b from-red-600 to-red-700 hover:from-red-500 hover:to-red-700 text-white text-xs font-bold shadow-sm border border-red-500/40 whitespace-nowrap"
             >
-              <Play className="w-3.5 h-3.5 fill-current" />
+              <Play className="w-3.5 h-3.5 fill-current shrink-0" />
               <span>Ouvir no YouTube</span>
-              <ExternalLink className="w-3 h-3 opacity-80" />
             </a>
 
             <a
               href={spotifyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="ae-btn flex items-center justify-center space-x-2 py-2.5 px-4 rounded-2xl bg-gradient-to-b from-[#1ED760] to-[#17A74A] hover:from-[#22E066] hover:to-[#159642] text-white text-xs font-bold shadow-sm border border-white/20"
+              className="ae-btn flex items-center justify-center gap-2 py-3 px-3 rounded-2xl bg-gradient-to-b from-[#1ED760] to-[#17A74A] hover:from-[#22E066] hover:to-[#159642] text-white text-xs font-bold shadow-sm border border-white/20 whitespace-nowrap"
             >
-              <Headphones className="w-3.5 h-3.5" />
+              <Headphones className="w-3.5 h-3.5 shrink-0" />
               <span>Ouvir no Spotify</span>
-              <ExternalLink className="w-3 h-3 opacity-80" />
             </a>
           </div>
         </div>

@@ -76,4 +76,10 @@ export function applyThemeAndFont(prefs: UserPreferences): void {
   } else {
     document.documentElement.classList.remove('dark');
   }
+
+  // Keep mobile browser/PWA status bar color in sync with current theme
+  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeColorMeta) {
+    themeColorMeta.setAttribute('content', isDark ? '#161917' : '#F7F3EA');
+  }
 }

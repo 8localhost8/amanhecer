@@ -64,7 +64,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Auditoria Teológica (8 Critérios) */}
           <button
             onClick={() => onNavigate('audit')}
-            className={`ae-btn px-3 py-1.5 rounded-full transition-all text-xs font-bold flex items-center space-x-1.5 ${
+            className={`ae-btn p-2 sm:px-3 sm:py-1.5 rounded-full transition-all text-xs font-bold flex items-center sm:space-x-1.5 ${
               currentView === 'audit'
                 ? 'btn-tactile-sage'
                 : 'surface-editorial text-graphite-600 hover:text-graphite-900 dark:text-graphite-300 dark:hover:text-white'
@@ -72,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Painel de Auditoria e Avaliação Teológica"
             aria-label="Abrir Painel de Avaliação Teológica"
           >
-            <ShieldCheck className="w-3.5 h-3.5 text-sage-700 dark:text-sage-300" />
+            <ShieldCheck className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-sage-700 dark:text-sage-300" />
             <span className="hidden sm:inline text-[11px]">Nota Bíblica</span>
           </button>
 
