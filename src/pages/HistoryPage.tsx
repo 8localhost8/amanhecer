@@ -47,14 +47,14 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
           placeholder="Buscar por livro, tema ou palavra..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-11 pr-4 py-3 bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-full text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sage-600 text-graphite-700 dark:text-graphite-100 placeholder:text-graphite-400 shadow-xs transition-all"
+          className="surface-editorial w-full pl-11 pr-4 py-3 rounded-full text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sage-600 text-graphite-700 dark:text-graphite-100 placeholder:text-graphite-400 transition-all"
         />
       </div>
 
       {/* List */}
       <div className="space-y-3 ae-reveal-up ae-stagger-3">
         {filtered.length === 0 ? (
-          <div className="text-center py-16 text-graphite-400 dark:text-graphite-400 space-y-2 ae-reveal-scale">
+          <div className="surface-editorial rounded-3xl text-center py-16 text-graphite-400 dark:text-graphite-400 space-y-2 ae-reveal-scale">
             <BookOpen className="w-8 h-8 mx-auto opacity-40 text-sage-600" />
             <p className="text-xs">Nenhum devocional encontrado para a sua busca.</p>
           </div>
@@ -66,7 +66,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
                 key={d.id}
                 onClick={() => onSelectDevotional(d)}
                 style={{ animationDelay: `${Math.min(idx * 55, 300)}ms` }}
-                className="ae-reveal-up ae-card w-full text-left p-5 rounded-3xl bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 hover:border-sage-400 dark:hover:border-sage-600 shadow-xs space-y-2"
+                className="ae-reveal-up ae-card surface-editorial w-full text-left p-5 rounded-3xl space-y-2"
               >
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-semibold text-sage-700 dark:text-sage-300 text-[11px] uppercase tracking-wider">

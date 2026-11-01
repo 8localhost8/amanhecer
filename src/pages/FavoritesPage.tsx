@@ -25,7 +25,7 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({
       </div>
 
       {favorites.length === 0 ? (
-        <div className="text-center py-16 text-graphite-400 dark:text-graphite-400 space-y-3 ae-reveal-scale ae-stagger-2">
+        <div className="surface-editorial rounded-3xl text-center py-16 text-graphite-400 dark:text-graphite-400 space-y-3 ae-reveal-scale ae-stagger-2">
           <div className="ae-spring-pop w-12 h-12 rounded-full bg-sand-200/70 dark:bg-graphite-800 text-sand-500 dark:text-sand-400 flex items-center justify-center mx-auto">
             <Heart className="w-6 h-6" />
           </div>
@@ -43,7 +43,7 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({
               key={d.id}
               onClick={() => onSelectDevotional(d)}
               style={{ animationDelay: `${Math.min(idx * 55, 300)}ms` }}
-              className="ae-reveal-up ae-card w-full text-left p-5 rounded-3xl bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 hover:border-sage-400 dark:hover:border-sage-600 shadow-xs flex items-start justify-between cursor-pointer"
+              className="ae-reveal-up ae-card surface-editorial w-full text-left p-5 rounded-3xl flex items-start justify-between cursor-pointer"
             >
               <div className="space-y-1.5 pr-3">
                 <span className="text-[11px] font-semibold text-sage-700 dark:text-sage-300 uppercase tracking-wider">

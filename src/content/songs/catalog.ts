@@ -219,8 +219,97 @@ export const VERIFIED_SONGS_CATALOG: ChristianSong[] = [
     youtubeUrl: buildYouTubeSearchUrl('Foi na Cruz', 'Harpa Cristã'),
     spotifyUrl: buildSpotifySearchUrl('Foi na Cruz', 'Harpa Cristã'),
     theologicalAlignmentNotes: 'Doutrina da justificação pela fé e reconciliação com o Pai pela cruz.'
+  },
+  {
+    id: 'song-021',
+    title: 'Aclame ao Senhor',
+    artist: 'Diante do Trono',
+    theme: 'Adoração e Majestade de Deus',
+    recommendationReason: 'Clássico da adoração cristã no Brasil que exalta o nome, o poder e a majestade de Jesus.',
+    youtubeUrl: buildYouTubeSearchUrl('Aclame ao Senhor', 'Diante do Trono'),
+    spotifyUrl: buildSpotifySearchUrl('Aclame ao Senhor', 'Diante do Trono'),
+    theologicalAlignmentNotes: 'Louvor reverente inspirado nos Salmos de entronização.'
+  },
+  {
+    id: 'song-022',
+    title: 'Nada Além do Sangue',
+    artist: 'Fernandinho',
+    theme: 'Redenção e Poder da Cruz',
+    recommendationReason: 'Declara que nossa justificação, limpeza e amizade com Deus vêm unicamente pelo sangue de Jesus.',
+    youtubeUrl: buildYouTubeSearchUrl('Nada Além do Sangue', 'Fernandinho'),
+    spotifyUrl: buildSpotifySearchUrl('Nada Além do Sangue', 'Fernandinho'),
+    theologicalAlignmentNotes: 'Centralidade da expiação de Cristo na cruz.'
+  },
+  {
+    id: 'song-023',
+    title: 'Ninguém Explica Deus',
+    artist: 'Preto no Branco (feat. Gabriela Rocha)',
+    theme: 'Soberania e Grandeza de Deus',
+    recommendationReason: 'Reconhece a infinitude do Criador e o Seu amor que alcança o coração humano.',
+    youtubeUrl: buildYouTubeSearchUrl('Ninguém Explica Deus', 'Preto no Branco Gabriela Rocha'),
+    spotifyUrl: buildSpotifySearchUrl('Ninguém Explica Deus', 'Preto no Branco'),
+    theologicalAlignmentNotes: 'Exaltação da onisciência e graça soberana do Senhor.'
+  },
+  {
+    id: 'song-024',
+    title: 'Consagração',
+    artist: 'Aline Barros',
+    theme: 'Entrega Total e Louvor',
+    recommendationReason: 'Uma oração cantada que consagra cada parte da nossa vida ao Rei dos reis.',
+    youtubeUrl: buildYouTubeSearchUrl('Consagração', 'Aline Barros'),
+    spotifyUrl: buildSpotifySearchUrl('Consagração', 'Aline Barros'),
+    theologicalAlignmentNotes: 'Mordomia cristã e entrega sincera a Deus.'
+  },
+  {
+    id: 'song-025',
+    title: 'Aos Pés da Cruz',
+    artist: 'Kleber Lucas',
+    theme: 'Humildade, Graça e Perdão',
+    recommendationReason: 'Convida o coração a se render diante da cruz de Cristo, onde encontramos graça e restauração.',
+    youtubeUrl: buildYouTubeSearchUrl('Aos Pés da Cruz', 'Kleber Lucas'),
+    spotifyUrl: buildSpotifySearchUrl('Aos Pés da Cruz', 'Kleber Lucas'),
+    theologicalAlignmentNotes: 'Arrependimento e confiança na misericórdia de Cristo.'
+  },
+  {
+    id: 'song-026',
+    title: 'Eu Só Quero Tua Presença',
+    artist: 'Theo Rubia',
+    theme: 'Comunhão com Deus',
+    recommendationReason: 'Expressa o desejo sincero de buscar a Deus pelo que Ele é, acima de qualquer bênção terrena.',
+    youtubeUrl: buildYouTubeSearchUrl('Eu Só Quero Tua Presença', 'Theo Rubia'),
+    spotifyUrl: buildSpotifySearchUrl('Eu Só Quero Tua Presença', 'Theo Rubia'),
+    theologicalAlignmentNotes: 'Devoção pura centrada na comunhão com Cristo.'
+  },
+  {
+    id: 'song-027',
+    title: 'Tu És + Águas Purificadoras',
+    artist: 'Fhop Music',
+    theme: 'Santidade e Fonte de Vida',
+    recommendationReason: 'Celebra o Senhor como a fonte de águas vivas que sacia e purifica a nossa alma.',
+    youtubeUrl: buildYouTubeSearchUrl('Tu És Águas Purificadoras', 'Fhop Music'),
+    spotifyUrl: buildSpotifySearchUrl('Tu És Águas Purificadoras', 'Fhop Music'),
+    theologicalAlignmentNotes: 'Cristo como a água da vida eterna (João 4:14).'
+  },
+  {
+    id: 'song-028',
+    title: 'Preciso de Ti',
+    artist: 'Diante do Trono',
+    theme: 'Dependência de Deus e Oração',
+    recommendationReason: 'Clamor humilde que reconhece que dependemos da graça do Senhor a cada novo respirar.',
+    youtubeUrl: buildYouTubeSearchUrl('Preciso de Ti', 'Diante do Trono'),
+    spotifyUrl: buildSpotifySearchUrl('Preciso de Ti', 'Diante do Trono'),
+    theologicalAlignmentNotes: 'Humildade espiritual e sede pela presença de Deus (Salmo 42).'
   }
 ];
+
+export function getRandomVerifiedSong(excludeId?: string): ChristianSong {
+  const pool = excludeId
+    ? VERIFIED_SONGS_CATALOG.filter((s) => s.id !== excludeId)
+    : VERIFIED_SONGS_CATALOG;
+  const list = pool.length > 0 ? pool : VERIFIED_SONGS_CATALOG;
+  const randomIndex = Math.floor(Math.random() * list.length);
+  return list[randomIndex];
+}
 
 export function getSongById(id: string): ChristianSong | undefined {
   return VERIFIED_SONGS_CATALOG.find(s => s.id === id);

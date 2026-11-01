@@ -110,7 +110,7 @@ export const DiaryPage: React.FC = () => {
 
         <button
           onClick={handleOpenNew}
-          className="ae-btn ae-btn-shimmer py-2.5 px-4 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-xs flex items-center space-x-1.5 text-xs"
+          className="ae-btn ae-btn-shimmer btn-tactile-sage py-2.5 px-4 font-semibold rounded-full flex items-center space-x-1.5 text-xs"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Novo Registro</span>
@@ -118,7 +118,7 @@ export const DiaryPage: React.FC = () => {
       </div>
 
       {/* Privacy Notice Banner */}
-      <div className="ae-reveal-up ae-stagger-2 bg-sage-50 dark:bg-graphite-800 border border-sage-200/80 dark:border-graphite-700 rounded-3xl p-4 text-xs text-graphite-600 dark:text-graphite-300 flex items-center space-x-3 shadow-xs">
+      <div className="ae-reveal-up ae-stagger-2 surface-warm-sand rounded-3xl p-4 text-xs text-graphite-600 dark:text-graphite-300 flex items-center space-x-3">
         <ShieldCheck className="w-5 h-5 text-sage-700 dark:text-sage-300 flex-shrink-0" />
         <p className="leading-relaxed">
           <strong className="text-graphite-700 dark:text-graphite-100">Privacidade local:</strong> Suas preces e anotações nunca são transmitidas para a nuvem nem lidas por IA.
@@ -210,7 +210,7 @@ export const DiaryPage: React.FC = () => {
               key={item.id}
               onClick={() => handleOpenEdit(item)}
               style={{ animationDelay: `${Math.min(idx * 55, 300)}ms` }}
-              className="ae-reveal-up ae-card p-5 rounded-3xl bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 hover:border-sage-400 dark:hover:border-sage-600 shadow-xs cursor-pointer space-y-2.5"
+              className="ae-reveal-up ae-card surface-editorial p-5 rounded-3xl cursor-pointer space-y-2.5"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">

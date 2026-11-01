@@ -89,7 +89,7 @@ export const EvaluationDashboardPage: React.FC<EvaluationDashboardPageProps> = (
       </div>
 
       {/* Main Score Hero Card */}
-      <section className="ae-reveal-up ae-stagger-2 ae-card bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-6 sm:p-7 shadow-xs text-center space-y-4">
+      <section className="ae-reveal-up ae-stagger-2 ae-card surface-editorial rounded-3xl p-6 sm:p-7 text-center space-y-4">
         <div className="flex justify-center">
           <span className="ae-spring-pop px-3 py-1 rounded-full bg-sage-100 dark:bg-sage-900/60 border border-sage-300 dark:border-sage-700 text-sage-900 dark:text-sage-200 text-xs font-bold flex items-center space-x-1.5">
             <CheckCircle className="w-3.5 h-3.5 text-sage-700 dark:text-sage-300" />
@@ -142,7 +142,7 @@ export const EvaluationDashboardPage: React.FC<EvaluationDashboardPageProps> = (
               <div
                 key={item.key}
                 style={{ animationDelay: `${Math.min(idx * 45, 320)}ms` }}
-                className="ae-reveal-up ae-card bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-2xl shadow-xs overflow-hidden"
+                className="ae-reveal-up ae-card surface-editorial rounded-2xl overflow-hidden"
               >
                 <div 
                   onClick={() => toggleExpand(item.key)}

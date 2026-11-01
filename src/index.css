@@ -17,12 +17,22 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #F7F3EA;
+  background-image:
+    radial-gradient(ellipse 90% 45% at 85% -5%, rgba(217, 199, 163, 0.45) 0%, transparent 65%),
+    radial-gradient(ellipse 75% 40% at 10% 18%, rgba(130, 145, 123, 0.16) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(217, 199, 163, 0.22) 0%, transparent 65%);
+  background-attachment: fixed;
   color: #383B35;
   overflow-x: hidden;
 }
 
 .dark body {
-  background-color: #191C1A;
+  background-color: #161917;
+  background-image:
+    radial-gradient(ellipse 90% 45% at 85% -5%, rgba(80, 96, 75, 0.32) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 40% at 10% 20%, rgba(217, 199, 163, 0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(56, 71, 54, 0.22) 0%, transparent 65%);
+  background-attachment: fixed;
   color: #F2EFE7;
 }
 
@@ -39,6 +49,98 @@ body {
   transition-property: background-color, border-color, color, fill, stroke, box-shadow, transform, opacity, filter;
   transition-duration: 260ms;
   transition-timing-function: var(--ease-ae-smooth);
+}
+
+/* ==========================================================================
+   DIMENSIONAL EDITORIAL SURFACES (ANTI-FLAT LUXURY SYSTEM)
+   ========================================================================== */
+
+.surface-editorial {
+  background: linear-gradient(165deg, #FFFFFF 0%, #FAF7F0 100%);
+  border: 1px solid rgba(217, 199, 163, 0.65);
+  box-shadow:
+    0 2px 4px rgba(56, 71, 54, 0.03),
+    0 12px 28px -8px rgba(56, 71, 54, 0.08),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.95);
+}
+
+.dark .surface-editorial {
+  background: linear-gradient(165deg, #242925 0%, #1C201D 100%);
+  border: 1px solid rgba(130, 145, 123, 0.18);
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.3),
+    0 16px 34px -8px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+}
+
+.surface-hero-sage {
+  background: linear-gradient(135deg, #273326 0%, #384736 52%, #4B5E48 100%);
+  border: 1px solid rgba(217, 199, 163, 0.25);
+  box-shadow:
+    0 8px 18px -4px rgba(40, 52, 38, 0.25),
+    0 22px 44px -12px rgba(40, 52, 38, 0.38),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+.dark .surface-hero-sage {
+  background: linear-gradient(135deg, #1F291E 0%, #2F3D2E 52%, #3E4F3C 100%);
+  border: 1px solid rgba(217, 199, 163, 0.22);
+  box-shadow:
+    0 12px 28px -6px rgba(0, 0, 0, 0.55),
+    0 24px 48px -12px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
+}
+
+.surface-warm-sand {
+  background: linear-gradient(155deg, #FBF8F1 0%, #F2EBDC 100%);
+  border: 1px solid rgba(217, 199, 163, 0.75);
+  box-shadow:
+    0 2px 6px rgba(138, 117, 109, 0.05),
+    0 12px 26px -8px rgba(56, 71, 54, 0.08),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+}
+
+.dark .surface-warm-sand {
+  background: linear-gradient(155deg, #262A26 0%, #1E211E 100%);
+  border: 1px solid rgba(217, 199, 163, 0.15);
+  box-shadow:
+    0 8px 24px -6px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+.btn-tactile-sage {
+  background: linear-gradient(180deg, #475944 0%, #344232 100%);
+  color: #FAF7F0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 4px 12px -2px rgba(52, 66, 50, 0.35),
+    0 10px 22px -6px rgba(52, 66, 50, 0.28),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+}
+
+.btn-tactile-sage:hover {
+  background: linear-gradient(180deg, #50644D 0%, #3B4B39 100%);
+  box-shadow:
+    0 6px 16px -2px rgba(52, 66, 50, 0.45),
+    0 14px 28px -6px rgba(52, 66, 50, 0.35),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+.btn-tactile-cream {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F3EDE0 100%);
+  color: #273326;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 0 #FFFFFF,
+    inset 0 -1px 0 0 rgba(217, 199, 163, 0.5);
+}
+
+.btn-tactile-cream:hover {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAF6EC 100%);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 0 #FFFFFF;
 }
 
 /* ==========================================================================
@@ -119,11 +221,11 @@ body {
 @keyframes aeSunFloat {
   0%, 100% {
     transform: translate3d(0, 0, 0) scale(1);
-    opacity: 0.78;
+    opacity: 0.85;
   }
   50% {
     transform: translate3d(-5px, -8px, 0) scale(1.1);
-    opacity: 0.96;
+    opacity: 1;
   }
 }
 
@@ -145,14 +247,23 @@ body {
   }
 }
 
-@keyframes aePulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(130, 145, 123, 0.35);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(130, 145, 123, 0);
-  }
+@keyframes aeEqualizerBar1 {
+  0%, 100% { height: 5px; }
+  50% { height: 15px; }
 }
+@keyframes aeEqualizerBar2 {
+  0%, 100% { height: 14px; }
+  35% { height: 6px; }
+  75% { height: 16px; }
+}
+@keyframes aeEqualizerBar3 {
+  0%, 100% { height: 8px; }
+  45% { height: 16px; }
+}
+
+.ae-eq-1 { animation: aeEqualizerBar1 1.1s ease-in-out infinite; }
+.ae-eq-2 { animation: aeEqualizerBar2 0.9s ease-in-out infinite; }
+.ae-eq-3 { animation: aeEqualizerBar3 1.25s ease-in-out infinite; }
 
 /* Base Animation Utilities */
 .animate-fade-in,
@@ -219,15 +330,20 @@ body {
 
 .ae-card:hover {
   transform: translate3d(0, -3px, 0) scale(1.006);
-  box-shadow: 0 14px 32px -10px rgba(56, 72, 54, 0.12);
+  box-shadow:
+    0 4px 8px rgba(56, 72, 54, 0.05),
+    0 18px 36px -10px rgba(56, 72, 54, 0.14),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
 }
 
 .dark .ae-card:hover {
-  box-shadow: 0 14px 32px -10px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    0 18px 38px -10px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
 }
 
 .ae-card:active {
-  transform: translate3d(0, 0, 0) scale(0.978);
+  transform: translate3d(0, 0, 0) scale(0.982);
   transition-duration: 140ms;
 }
 
@@ -264,7 +380,7 @@ body {
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.18) 50%,
+    rgba(255, 255, 255, 0.22) 50%,
     rgba(255, 255, 255, 0) 100%
   );
   animation: aeShimmerSweep 5.5s var(--ease-ae-in-out) infinite;
@@ -317,7 +433,7 @@ body {
   background: rgba(130, 145, 123, 0.5);
 }
 
-/* Safe area insets for iOS devices */
+/* Safe area insets for mobile devices */
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 1rem);
 }

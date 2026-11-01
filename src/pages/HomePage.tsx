@@ -1,7 +1,29 @@
-import React from 'react';
-import { BookOpen, CheckCircle, Clock, Share2, Heart, BookMarked, Sun, Sunset, Moon, Play } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  BookOpen,
+  CheckCircle,
+  Clock,
+  Share2,
+  Heart,
+  BookMarked,
+  Sun,
+  Sunset,
+  Moon,
+  Play,
+  Headphones,
+  Shuffle,
+  ExternalLink,
+  ChevronRight,
+  Sparkles,
+} from 'lucide-react';
 import { DevotionalPublic } from '../services/ai/schemas';
 import { BiblicalPassage } from '../content/passages/catalog';
+import {
+  ChristianSong,
+  getRandomVerifiedSong,
+  buildYouTubeSearchUrl,
+  buildSpotifySearchUrl,
+} from '../content/songs/catalog';
 
 interface HomePageProps {
   devotional: DevotionalPublic;
@@ -24,6 +46,19 @@ export const HomePage: React.FC<HomePageProps> = ({
   onToggleFav,
   userName = '',
 }) => {
+  // Pick a random 100% verified existing Christian song on dashboard load
+  const [songOfTheDay, setSongOfTheDay] = useState<ChristianSong>(() =>
+    getRandomVerifiedSong()
+  );
+  const [isSpinningSong, setIsSpinningSong] = useState(false);
+
+  const handleShuffleSong = () => {
+    setIsSpinningSong(true);
+    const nextSong = getRandomVerifiedSong(songOfTheDay.id);
+    setSongOfTheDay(nextSong);
+    setTimeout(() => setIsSpinningSong(false), 380);
+  };
+
   const hour = new Date().getHours();
   let greeting = 'Bom dia';
   let GreetingIcon = Sun;
@@ -53,188 +88,352 @@ export const HomePage: React.FC<HomePageProps> = ({
     }
   };
 
+  const youtubeUrl = buildYouTubeSearchUrl(songOfTheDay.title, songOfTheDay.artist);
+  const spotifyUrl = buildSpotifySearchUrl(songOfTheDay.title, songOfTheDay.artist);
+
   return (
     <div className="space-y-6 pb-28 max-w-xl mx-auto">
-      {/* Top Greeting with Stagger 1 */}
-      <div className="flex items-center justify-between pt-2 ae-reveal-up ae-stagger-1">
-        <div>
-          <div className="flex items-center space-x-1.5 text-graphite-500 dark:text-graphite-400 text-xs font-medium">
+      {/* 1. Top Greeting Header with Dimensional Badges */}
+      <div className="flex items-start justify-between pt-2 ae-reveal-up ae-stagger-1">
+        <div className="space-y-1">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full surface-editorial text-graphite-600 dark:text-graphite-300 text-xs font-medium">
             <GreetingIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 ae-sun-float" />
-            <span>{greeting},</span>
+            <span>{greeting}</span>
+            <span className="text-sand-400 dark:text-graphite-600">•</span>
+            <span className="capitalize text-graphite-500 dark:text-graphite-400">
+              {todayFormatted}
+            </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-graphite-700 dark:text-graphite-50 font-serif tracking-tight mt-0.5">
+
+          <h1 className="text-2xl sm:text-3xl font-bold text-graphite-800 dark:text-graphite-50 font-serif tracking-tight pt-1">
             {userName.trim() ? `Graça e paz, ${userName.trim()}!` : 'Graça e paz!'}
           </h1>
-          <p className="text-xs text-graphite-400 dark:text-graphite-400 capitalize mt-0.5">
-            {todayFormatted}
-          </p>
         </div>
 
         {isCompleted && (
-          <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-sage-100 dark:bg-sage-900/60 border border-sage-200 dark:border-sage-800 text-sage-800 dark:text-sage-200 text-xs font-semibold ae-spring-pop">
-            <CheckCircle className="w-3.5 h-3.5 text-sage-600 dark:text-sage-300" />
-            <span>Devocional Lido</span>
+          <div className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-sage-100/90 dark:bg-sage-900/70 border border-sage-300 dark:border-sage-700 text-sage-900 dark:text-sage-200 text-xs font-bold shadow-sm ae-spring-pop">
+            <CheckCircle className="w-3.5 h-3.5 text-sage-700 dark:text-sage-300" />
+            <span>Concluído</span>
           </div>
         )}
       </div>
 
-      {/* Hero Card: Devocional de Hoje with Stagger 2 & Ambient Dawn Motion */}
-      <section 
-        className="bg-sage-900 text-cream-50 rounded-3xl p-6 sm:p-7 relative overflow-hidden shadow-md ae-reveal-scale ae-stagger-2 ae-card"
+      {/* 2. Hero Card: Devocional de Hoje (Deep Dimensional Sage Surface) */}
+      <section
+        className="surface-hero-sage text-cream-50 rounded-3xl p-6 sm:p-7 relative overflow-hidden ae-reveal-scale ae-stagger-2 ae-card"
         aria-labelledby="today-devotional-heading"
       >
-        {/* Background Graphic: Animated Organic Dawn Hills & Breathing Sun */}
-        <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-35 pointer-events-none overflow-hidden">
-          <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full object-cover">
-            <circle cx="150" cy="78" r="35" fill="#D9C7A3" className="ae-sun-float" />
-            <path d="M50 200 C90 140, 140 160, 200 130 L200 200 Z" fill="#82917B" opacity="0.65" className="ae-hill-drift" />
-            <path d="M20 200 C80 160, 130 180, 200 150 L200 200 Z" fill="#50604B" opacity="0.75" className="ae-hill-drift-delayed" />
+        {/* Ambient radial sun glow + organic hills */}
+        <div className="absolute -right-8 -top-8 w-52 h-52 rounded-full bg-sand-300/15 blur-2xl pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-3/5 opacity-45 pointer-events-none overflow-hidden">
+          <svg
+            viewBox="0 0 240 200"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full h-full object-cover"
+          >
+            <circle cx="178" cy="68" r="46" fill="#D9C7A3" opacity="0.22" className="ae-sun-float" />
+            <circle cx="178" cy="68" r="31" fill="#D9C7A3" className="ae-sun-float" />
+            <path
+              d="M30 200 C85 132, 155 152, 240 120 L240 200 Z"
+              fill="#82917B"
+              opacity="0.6"
+              className="ae-hill-drift"
+            />
+            <path
+              d="M0 200 C70 155, 145 175, 240 144 L240 200 Z"
+              fill="#50604B"
+              opacity="0.82"
+              className="ae-hill-drift-delayed"
+            />
           </svg>
         </div>
 
-        <div className="relative z-10 space-y-3.5 max-w-sm">
-          <div className="flex items-center space-x-2 text-[11px] font-semibold tracking-wider uppercase text-sand-300">
+        <div className="relative z-10 space-y-4 max-w-md">
+          {/* Glassmorphic Header Pill */}
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] font-semibold tracking-wider uppercase text-sand-200">
+            <Sparkles className="w-3 h-3 text-sand-300" />
             <span>Devocional de Hoje</span>
-            <span>•</span>
+            <span className="opacity-50">•</span>
             <span className="flex items-center space-x-1">
               <Clock className="w-3 h-3" />
               <span>{devotional.estimatedMinutes} min</span>
             </span>
           </div>
 
-          <div>
-            <h2 id="today-devotional-heading" className="text-xl sm:text-2xl font-bold font-serif tracking-tight leading-snug">
+          <div className="space-y-1.5">
+            <h2
+              id="today-devotional-heading"
+              className="text-2xl sm:text-3xl font-bold font-serif tracking-tight leading-snug text-white drop-shadow-xs"
+            >
               {devotional.title}
             </h2>
-            <p className="text-xs text-sand-200/90 mt-1 font-medium">
+            <p className="text-xs text-sand-200 font-medium tracking-wide">
               {devotional.verseOfTheDay.reference} • {devotional.theme}
             </p>
           </div>
 
-          <p className="text-xs text-cream-100/80 line-clamp-2 leading-relaxed">
+          <p className="text-xs sm:text-sm text-cream-100/85 line-clamp-2 leading-relaxed">
             {devotional.reflection}
           </p>
 
-          <div className="pt-1.5 flex items-center space-x-3">
+          <div className="pt-2 flex items-center space-x-3">
             <button
               onClick={onStartReading}
-              className="py-2.5 px-5 bg-cream-100 hover:bg-white text-sage-900 font-semibold rounded-full text-xs shadow-sm flex items-center space-x-2 ae-btn ae-btn-shimmer"
+              className="py-3 px-6 btn-tactile-cream font-bold rounded-full text-xs sm:text-sm flex items-center space-x-2 ae-btn ae-btn-shimmer"
             >
-              <Play className="w-3.5 h-3.5 fill-current" />
+              <Play className="w-3.5 h-3.5 fill-current text-sage-800" />
               <span>{isCompleted ? 'Reler Devocional' : 'Começar Leitura'}</span>
             </button>
 
             <button
               onClick={onToggleFav}
-              className={`p-2.5 rounded-full border border-cream-100/20 ae-btn ${
+              className={`p-3 rounded-full border backdrop-blur-md ae-btn ${
                 isFav
-                  ? 'bg-rose-900/60 text-rose-300 border-rose-400/40 scale-105'
-                  : 'text-cream-100/70 hover:text-white hover:bg-white/10'
+                  ? 'bg-rose-500/25 text-rose-200 border-rose-300/40 shadow-sm scale-105'
+                  : 'bg-white/10 border-white/20 text-cream-100 hover:bg-white/20'
               }`}
               title={isFav ? 'Remover dos favoritos' : 'Salvar nos favoritos'}
               aria-label="Salvar devocional nos favoritos"
             >
-              <Heart className={`w-4 h-4 transition-transform ${isFav ? 'fill-current scale-110' : ''}`} />
+              <Heart
+                className={`w-4 h-4 transition-transform ${
+                  isFav ? 'fill-current scale-110 text-rose-300' : ''
+                }`}
+              />
             </button>
           </div>
         </div>
       </section>
 
-      {/* Versículo do Dia (Editorial Quote Card with Stagger 3) */}
-      <section 
-        className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 shadow-xs relative ae-reveal-up ae-stagger-3 ae-card"
+      {/* 3. Versículo do Dia (Luxury Editorial Card with Watermark Quote) */}
+      <section
+        className="surface-editorial rounded-3xl p-6 sm:p-7 relative overflow-hidden ae-reveal-up ae-stagger-3 ae-card"
         aria-labelledby="verse-of-the-day-heading"
       >
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-sage-600 dark:bg-sage-400 animate-pulse" />
-            <h2 id="verse-of-the-day-heading" className="text-[11px] font-bold uppercase tracking-wider text-graphite-400 dark:text-graphite-300">
-              Versículo do Dia
-            </h2>
+        {/* Decorative serif quotation watermark */}
+        <span
+          aria-hidden="true"
+          className="absolute right-5 -top-3 font-serif text-8xl leading-none text-sand-300/35 dark:text-sage-800/30 select-none pointer-events-none"
+        >
+          “
+        </span>
+
+        {/* Left accent bar */}
+        <div className="absolute left-0 top-6 bottom-6 w-1.5 rounded-r-full bg-gradient-to-b from-sage-600 via-sage-700 to-sand-400" />
+
+        <div className="relative z-10 pl-2">
+          <div className="flex items-center justify-between mb-3.5">
+            <div className="flex items-center space-x-2">
+              <span className="w-2 h-2 rounded-full bg-sage-600 dark:bg-sage-400 ring-4 ring-sage-100 dark:ring-sage-900/60" />
+              <h2
+                id="verse-of-the-day-heading"
+                className="text-[11px] font-bold uppercase tracking-widest text-sage-800 dark:text-sage-300"
+              >
+                Versículo do Dia
+              </h2>
+            </div>
+
+            <button
+              onClick={handleShareVerse}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-cream-100/80 dark:bg-graphite-800 border border-sand-200/80 dark:border-graphite-700 text-graphite-600 dark:text-graphite-300 hover:text-sage-800 dark:hover:text-sage-200 text-[11px] font-semibold ae-btn"
+              title="Compartilhar versículo"
+              aria-label="Compartilhar versículo do dia"
+            >
+              <Share2 className="w-3 h-3" />
+              <span>Compartilhar</span>
+            </button>
           </div>
-          <button
-            onClick={handleShareVerse}
-            className="p-1.5 text-graphite-400 hover:text-sage-700 dark:hover:text-sage-300 rounded-full ae-btn"
-            title="Compartilhar versículo"
-            aria-label="Compartilhar versículo do dia"
-          >
-            <Share2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
 
-        <blockquote className="font-serif italic text-base sm:text-lg text-graphite-700 dark:text-graphite-50 leading-relaxed">
-          "{dailyVerse.text}"
-        </blockquote>
+          <blockquote className="font-serif italic text-lg sm:text-xl text-graphite-800 dark:text-graphite-50 leading-relaxed">
+            "{dailyVerse.text}"
+          </blockquote>
 
-        <div className="mt-3.5 flex items-center justify-between pt-2.5 border-t border-sand-100 dark:border-graphite-700/60 text-xs">
-          <span className="font-semibold text-graphite-700 dark:text-graphite-200">
-            {dailyVerse.reference}
-          </span>
-          <span className="text-[11px] px-2 py-0.5 rounded-full bg-cream-50 dark:bg-graphite-900 text-graphite-500 dark:text-graphite-400 border border-sand-200/60 dark:border-graphite-700/60">
-            {dailyVerse.category}
-          </span>
+          <div className="mt-4 flex items-center justify-between pt-3.5 border-t border-sand-200/60 dark:border-graphite-700/60 text-xs">
+            <span className="font-bold text-graphite-800 dark:text-graphite-100 tracking-tight">
+              — {dailyVerse.reference}
+            </span>
+            <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-sage-50 dark:bg-sage-950/70 text-sage-800 dark:text-sage-300 border border-sage-200/70 dark:border-sage-800/70">
+              {dailyVerse.category}
+            </span>
+          </div>
         </div>
       </section>
 
-      {/* Continue Sua Jornada (3 Pastel Cards with Stagger 4) */}
-      <section className="space-y-3 ae-reveal-up ae-stagger-4">
-        <h3 className="text-xs font-bold text-graphite-400 dark:text-graphite-400 uppercase tracking-wider">
-          Continue Sua Jornada
-        </h3>
+      {/* 4. Música do Dia (Tactile Audio Card on Dashboard with Verified Real Songs) */}
+      <section
+        className="surface-warm-sand rounded-3xl p-6 sm:p-7 relative overflow-hidden ae-reveal-up ae-stagger-4 ae-card"
+        aria-labelledby="song-of-the-day-heading"
+      >
+        {/* Subtle decorative vinyl rings in background */}
+        <div className="absolute -right-10 -bottom-10 w-40 h-40 rounded-full border border-sand-300/40 dark:border-graphite-700/40 pointer-events-none" />
+        <div className="absolute -right-4 -bottom-4 w-28 h-28 rounded-full border border-sand-300/50 dark:border-graphite-700/50 pointer-events-none" />
 
-        <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+        <div className="relative z-10 space-y-4">
+          {/* Top Bar: Title + Equalizer + Shuffle Button */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-9 h-9 rounded-2xl btn-tactile-sage flex items-center justify-center shadow-xs">
+                <Headphones className="w-4 h-4 text-cream-50" />
+              </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h2
+                    id="song-of-the-day-heading"
+                    className="text-xs font-bold uppercase tracking-widest text-sage-900 dark:text-sage-200"
+                  >
+                    Música do Dia
+                  </h2>
+                  {/* Animated Equalizer Bars */}
+                  <div className="flex items-end space-x-0.5 h-3.5" aria-hidden="true">
+                    <span className="w-0.5 bg-sage-600 dark:bg-sage-400 rounded-full ae-eq-1" />
+                    <span className="w-0.5 bg-sage-700 dark:bg-sage-300 rounded-full ae-eq-2" />
+                    <span className="w-0.5 bg-sage-600 dark:bg-sage-400 rounded-full ae-eq-3" />
+                  </div>
+                </div>
+                <p className="text-[11px] text-graphite-500 dark:text-graphite-400">
+                  Louvor selecionado para edificar o seu dia
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleShuffleSong}
+              className="ae-btn inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-white/85 dark:bg-graphite-800 border border-sand-300/80 dark:border-graphite-700 text-graphite-700 dark:text-graphite-200 hover:border-sage-500 text-[11px] font-semibold shadow-2xs"
+              title="Sortear outra música"
+              aria-label="Sortear outra música do dia"
+            >
+              <Shuffle
+                className={`w-3.5 h-3.5 text-sage-700 dark:text-sage-300 transition-transform duration-300 ${
+                  isSpinningSong ? 'rotate-180 scale-110' : ''
+                }`}
+              />
+              <span>Outra música</span>
+            </button>
+          </div>
+
+          {/* Song Info Box */}
+          <div className="p-4 rounded-2xl bg-white/80 dark:bg-graphite-900/70 border border-sand-200/80 dark:border-graphite-700/80 space-y-1.5 shadow-2xs">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold font-serif text-graphite-800 dark:text-graphite-50 leading-snug">
+                  {songOfTheDay.title}
+                </h3>
+                <p className="text-xs font-semibold text-sage-700 dark:text-sage-300 mt-0.5">
+                  {songOfTheDay.artist}
+                </p>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-sand-100 dark:bg-graphite-800 text-graphite-600 dark:text-graphite-300 border border-sand-200 dark:border-graphite-700 flex-shrink-0">
+                Louvor Real
+              </span>
+            </div>
+
+            <p className="text-xs text-graphite-600 dark:text-graphite-300 italic leading-relaxed pt-1">
+              "{songOfTheDay.recommendationReason}"
+            </p>
+          </div>
+
+          {/* Action Links: YouTube & Spotify */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <a
+              href={youtubeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ae-btn flex items-center justify-center space-x-2 py-2.5 px-4 rounded-2xl bg-gradient-to-b from-red-600 to-red-700 hover:from-red-500 hover:to-red-700 text-white text-xs font-bold shadow-sm border border-red-500/40"
+            >
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span>Ouvir no YouTube</span>
+              <ExternalLink className="w-3 h-3 opacity-80" />
+            </a>
+
+            <a
+              href={spotifyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ae-btn flex items-center justify-center space-x-2 py-2.5 px-4 rounded-2xl bg-gradient-to-b from-[#1ED760] to-[#17A74A] hover:from-[#22E066] hover:to-[#159642] text-white text-xs font-bold shadow-sm border border-white/20"
+            >
+              <Headphones className="w-3.5 h-3.5" />
+              <span>Ouvir no Spotify</span>
+              <ExternalLink className="w-3 h-3 opacity-80" />
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Continue Sua Jornada (Dimensional Bento Grid) */}
+      <section className="space-y-3.5 ae-reveal-up ae-stagger-5">
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-xs font-bold text-graphite-500 dark:text-graphite-400 uppercase tracking-widest">
+            Continue Sua Jornada
+          </h3>
+          <span className="text-[11px] text-graphite-400 dark:text-graphite-500">
+            Acesso rápido e offline
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Card 1: Diário de Oração */}
           <button
             onClick={() => onNavigate('diary')}
-            className="text-left p-3.5 sm:p-4 rounded-2xl bg-sage-100/70 dark:bg-sage-900/40 border border-sage-200/70 dark:border-sage-800/60 hover:border-sage-300 dark:hover:border-sage-700 group flex flex-col justify-between ae-card"
+            className="surface-editorial text-left p-4 rounded-3xl group flex sm:flex-col items-center sm:items-start justify-between gap-3 ae-card"
           >
-            <div className="w-8 h-8 rounded-full bg-sage-800 text-cream-50 dark:bg-sage-700 flex items-center justify-center mb-2 shadow-xs group-hover:scale-110 group-hover:-rotate-6 transition-transform">
-              <BookMarked className="w-4 h-4" />
+            <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2.5">
+              <div className="w-11 h-11 rounded-2xl btn-tactile-sage flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:-rotate-6 transition-transform">
+                <BookMarked className="w-5 h-5 text-cream-50" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold font-serif text-graphite-800 dark:text-graphite-50">
+                  Diário de Oração
+                </h4>
+                <p className="text-[11px] text-graphite-500 dark:text-graphite-400 mt-0.5">
+                  Anote preces e gratidão
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className="text-xs font-bold text-sage-900 dark:text-sage-100">
-                Diário
-              </h4>
-              <p className="text-[10px] text-sage-700 dark:text-sage-300 mt-0.5">
-                Suas preces
-              </p>
-            </div>
+            <ChevronRight className="w-4 h-4 text-graphite-400 group-hover:text-sage-700 group-hover:translate-x-1 transition-all sm:self-end" />
           </button>
 
           {/* Card 2: Favoritos */}
           <button
             onClick={() => onNavigate('favorites')}
-            className="text-left p-3.5 sm:p-4 rounded-2xl bg-sand-200/60 dark:bg-graphite-800/80 border border-sand-300/60 dark:border-graphite-700 hover:border-sand-400 dark:hover:border-graphite-600 group flex flex-col justify-between ae-card"
+            className="surface-editorial text-left p-4 rounded-3xl group flex sm:flex-col items-center sm:items-start justify-between gap-3 ae-card"
           >
-            <div className="w-8 h-8 rounded-full bg-sand-500 text-cream-50 dark:bg-sand-400 dark:text-graphite-900 flex items-center justify-center mb-2 shadow-xs group-hover:scale-110 group-hover:rotate-6 transition-transform">
-              <Heart className="w-4 h-4" />
+            <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2.5">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-sand-400 to-sand-500 text-graphite-900 flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-110 group-hover:rotate-6 transition-transform">
+                <Heart className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold font-serif text-graphite-800 dark:text-graphite-50">
+                  Favoritos
+                </h4>
+                <p className="text-[11px] text-graphite-500 dark:text-graphite-400 mt-0.5">
+                  Mensagens salvas
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className="text-xs font-bold text-graphite-800 dark:text-graphite-100">
-                Favoritos
-              </h4>
-              <p className="text-[10px] text-graphite-500 dark:text-graphite-300 mt-0.5">
-                Leitura offline
-              </p>
-            </div>
+            <ChevronRight className="w-4 h-4 text-graphite-400 group-hover:text-sage-700 group-hover:translate-x-1 transition-all sm:self-end" />
           </button>
 
           {/* Card 3: Histórico */}
           <button
             onClick={() => onNavigate('history')}
-            className="text-left p-3.5 sm:p-4 rounded-2xl bg-[#EFE4DE]/70 dark:bg-graphite-800/60 border border-[#E0D5CF] dark:border-graphite-700 hover:border-[#D5C8C0] dark:hover:border-graphite-600 group flex flex-col justify-between ae-card"
+            className="surface-editorial text-left p-4 rounded-3xl group flex sm:flex-col items-center sm:items-start justify-between gap-3 ae-card"
           >
-            <div className="w-8 h-8 rounded-full bg-[#8A756D] text-cream-50 dark:bg-[#A38D84] dark:text-graphite-900 flex items-center justify-center mb-2 shadow-xs group-hover:scale-110 group-hover:-rotate-6 transition-transform">
-              <BookOpen className="w-4 h-4" />
+            <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2.5">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-[#968077] to-[#78645C] text-cream-50 flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-110 group-hover:-rotate-6 transition-transform">
+                <BookOpen className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold font-serif text-graphite-800 dark:text-graphite-50">
+                  Histórico
+                </h4>
+                <p className="text-[11px] text-graphite-500 dark:text-graphite-400 mt-0.5">
+                  Leituras anteriores
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className="text-xs font-bold text-graphite-800 dark:text-graphite-100">
-                Histórico
-              </h4>
-              <p className="text-[10px] text-graphite-500 dark:text-graphite-300 mt-0.5">
-                Devocionais
-              </p>
-            </div>
+            <ChevronRight className="w-4 h-4 text-graphite-400 group-hover:text-sage-700 group-hover:translate-x-1 transition-all sm:self-end" />
           </button>
         </div>
       </section>

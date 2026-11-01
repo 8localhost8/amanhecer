@@ -26,7 +26,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, onNavigate, f
     >
       <div className="max-w-md mx-auto px-4 pb-3 sm:pb-4 pointer-events-auto">
         {/* Floating rounded navigation bar with glassmorphic depth */}
-        <div className="bg-white/95 dark:bg-graphite-800/95 backdrop-blur-md rounded-full shadow-xl shadow-graphite-900/10 dark:shadow-black/35 border border-sand-200 dark:border-graphite-700 px-2 py-1.5 flex items-center justify-around relative">
+        <div className="surface-editorial backdrop-blur-xl rounded-full px-2 py-1.5 flex items-center justify-around relative">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = currentView === tab.id || (tab.id === 'home' && currentView === 'devotional');
@@ -42,7 +42,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, onNavigate, f
                 {isActive ? (
                   /* Raised active circular button with After Effects Spring Pop */
                   <div className="flex flex-col items-center">
-                    <div className="absolute -top-6 w-12 h-12 rounded-full bg-sage-800 dark:bg-sage-600 text-white shadow-lg shadow-sage-900/25 flex items-center justify-center ring-4 ring-cream-100 dark:ring-graphite-950 ae-spring-pop">
+                    <div className="absolute -top-6 w-12 h-12 rounded-full btn-tactile-sage text-white flex items-center justify-center ring-4 ring-cream-100 dark:ring-graphite-950 ae-spring-pop">
                       <Icon className="w-5 h-5" />
                     </div>
                     <span className="text-[11px] font-bold text-sage-900 dark:text-sage-200 mt-6 tracking-tight ae-reveal-scale">
