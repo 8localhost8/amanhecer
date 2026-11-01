@@ -18,7 +18,7 @@ import { loadUserPreferences, saveUserPreferences, applyThemeAndFont, UserPrefer
 import { getDevotionalForDate, getAllPublishedDevotionals } from './content/devotionals/vault';
 import { selectDailyVerse, getSaoPauloDateString } from './services/daily-verse/selection-engine';
 import { saveCompletion, getCompletion, getAllCompletions, toggleFavorite, isFavorite, getAllFavorites } from './storage/db';
-import { syncCompletionWithPushServer } from './services/notifications/push-client';
+import { syncCompletionWithPushServer, initLocalNotificationScheduler } from './services/notifications/push-client';
 import { DevotionalPublic } from './services/ai/schemas';
 
 export const App: React.FC = () => {
@@ -65,6 +65,11 @@ export const App: React.FC = () => {
   useEffect(() => {
     applyThemeAndFont(preferences);
   }, [preferences]);
+
+  // Initialize autonomous notification scheduler (06:06 Daily Verse & Reminders)
+  useEffect(() => {
+    initLocalNotificationScheduler();
+  }, []);
 
   // Network offline listener
   useEffect(() => {

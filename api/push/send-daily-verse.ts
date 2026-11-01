@@ -18,10 +18,14 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
   const todayStr = getSaoPauloDateString();
   const verse = selectDailyVerse(todayStr);
 
-  // Configure VAPID
-  const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || process.env.VITE_VAPID_PUBLIC_KEY;
-  const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
-  const vapidSubject = process.env.VAPID_SUBJECT || 'mailto:contato@amanhecer.app';
+  // Configure VAPID (sanitize any accidental quotes or whitespace from Env Vars)
+  const clean = (v?: string) => (v || '').replace(/["'\s]/g, '').trim();
+  const vapidPublicKey =
+    clean(process.env.VAPID_PUBLIC_KEY) ||
+    clean(process.env.VITE_VAPID_PUBLIC_KEY) ||
+    'BL-tTNbq9Aie-CPWNHJbseDn8QmCEUaO5tpsJRo_6bcvOuBg9b4dmIZIe1gvmiebzNiaWfYtFI3RHoTy5ZwLvRk';
+  const vapidPrivateKey = clean(process.env.VAPID_PRIVATE_KEY);
+  const vapidSubject = clean(process.env.VAPID_SUBJECT) || 'mailto:contato@amanhecer.app';
 
   if (vapidPublicKey && vapidPrivateKey) {
     webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);

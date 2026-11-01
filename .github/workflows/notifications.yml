@@ -31,13 +31,40 @@ jobs:
         env:
           APP_URL: ${{ secrets.APP_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SCHEDULE: ${{ github.event.schedule }}
+          INPUT_TYPE: ${{ github.event.inputs.type }}
+          INPUT_SLOT: ${{ github.event.inputs.slot }}
         run: |
-          if [ "${{ github.event.inputs.type }}" = "reminder" ]; then
-            echo "Disparando Lembrete de Leitura (${{ github.event.inputs.slot }})..."
-            curl -X POST "${APP_URL:-https://amanhecer.app}/api/push/send-reminders?slot=${{ github.event.inputs.slot }}" \
+          TARGET_URL="${APP_URL:-https://amanhecer-beta.vercel.app}"
+          # Remove barra final se houver
+          TARGET_URL="${TARGET_URL%/}"
+
+          if [ "$INPUT_TYPE" = "reminder" ]; then
+            echo "Disparando Lembrete Manual ($INPUT_SLOT)..."
+            curl -sS -X POST "$TARGET_URL/api/push/send-reminders?slot=${INPUT_SLOT:-11:00}" \
+              -H "Authorization: Bearer $CRON_SECRET"
+          elif [ "$INPUT_TYPE" = "daily-verse" ]; then
+            echo "Disparando Versículo do Dia Manual..."
+            curl -sS -X POST "$TARGET_URL/api/push/send-daily-verse" \
+              -H "Authorization: Bearer $CRON_SECRET"
+          elif [ "$SCHEDULE" = "0 9 * * *" ]; then
+            echo "Disparando Lembrete Agendado (06:00 BRT)..."
+            curl -sS -X POST "$TARGET_URL/api/push/send-reminders?slot=06:00" \
+              -H "Authorization: Bearer $CRON_SECRET"
+          elif [ "$SCHEDULE" = "0 14 * * *" ]; then
+            echo "Disparando Lembrete Agendado (11:00 BRT)..."
+            curl -sS -X POST "$TARGET_URL/api/push/send-reminders?slot=11:00" \
+              -H "Authorization: Bearer $CRON_SECRET"
+          elif [ "$SCHEDULE" = "0 19 * * *" ]; then
+            echo "Disparando Lembrete Agendado (16:00 BRT)..."
+            curl -sS -X POST "$TARGET_URL/api/push/send-reminders?slot=16:00" \
+              -H "Authorization: Bearer $CRON_SECRET"
+          elif [ "$SCHEDULE" = "0 0 * * *" ]; then
+            echo "Disparando Lembrete Agendado (21:00 BRT)..."
+            curl -sS -X POST "$TARGET_URL/api/push/send-reminders?slot=21:00" \
               -H "Authorization: Bearer $CRON_SECRET"
           else
-            echo "Disparando Notificação do Versículo do Dia (06:06)..."
-            curl -X POST "${APP_URL:-https://amanhecer.app}/api/push/send-daily-verse" \
+            echo "Disparando Versículo do Dia Agendado (06:06 BRT)..."
+            curl -sS -X POST "$TARGET_URL/api/push/send-daily-verse" \
               -H "Authorization: Bearer $CRON_SECRET"
           fi

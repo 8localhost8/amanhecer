@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, Moon, Sparkles, Type, Bell, ShieldCheck, BookOpen, Send, User } from 'lucide-react';
 import { UserPreferences, saveUserPreferences, FontSizePreset, AppTheme } from '../storage/preferences';
-import { getPushStatus, requestAndSubscribePush, unsubscribePush, PushStatus } from '../services/notifications/push-client';
+import {
+  getPushStatus,
+  requestAndSubscribePush,
+  unsubscribePush,
+  sendTestNotification,
+  syncNotificationScheduleWithSW,
+  PushStatus,
+} from '../services/notifications/push-client';
 
 interface SettingsPageProps {
   preferences: UserPreferences;
@@ -11,6 +18,7 @@ interface SettingsPageProps {
 export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdatePreferences }) => {
   const [pushStatus, setPushStatus] = useState<PushStatus | null>(null);
   const [isTestingPush, setIsTestingPush] = useState(false);
+  const [testSuccessMsg, setTestSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
     checkStatus();
@@ -52,6 +60,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
       if (res.success) {
         const updated = saveUserPreferences({ notificationsEnabled: true });
         onUpdatePreferences(updated);
+        setTestSuccessMsg('Notificações ativadas com sucesso! Enviamos um aviso de confirmação.');
+        setTimeout(() => setTestSuccessMsg(null), 5000);
       } else {
         alert(res.error || 'Não foi possível ativar notificações.');
       }
@@ -62,23 +72,24 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
   const handleToggleDailyVerse = (enabled: boolean) => {
     const updated = saveUserPreferences({ dailyVerseEnabled: enabled });
     onUpdatePreferences(updated);
+    syncNotificationScheduleWithSW();
   };
 
   const handleToggleReminders = (enabled: boolean) => {
     const updated = saveUserPreferences({ reminderEnabled: enabled });
     onUpdatePreferences(updated);
+    syncNotificationScheduleWithSW();
   };
 
   const handleSendTestNotification = async () => {
     setIsTestingPush(true);
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('☀️ Versículo do Dia — Amanhecer', {
-        body: 'Provérbios 3:5-6 — Confia no SENHOR de todo o teu coração...',
-        icon: '/icons/icon-192x192.png',
-      });
-      alert('Notificação de teste enviada!');
+    setTestSuccessMsg(null);
+    const res = await sendTestNotification();
+    if (res.success) {
+      setTestSuccessMsg('Notificação de teste enviada para o seu aparelho!');
+      setTimeout(() => setTestSuccessMsg(null), 5000);
     } else {
-      alert('Ative as notificações primeiro para realizar o teste.');
+      alert(res.error || 'Ative as notificações primeiro para realizar o teste.');
     }
     setIsTestingPush(false);
   };
@@ -284,11 +295,17 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
             <button
               onClick={handleSendTestNotification}
               disabled={isTestingPush}
-              className="mt-2 w-full py-2.5 px-3 bg-sand-100 dark:bg-graphite-700 hover:bg-sand-200 text-graphite-700 dark:text-graphite-200 text-xs font-semibold rounded-full flex items-center justify-center space-x-1.5 transition-all"
+              className="ae-btn mt-2 w-full py-2.5 px-3 bg-sand-100 dark:bg-graphite-700 hover:bg-sand-200 text-graphite-700 dark:text-graphite-200 text-xs font-semibold rounded-full flex items-center justify-center space-x-1.5 transition-all"
             >
               <Send className="w-3.5 h-3.5" />
-              <span>Testar Notificação Agora</span>
+              <span>{isTestingPush ? 'Enviando...' : 'Testar Notificação Agora'}</span>
             </button>
+
+            {testSuccessMsg && (
+              <p className="ae-reveal-scale text-center text-[11px] font-semibold text-sage-800 dark:text-sage-300 bg-sage-50 dark:bg-sage-950/60 py-2 px-3 rounded-2xl border border-sage-200 dark:border-sage-800">
+                ✓ {testSuccessMsg}
+              </p>
+            )}
           </div>
         )}
       </section>
