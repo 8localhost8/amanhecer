@@ -39,6 +39,7 @@ export const NotificationBugfixModal: React.FC<NotificationBugfixModalProps> = (
         notifBugfixV23Seen: true,
         notifBugfixV24Seen: true,
         notifBugfixV25Seen: true,
+        forceNotifPromptV1Seen: true,
       });
       setStatusMessage('Notificação ativada com sucesso!');
       setTimeout(() => {
@@ -54,6 +55,7 @@ export const NotificationBugfixModal: React.FC<NotificationBugfixModalProps> = (
       notifBugfixV23Seen: true,
       notifBugfixV24Seen: true,
       notifBugfixV25Seen: true,
+      forceNotifPromptV1Seen: true,
     });
     onClose(updated);
   };

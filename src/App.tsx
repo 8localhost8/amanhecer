@@ -27,7 +27,7 @@ export const App: React.FC = () => {
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => !loadUserPreferences().onboardingCompleted);
   const [isNotifBugfixOpen, setIsNotifBugfixOpen] = useState<boolean>(() => {
     const p = loadUserPreferences();
-    return Boolean(p.onboardingCompleted && !p.notifBugfixV25Seen);
+    return Boolean(p.onboardingCompleted && !p.forceNotifPromptV1Seen);
   });
   const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
   const [isCelebrationOpen, setIsCelebrationOpen] = useState<boolean>(false);
