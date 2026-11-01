@@ -38,8 +38,8 @@ export const IntroSplash: React.FC<IntroSplashProps> = ({ onComplete }) => {
   return (
     <div
       onClick={handleFinish}
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-[#384736] transition-opacity duration-500 select-none cursor-pointer ${
-        isFadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-[#384736] transition-all duration-500 ease-out select-none cursor-pointer ${
+        isFadingOut ? 'opacity-0 scale-105 blur-xs pointer-events-none' : 'opacity-100 scale-100 blur-0'
       }`}
       aria-label="Introdução Amanhecer"
       role="banner"

@@ -20,13 +20,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, onNavigate, f
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 z-40 pb-safe pointer-events-none"
+      className="fixed bottom-0 left-0 right-0 z-40 pb-safe pointer-events-none ae-reveal-up ae-stagger-4"
       role="navigation"
       aria-label="Navegação Principal"
     >
       <div className="max-w-md mx-auto px-4 pb-3 sm:pb-4 pointer-events-auto">
-        {/* Floating rounded navigation bar based on UX reference */}
-        <div className="bg-white/95 dark:bg-graphite-800/95 backdrop-blur-md rounded-full shadow-lg shadow-graphite-900/5 dark:shadow-black/20 border border-sand-200 dark:border-graphite-700 px-2 py-1.5 flex items-center justify-around relative">
+        {/* Floating rounded navigation bar with glassmorphic depth */}
+        <div className="bg-white/95 dark:bg-graphite-800/95 backdrop-blur-md rounded-full shadow-xl shadow-graphite-900/10 dark:shadow-black/35 border border-sand-200 dark:border-graphite-700 px-2 py-1.5 flex items-center justify-around relative">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = currentView === tab.id || (tab.id === 'home' && currentView === 'devotional');
@@ -35,27 +35,27 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, onNavigate, f
               <button
                 key={tab.id}
                 onClick={() => onNavigate(tab.id as AppView)}
-                className="relative flex-1 flex flex-col items-center justify-center py-1 group focus:outline-none"
+                className="relative flex-1 flex flex-col items-center justify-center py-1 group focus:outline-none active:scale-90 transition-transform"
                 aria-label={tab.label}
                 aria-current={isActive ? 'page' : undefined}
               >
                 {isActive ? (
-                  /* Raised active circular button (as in UX reference image) */
+                  /* Raised active circular button with After Effects Spring Pop */
                   <div className="flex flex-col items-center">
-                    <div className="absolute -top-6 w-12 h-12 rounded-full bg-sage-800 dark:bg-sage-600 text-white shadow-md shadow-sage-900/20 flex items-center justify-center ring-4 ring-cream-100 dark:ring-graphite-950 transition-all duration-300 scale-105">
+                    <div className="absolute -top-6 w-12 h-12 rounded-full bg-sage-800 dark:bg-sage-600 text-white shadow-lg shadow-sage-900/25 flex items-center justify-center ring-4 ring-cream-100 dark:ring-graphite-950 ae-spring-pop">
                       <Icon className="w-5 h-5" />
                     </div>
-                    <span className="text-[11px] font-bold text-sage-900 dark:text-sage-200 mt-6 tracking-tight">
+                    <span className="text-[11px] font-bold text-sage-900 dark:text-sage-200 mt-6 tracking-tight ae-reveal-scale">
                       {tab.label}
                     </span>
                   </div>
                 ) : (
-                  /* Inactive button */
-                  <div className="flex flex-col items-center text-graphite-400 dark:text-graphite-300 group-hover:text-graphite-700 dark:group-hover:text-graphite-100 transition-colors py-1">
-                    <div className="relative">
+                  /* Inactive button with subtle micro-interaction */
+                  <div className="flex flex-col items-center text-graphite-400 dark:text-graphite-300 group-hover:text-graphite-700 dark:group-hover:text-graphite-100 transition-all py-1">
+                    <div className="relative group-hover:-translate-y-0.5 group-hover:scale-110 transition-transform">
                       <Icon className="w-5 h-5" />
                       {tab.badge && (
-                        <span className="absolute -top-1 -right-2 px-1 py-0.2 bg-sage-700 text-white rounded-full text-[8px] font-bold">
+                        <span className="absolute -top-1 -right-2 px-1 py-0.2 bg-sage-700 text-white rounded-full text-[8px] font-bold ae-spring-pop">
                           {tab.badge}
                         </span>
                       )}

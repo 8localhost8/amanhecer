@@ -66,20 +66,20 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-graphite-950/70 backdrop-blur-xs animate-fade-in"
+      className="ae-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-graphite-950/70 backdrop-blur-xs"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl max-w-sm w-full p-6 shadow-xl relative overflow-hidden text-center">
+      <div className="ae-modal-card bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl max-w-sm w-full p-6 shadow-xl relative overflow-hidden text-center">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-graphite-400 hover:text-graphite-700 dark:hover:text-graphite-200 p-1.5 rounded-full"
+          className="ae-btn absolute top-4 right-4 text-graphite-400 hover:text-graphite-700 dark:hover:text-graphite-200 p-1.5 rounded-full"
           aria-label="Fechar"
         >
           <X className="w-4 h-4" />
         </button>
 
-        <div className="w-14 h-14 rounded-full bg-sage-100 dark:bg-sage-900/60 text-sage-800 dark:text-sage-300 flex items-center justify-center mx-auto mb-3.5 ring-6 ring-sage-50 dark:ring-sage-950/40">
+        <div className="ae-spring-pop w-14 h-14 rounded-full bg-sage-100 dark:bg-sage-900/60 text-sage-800 dark:text-sage-300 flex items-center justify-center mx-auto mb-3.5 ring-6 ring-sage-50 dark:ring-sage-950/40">
           <CheckCircle2 className="w-7 h-7" />
         </div>
 
@@ -122,7 +122,7 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
           {/* WhatsApp Direct Share Button */}
           <button
             onClick={handleShareWhatsApp}
-            className="w-full py-3.5 px-4 bg-[#25D366] hover:bg-[#20BD5A] text-white font-semibold rounded-full shadow-xs flex items-center justify-center space-x-2 text-xs transition-all active:scale-95"
+            className="ae-btn ae-btn-shimmer w-full py-3.5 px-4 bg-[#25D366] hover:bg-[#20BD5A] text-white font-semibold rounded-full shadow-xs flex items-center justify-center space-x-2 text-xs"
             aria-label="Compartilhar bênção no WhatsApp"
           >
             <MessageCircle className="w-4 h-4 fill-current" />

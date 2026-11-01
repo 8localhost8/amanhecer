@@ -97,8 +97,8 @@ export const DiaryPage: React.FC = () => {
   const filtered = entries.filter((e) => activeFilter === 'all' || e.type === activeFilter);
 
   return (
-    <div className="space-y-6 pb-28 animate-fade-in max-w-xl mx-auto">
-      <div className="flex items-start justify-between">
+    <div className="space-y-6 pb-28 max-w-xl mx-auto">
+      <div className="flex items-start justify-between ae-reveal-up ae-stagger-1">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold font-serif text-graphite-700 dark:text-graphite-50 tracking-tight">
             Diário Pessoal
@@ -110,7 +110,7 @@ export const DiaryPage: React.FC = () => {
 
         <button
           onClick={handleOpenNew}
-          className="py-2.5 px-4 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-xs flex items-center space-x-1.5 text-xs transition-all active:scale-95"
+          className="ae-btn ae-btn-shimmer py-2.5 px-4 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-xs flex items-center space-x-1.5 text-xs"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Novo Registro</span>
@@ -118,7 +118,7 @@ export const DiaryPage: React.FC = () => {
       </div>
 
       {/* Privacy Notice Banner */}
-      <div className="bg-sage-50 dark:bg-graphite-800 border border-sage-200/80 dark:border-graphite-700 rounded-3xl p-4 text-xs text-graphite-600 dark:text-graphite-300 flex items-center space-x-3 shadow-xs">
+      <div className="ae-reveal-up ae-stagger-2 bg-sage-50 dark:bg-graphite-800 border border-sage-200/80 dark:border-graphite-700 rounded-3xl p-4 text-xs text-graphite-600 dark:text-graphite-300 flex items-center space-x-3 shadow-xs">
         <ShieldCheck className="w-5 h-5 text-sage-700 dark:text-sage-300 flex-shrink-0" />
         <p className="leading-relaxed">
           <strong className="text-graphite-700 dark:text-graphite-100">Privacidade local:</strong> Suas preces e anotações nunca são transmitidas para a nuvem nem lidas por IA.
@@ -126,7 +126,7 @@ export const DiaryPage: React.FC = () => {
       </div>
 
       {/* Filters and Backup Actions */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 ae-reveal-up ae-stagger-3">
         <div className="flex bg-sand-100 dark:bg-graphite-850 p-1 rounded-full text-xs font-semibold">
           <button
             onClick={() => setActiveFilter('all')}
@@ -192,9 +192,9 @@ export const DiaryPage: React.FC = () => {
       </div>
 
       {/* Entries List */}
-      <div className="space-y-3">
+      <div className="space-y-3 ae-reveal-up ae-stagger-4">
         {filtered.length === 0 ? (
-          <div className="text-center py-16 text-graphite-400 dark:text-graphite-400 space-y-2">
+          <div className="text-center py-16 text-graphite-400 dark:text-graphite-400 space-y-2 ae-reveal-scale">
             <MessageSquare className="w-8 h-8 mx-auto opacity-30 text-sage-600" />
             <p className="text-xs">Nenhum registro encontrado nesta categoria.</p>
             <button
@@ -205,11 +205,12 @@ export const DiaryPage: React.FC = () => {
             </button>
           </div>
         ) : (
-          filtered.map((item) => (
+          filtered.map((item, idx) => (
             <div
               key={item.id}
               onClick={() => handleOpenEdit(item)}
-              className="p-5 rounded-3xl bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 hover:border-sage-400 dark:hover:border-sage-600 transition-all shadow-xs cursor-pointer space-y-2.5"
+              style={{ animationDelay: `${Math.min(idx * 55, 300)}ms` }}
+              className="ae-reveal-up ae-card p-5 rounded-3xl bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 hover:border-sage-400 dark:hover:border-sage-600 shadow-xs cursor-pointer space-y-2.5"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -252,8 +253,8 @@ export const DiaryPage: React.FC = () => {
 
       {/* Editor Modal */}
       {isEditorOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-graphite-950/70 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl max-w-lg w-full p-6 shadow-xl relative overflow-hidden">
+        <div className="ae-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-graphite-950/70 backdrop-blur-xs">
+          <div className="ae-modal-card bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl max-w-lg w-full p-6 shadow-xl relative overflow-hidden">
             <div className="flex items-center justify-between pb-3.5 border-b border-sand-100 dark:border-graphite-700">
               <h2 className="text-base font-bold font-serif text-graphite-700 dark:text-graphite-50">
                 {editingId ? 'Editar Registro' : 'Novo Registro no Diário'}

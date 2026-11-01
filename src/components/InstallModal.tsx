@@ -32,12 +32,12 @@ export const InstallModal: React.FC<InstallModalProps> = ({ isOpen, onClose, def
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-graphite-950/70 backdrop-blur-xs animate-fade-in"
+      className="ae-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-graphite-950/70 backdrop-blur-xs"
       role="dialog"
       aria-modal="true"
       aria-labelledby="install-modal-title"
     >
-      <div className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl max-w-md w-full p-6 shadow-xl relative overflow-hidden">
+      <div className="ae-modal-card bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl max-w-md w-full p-6 shadow-xl relative overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between pb-3.5 border-b border-sand-100 dark:border-graphite-700/80">
           <div className="flex items-center space-x-2.5">

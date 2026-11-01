@@ -5,6 +5,11 @@
 :root {
   --font-reading-size: 18px;
   --font-reading-line-height: 1.75;
+  /* After Effects Graph Editor Curves */
+  --ease-ae-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-ae-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-ae-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-ae-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 body {
@@ -13,6 +18,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #F7F3EA;
   color: #383B35;
+  overflow-x: hidden;
 }
 
 .dark body {
@@ -25,13 +31,258 @@ body {
   font-size: var(--font-reading-size);
   line-height: var(--font-reading-line-height);
   letter-spacing: -0.01em;
+  transition: font-size 320ms var(--ease-ae-expo);
 }
 
 /* Smooth transitions for theme toggle & interactions */
 *, *::before, *::after {
-  transition-property: background-color, border-color, color, fill, stroke, box-shadow, transform;
-  transition-duration: 200ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow, transform, opacity, filter;
+  transition-duration: 260ms;
+  transition-timing-function: var(--ease-ae-smooth);
+}
+
+/* ==========================================================================
+   AFTER EFFECTS MOTION GRAPHICS KEYFRAMES & CHOREOGRAPHY
+   ========================================================================== */
+
+@keyframes aeRevealUp {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 26px, 0) scale(0.975);
+    filter: blur(6px);
+  }
+  60% {
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+@keyframes aeRevealScale {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0) scale(0.92);
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+@keyframes aeSpringPop {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.6);
+  }
+  65% {
+    opacity: 1;
+    transform: translate3d(0, -3px, 0) scale(1.07);
+  }
+  85% {
+    transform: translate3d(0, 1px, 0) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes aeModalIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 32px, 0) scale(0.91);
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+@keyframes aeBackdropIn {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(6px);
+  }
+}
+
+@keyframes aeSunFloat {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.78;
+  }
+  50% {
+    transform: translate3d(-5px, -8px, 0) scale(1.1);
+    opacity: 0.96;
+  }
+}
+
+@keyframes aeHillDrift {
+  0%, 100% {
+    transform: scaleX(1) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scaleX(1.035) translate3d(0, -3px, 0);
+  }
+}
+
+@keyframes aeShimmerSweep {
+  0% {
+    transform: translateX(-120%) skewX(-18deg);
+  }
+  35%, 100% {
+    transform: translateX(220%) skewX(-18deg);
+  }
+}
+
+@keyframes aePulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(130, 145, 123, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(130, 145, 123, 0);
+  }
+}
+
+/* Base Animation Utilities */
+.animate-fade-in,
+.ae-page-enter {
+  animation: aeRevealUp 680ms var(--ease-ae-expo) both;
+  will-change: transform, opacity, filter;
+}
+
+.ae-reveal-up {
+  animation: aeRevealUp 680ms var(--ease-ae-expo) both;
+  will-change: transform, opacity, filter;
+}
+
+.ae-reveal-scale {
+  animation: aeRevealScale 640ms var(--ease-ae-expo) both;
+  will-change: transform, opacity, filter;
+}
+
+.ae-spring-pop {
+  animation: aeSpringPop 560ms var(--ease-ae-spring) both;
+  will-change: transform, opacity;
+}
+
+.ae-modal-backdrop {
+  animation: aeBackdropIn 380ms var(--ease-ae-smooth) both;
+}
+
+.ae-modal-card {
+  animation: aeModalIn 540ms var(--ease-ae-spring) both;
+  will-change: transform, opacity, filter;
+}
+
+.ae-sun-float {
+  animation: aeSunFloat 6s var(--ease-ae-in-out) infinite;
+}
+
+.ae-hill-drift {
+  animation: aeHillDrift 8s var(--ease-ae-in-out) infinite;
+  transform-origin: bottom center;
+}
+
+.ae-hill-drift-delayed {
+  animation: aeHillDrift 9.5s var(--ease-ae-in-out) 1.5s infinite;
+  transform-origin: bottom center;
+}
+
+/* Staggered Timeline Delays (After Effects Layer Sequencer) */
+.ae-stagger-1 { animation-delay: 50ms; }
+.ae-stagger-2 { animation-delay: 115ms; }
+.ae-stagger-3 { animation-delay: 180ms; }
+.ae-stagger-4 { animation-delay: 245ms; }
+.ae-stagger-5 { animation-delay: 310ms; }
+.ae-stagger-6 { animation-delay: 375ms; }
+
+/* Interactive Tactile Cards & Buttons */
+.ae-card {
+  transition:
+    transform 420ms var(--ease-ae-expo),
+    box-shadow 420ms var(--ease-ae-expo),
+    border-color 300ms var(--ease-ae-smooth),
+    background-color 300ms var(--ease-ae-smooth);
+  will-change: transform, box-shadow;
+}
+
+.ae-card:hover {
+  transform: translate3d(0, -3px, 0) scale(1.006);
+  box-shadow: 0 14px 32px -10px rgba(56, 72, 54, 0.12);
+}
+
+.dark .ae-card:hover {
+  box-shadow: 0 14px 32px -10px rgba(0, 0, 0, 0.45);
+}
+
+.ae-card:active {
+  transform: translate3d(0, 0, 0) scale(0.978);
+  transition-duration: 140ms;
+}
+
+.ae-btn {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 380ms var(--ease-ae-spring),
+    box-shadow 380ms var(--ease-ae-expo),
+    background-color 260ms var(--ease-ae-smooth);
+  will-change: transform;
+}
+
+.ae-btn:hover {
+  transform: translate3d(0, -2px, 0) scale(1.015);
+}
+
+.ae-btn:active {
+  transform: translate3d(0, 1px, 0) scale(0.955);
+  transition-duration: 120ms;
+}
+
+/* Subtle light shimmer sweep inside primary CTA buttons */
+.ae-btn-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.18) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: aeShimmerSweep 5.5s var(--ease-ae-in-out) infinite;
+  pointer-events: none;
+}
+
+/* Respect reduced motion preference while preserving subtle fades */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .ae-page-enter,
+  .ae-reveal-up,
+  .ae-reveal-scale,
+  .ae-spring-pop,
+  .ae-modal-card,
+  .ae-sun-float,
+  .ae-hill-drift,
+  .ae-hill-drift-delayed {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    filter: none !important;
+  }
 }
 
 /* Accessibility focus ring */

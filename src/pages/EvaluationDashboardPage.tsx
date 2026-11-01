@@ -74,9 +74,9 @@ export const EvaluationDashboardPage: React.FC<EvaluationDashboardPageProps> = (
   ];
 
   return (
-    <div className="space-y-6 pb-28 animate-fade-in max-w-xl mx-auto">
+    <div className="space-y-6 pb-28 max-w-xl mx-auto">
       {/* Header */}
-      <div>
+      <div className="ae-reveal-up ae-stagger-1">
         <div className="flex items-center space-x-2 text-sage-700 dark:text-sage-300">
           <ShieldCheck className="w-5 h-5 text-sage-700 dark:text-sage-300" />
           <h1 className="text-2xl sm:text-3xl font-bold font-serif text-graphite-700 dark:text-graphite-50 tracking-tight">
@@ -89,9 +89,9 @@ export const EvaluationDashboardPage: React.FC<EvaluationDashboardPageProps> = (
       </div>
 
       {/* Main Score Hero Card */}
-      <section className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-6 sm:p-7 shadow-xs text-center space-y-4">
+      <section className="ae-reveal-up ae-stagger-2 ae-card bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-6 sm:p-7 shadow-xs text-center space-y-4">
         <div className="flex justify-center">
-          <span className="px-3 py-1 rounded-full bg-sage-100 dark:bg-sage-900/60 border border-sage-300 dark:border-sage-700 text-sage-900 dark:text-sage-200 text-xs font-bold flex items-center space-x-1.5">
+          <span className="ae-spring-pop px-3 py-1 rounded-full bg-sage-100 dark:bg-sage-900/60 border border-sage-300 dark:border-sage-700 text-sage-900 dark:text-sage-200 text-xs font-bold flex items-center space-x-1.5">
             <CheckCircle className="w-3.5 h-3.5 text-sage-700 dark:text-sage-300" />
             <span>Aprovado com Excelência Teológica</span>
           </span>
@@ -99,7 +99,7 @@ export const EvaluationDashboardPage: React.FC<EvaluationDashboardPageProps> = (
 
         <div className="space-y-1">
           <div className="flex items-baseline justify-center space-x-2">
-            <span className="text-6xl sm:text-7xl font-extrabold tracking-tight font-serif text-sage-800 dark:text-sage-300">
+            <span className="ae-reveal-scale text-6xl sm:text-7xl font-extrabold tracking-tight font-serif text-sage-800 dark:text-sage-300">
               {finalScore}
             </span>
             <span className="text-xl font-medium text-graphite-400">/ 100</span>
@@ -112,7 +112,7 @@ export const EvaluationDashboardPage: React.FC<EvaluationDashboardPageProps> = (
         {/* Progress bar */}
         <div className="w-full bg-sand-100 dark:bg-graphite-900 rounded-full h-2.5 overflow-hidden p-0.5 border border-sand-200 dark:border-graphite-700">
           <div
-            className="h-full rounded-full bg-sage-700 dark:bg-sage-500 transition-all duration-500"
+            className="h-full rounded-full bg-sage-700 dark:bg-sage-500 transition-all duration-1000"
             style={{ width: `${Math.min(100, Math.max(0, finalScore))}%` }}
           />
         </div>
@@ -123,7 +123,7 @@ export const EvaluationDashboardPage: React.FC<EvaluationDashboardPageProps> = (
       </section>
 
       {/* 8 Criteria List (Read-Only) */}
-      <section className="space-y-3">
+      <section className="space-y-3 ae-reveal-up ae-stagger-3">
         <div className="flex items-center justify-between">
           <h2 className="text-[11px] font-bold text-graphite-400 dark:text-graphite-400 uppercase tracking-widest">
             Detalhamento dos 8 Critérios Bíblicos
@@ -134,14 +134,15 @@ export const EvaluationDashboardPage: React.FC<EvaluationDashboardPageProps> = (
         </div>
 
         <div className="space-y-2">
-          {criteriaConfig.map((item) => {
+          {criteriaConfig.map((item, idx) => {
             const currentCrit = criteriaData[item.key];
             const isExpanded = !!expandedCriteria[item.key];
 
             return (
               <div
                 key={item.key}
-                className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-2xl transition-all shadow-xs overflow-hidden"
+                style={{ animationDelay: `${Math.min(idx * 45, 320)}ms` }}
+                className="ae-reveal-up ae-card bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-2xl shadow-xs overflow-hidden"
               >
                 <div 
                   onClick={() => toggleExpand(item.key)}

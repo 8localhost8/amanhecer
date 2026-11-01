@@ -182,7 +182,7 @@ export const App: React.FC = () => {
         isOffline={isOffline}
       />
 
-      <main className="flex-1 max-w-xl w-full mx-auto px-4 pt-4 pb-20">
+      <main key={currentView} className="flex-1 max-w-xl w-full mx-auto px-4 pt-4 pb-20">
         {currentView === 'home' && (
           <HomePage
             devotional={devotional}

@@ -25,11 +25,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Brand Logo & Editorial Title */}
         <button
           onClick={() => onNavigate('home')}
-          className="flex items-center space-x-2.5 text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-600 rounded-xl"
+          className="ae-btn flex items-center space-x-2.5 text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-600 rounded-xl"
           aria-label="Ir para o início do Amanhecer"
         >
           {/* Official Amanhecer leaf icon (Light & Dark theme aware) */}
-          <div className="w-8 h-8 rounded-full overflow-hidden shadow-xs ring-1 ring-sand-200 dark:ring-graphite-700 flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 rounded-full overflow-hidden shadow-xs ring-1 ring-sand-200 dark:ring-graphite-700 flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-105">
             <img
               src="/icons/amanhecer-claro.png"
               alt="Amanhecer"
@@ -52,7 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center space-x-1 sm:space-x-1.5">
           {/* Offline indicator */}
           {isOffline && (
-            <div className="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-sand-200 dark:bg-graphite-800 text-graphite-700 dark:text-graphite-200 text-xs font-medium">
+            <div className="ae-spring-pop flex items-center space-x-1 px-2.5 py-1 rounded-full bg-sand-200 dark:bg-graphite-800 text-graphite-700 dark:text-graphite-200 text-xs font-medium">
               <WifiOff className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
               <span className="hidden sm:inline">Offline</span>
             </div>
@@ -61,7 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Auditoria Teológica (8 Critérios) */}
           <button
             onClick={() => onNavigate('audit')}
-            className={`p-2 rounded-full border transition-all text-xs font-semibold flex items-center space-x-1 ${
+            className={`ae-btn p-2 rounded-full border transition-all text-xs font-semibold flex items-center space-x-1 ${
               currentView === 'audit'
                 ? 'bg-sage-100 dark:bg-sage-900/60 text-sage-900 dark:text-sage-200 border-sage-300 dark:border-sage-700'
                 : 'border-transparent text-graphite-500 hover:text-graphite-800 dark:text-graphite-300 dark:hover:text-white'
@@ -76,21 +76,21 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Theme Toggle */}
           <button
             onClick={onThemeToggle}
-            className="p-2 text-graphite-600 dark:text-graphite-300 hover:bg-sand-100 dark:hover:bg-graphite-800 rounded-full transition-colors focus:ring-2 focus:ring-sage-600"
+            className="ae-btn p-2 text-graphite-600 dark:text-graphite-300 hover:bg-sand-100 dark:hover:bg-graphite-800 rounded-full transition-colors focus:ring-2 focus:ring-sage-600"
             aria-label={`Alternar tema. Tema atual: ${theme}`}
             title="Alternar tema claro / escuro"
           >
             {theme === 'dark' ? (
-              <Moon className="w-4 h-4 text-sage-300" />
+              <Moon className="w-4 h-4 text-sage-300 ae-spring-pop" />
             ) : (
-              <Sun className="w-4 h-4 text-amber-700" />
+              <Sun className="w-4 h-4 text-amber-700 ae-spring-pop" />
             )}
           </button>
 
           {/* Help Button (?) */}
           <button
             onClick={onOpenHelp}
-            className="p-2 text-graphite-600 dark:text-graphite-300 hover:bg-sand-100 dark:hover:bg-graphite-800 rounded-full transition-colors focus:ring-2 focus:ring-sage-600"
+            className="ae-btn p-2 text-graphite-600 dark:text-graphite-300 hover:bg-sand-100 dark:hover:bg-graphite-800 rounded-full transition-colors focus:ring-2 focus:ring-sage-600"
             aria-label="Ajuda e instruções de instalação do aplicativo"
             title="Como instalar no celular ou computador"
           >

@@ -84,8 +84,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
   };
 
   return (
-    <div className="space-y-6 pb-28 animate-fade-in max-w-xl mx-auto">
-      <div>
+    <div className="space-y-6 pb-28 max-w-xl mx-auto">
+      <div className="ae-reveal-up ae-stagger-1">
         <h1 className="text-2xl sm:text-3xl font-bold font-serif text-graphite-700 dark:text-graphite-50 tracking-tight">
           Configurações
         </h1>
@@ -95,7 +95,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
       </div>
 
       {/* 0. Nome do Leitor */}
-      <section className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3">
+      <section className="ae-reveal-up ae-stagger-2 ae-card bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3">
         <h2 className="text-xs font-bold text-graphite-400 dark:text-graphite-400 uppercase tracking-wider flex items-center space-x-2">
           <User className="w-3.5 h-3.5 text-sage-600 dark:text-sage-400" />
           <span>Como podemos te chamar</span>
@@ -117,7 +117,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
       </section>
 
       {/* 1. Tema */}
-      <section className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3.5">
+      <section className="ae-reveal-up ae-stagger-3 ae-card bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3.5">
         <h2 className="text-xs font-bold text-graphite-400 dark:text-graphite-400 uppercase tracking-wider flex items-center space-x-2">
           <Sun className="w-3.5 h-3.5 text-sage-600 dark:text-sage-400" />
           <span>Tema de Exibição</span>
@@ -161,7 +161,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
       </section>
 
       {/* 2. Tamanho da Fonte */}
-      <section className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3.5">
+      <section className="ae-reveal-up ae-stagger-4 ae-card bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3.5">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-bold text-graphite-400 dark:text-graphite-400 uppercase tracking-wider flex items-center space-x-2">
             <Type className="w-3.5 h-3.5 text-sage-600 dark:text-sage-400" />
@@ -222,7 +222,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
       </section>
 
       {/* 3. Notificações */}
-      <section className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3.5">
+      <section className="ae-reveal-up ae-stagger-5 ae-card bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3.5">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-bold text-graphite-400 dark:text-graphite-400 uppercase tracking-wider flex items-center space-x-2">
             <Bell className="w-3.5 h-3.5 text-sage-600 dark:text-sage-400" />
@@ -294,7 +294,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
       </section>
 
       {/* 4. Compromisso Teológico */}
-      <section className="bg-sand-50 dark:bg-graphite-850 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 space-y-2.5 text-xs text-graphite-600 dark:text-graphite-300 shadow-xs">
+      <section className="ae-reveal-up ae-stagger-6 ae-card bg-sand-50 dark:bg-graphite-850 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 space-y-2.5 text-xs text-graphite-600 dark:text-graphite-300 shadow-xs">
         <h2 className="text-xs font-bold text-graphite-700 dark:text-graphite-200 uppercase tracking-wider flex items-center space-x-2">
           <BookOpen className="w-4 h-4 text-sage-700 dark:text-sage-300" />
           <span>Fidelidade Bíblica</span>

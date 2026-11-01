@@ -86,11 +86,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-graphite-950/75 backdrop-blur-xs animate-fade-in"
+      className="ae-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-graphite-950/75 backdrop-blur-xs"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl max-w-sm w-full p-6 shadow-xl relative overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="ae-modal-card bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl max-w-sm w-full p-6 shadow-xl relative overflow-hidden flex flex-col max-h-[92vh]">
         {/* Progress indicator */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex space-x-1.5">
@@ -153,14 +153,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
             {/* Mensagem personalizada quando preenchido */}
             {userName.trim() ? (
-              <div className="w-full p-3.5 bg-sage-50 dark:bg-sage-950/60 border border-sage-200 dark:border-sage-800 rounded-2xl text-left space-y-3 animate-fade-in">
+              <div className="ae-reveal-scale w-full p-3.5 bg-sage-50 dark:bg-sage-950/60 border border-sage-200 dark:border-sage-800 rounded-2xl text-left space-y-3">
                 <p className="text-xs text-sage-900 dark:text-sage-200 font-serif leading-relaxed">
                   Olá <strong>{userName.trim()}</strong>! Bem-vindo ao Amanhecer, que tal ler o seu primeiro devocional?
                 </p>
                 <div className="space-y-1.5">
                   <button
                     onClick={() => finishOnboarding(true)}
-                    className="w-full py-3 px-4 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-xs flex items-center justify-center space-x-2 text-xs transition-all active:scale-95"
+                    className="ae-btn ae-btn-shimmer w-full py-3 px-4 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-xs flex items-center justify-center space-x-2 text-xs"
                   >
                     <span>Ler meu primeiro devocional agora</span>
                     <ArrowRight className="w-4 h-4" />
@@ -177,7 +177,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               <div className="w-full pt-1">
                 <button
                   onClick={() => setStep(2)}
-                  className="w-full py-3.5 px-6 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-xs flex items-center justify-center space-x-2 text-xs transition-all active:scale-95"
+                  className="ae-btn ae-btn-shimmer w-full py-3.5 px-6 bg-sage-800 hover:bg-sage-900 text-cream-50 font-semibold rounded-full shadow-xs flex items-center justify-center space-x-2 text-xs"
                 >
                   <span>Continuar</span>
                   <ArrowRight className="w-4 h-4" />

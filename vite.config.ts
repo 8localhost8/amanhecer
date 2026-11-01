@@ -20,34 +20,39 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: '/icons/icon-192x192.png',
+            src: '/icons/icon-192x192.png?v=2.2',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/icons/icon-512x512.png',
+            src: '/icons/icon-512x512.png?v=2.2',
             sizes: '512x512',
             type: 'image/png'
           },
           {
-            src: '/icons/icon-512x512.png',
+            src: '/icons/icon-512x512.png?v=2.2',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: '/icons/amanhecer-claro.png',
+            src: '/icons/amanhecer-claro.png?v=2.2',
             sizes: '500x500',
             type: 'image/png'
           },
           {
-            src: '/icons/amanhecer-escuro.png',
+            src: '/icons/amanhecer-escuro.png?v=2.2',
             sizes: '500x500',
             type: 'image/png'
           }
         ]
       },
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json,webmanifest,mp4,webm}'],
         runtimeCaching: [
           {

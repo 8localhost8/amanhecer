@@ -54,25 +54,25 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
     : '';
 
   return (
-    <article className="max-w-xl mx-auto space-y-7 pb-36 animate-fade-in">
-      {/* Top Bar Navigation */}
-      <div className="flex items-center justify-between pt-2">
+    <article className="max-w-xl mx-auto space-y-7 pb-36">
+      {/* Top Bar Navigation (Stagger 1) */}
+      <div className="flex items-center justify-between pt-2 ae-reveal-up ae-stagger-1">
         <button
           onClick={onBack}
-          className="flex items-center space-x-1.5 text-xs font-semibold text-graphite-500 hover:text-graphite-900 dark:text-graphite-300 dark:hover:text-white p-2 rounded-full transition-colors"
+          className="flex items-center space-x-1.5 text-xs font-semibold text-graphite-500 hover:text-graphite-900 dark:text-graphite-300 dark:hover:text-white p-2 rounded-full ae-btn group"
           aria-label="Voltar para a página inicial"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span>Voltar</span>
         </button>
 
         {/* Reading Controls: Font resize, Favorite, Share */}
         <div className="flex items-center space-x-1 sm:space-x-1.5">
-          <div className="flex items-center bg-white dark:bg-graphite-800 rounded-full px-2 py-0.5 border border-sand-200 dark:border-graphite-700">
+          <div className="flex items-center bg-white dark:bg-graphite-800 rounded-full px-2 py-0.5 border border-sand-200 dark:border-graphite-700 shadow-xs">
             <button
               onClick={() => handleAdjustFontSize(-2)}
               disabled={currentFontSize <= 16}
-              className="p-1 text-graphite-500 hover:text-graphite-800 dark:text-graphite-300 disabled:opacity-30 rounded-full"
+              className="p-1 text-graphite-500 hover:text-graphite-800 dark:text-graphite-300 disabled:opacity-30 rounded-full active:scale-90 transition-transform"
               title="Diminuir fonte"
               aria-label="Diminuir tamanho da letra"
             >
@@ -84,7 +84,7 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
             <button
               onClick={() => handleAdjustFontSize(2)}
               disabled={currentFontSize >= 32}
-              className="p-1 text-graphite-500 hover:text-graphite-800 dark:text-graphite-300 disabled:opacity-30 rounded-full"
+              className="p-1 text-graphite-500 hover:text-graphite-800 dark:text-graphite-300 disabled:opacity-30 rounded-full active:scale-90 transition-transform"
               title="Aumentar fonte"
               aria-label="Aumentar tamanho da letra"
             >
@@ -94,20 +94,20 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
 
           <button
             onClick={onToggleFav}
-            className={`p-2 rounded-full border transition-all ${
+            className={`p-2 rounded-full border ae-btn ${
               isFav
-                ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-900'
+                ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-900 scale-105'
                 : 'border-sand-200 dark:border-graphite-700 text-graphite-400 hover:text-graphite-700 dark:hover:text-white bg-white dark:bg-graphite-800'
             }`}
             title="Salvar nos favoritos"
             aria-label="Favoritar este devocional"
           >
-            <Heart className={`w-4 h-4 ${isFav ? 'fill-current' : ''}`} />
+            <Heart className={`w-4 h-4 transition-transform ${isFav ? 'fill-current scale-110' : ''}`} />
           </button>
 
           <button
             onClick={handleShare}
-            className="p-2 bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 text-graphite-400 hover:text-graphite-700 dark:hover:text-white rounded-full transition-colors"
+            className="p-2 bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 text-graphite-400 hover:text-graphite-700 dark:hover:text-white rounded-full ae-btn"
             title="Compartilhar"
             aria-label="Compartilhar devocional"
           >
@@ -116,8 +116,8 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
         </div>
       </div>
 
-      {/* Editorial Header */}
-      <header className="space-y-2.5 text-left">
+      {/* Editorial Header (Stagger 2) */}
+      <header className="space-y-2.5 text-left ae-reveal-up ae-stagger-2">
         <div className="flex items-center space-x-2 text-xs font-semibold text-sage-700 dark:text-sage-300 tracking-wider uppercase">
           <span>{devotional.date}</span>
           <span>•</span>
@@ -134,9 +134,9 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
         </h1>
       </header>
 
-      {/* Scripture Passage Card */}
+      {/* Scripture Passage Card (Stagger 3) */}
       <section 
-        className="bg-white dark:bg-graphite-800 border-l-4 border-sage-600 dark:border-sage-400 rounded-r-3xl p-5 sm:p-6 shadow-xs space-y-3"
+        className="bg-white dark:bg-graphite-800 border-l-4 border-sage-600 dark:border-sage-400 rounded-r-3xl p-5 sm:p-6 shadow-xs space-y-3 ae-reveal-scale ae-stagger-3 ae-card"
         aria-label="Passagem Bíblica do Dia"
       >
         <div className="flex items-center justify-between text-xs font-bold text-sage-800 dark:text-sage-200">
@@ -160,8 +160,8 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
         )}
       </section>
 
-      {/* Reflection Content */}
-      <section className="space-y-4">
+      {/* Reflection Content (Stagger 4) */}
+      <section className="space-y-4 ae-reveal-up ae-stagger-4">
         <h2 className="text-[11px] font-bold text-graphite-400 dark:text-graphite-400 uppercase tracking-widest">
           Reflexão Bíblica
         </h2>
@@ -173,10 +173,10 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
         </div>
       </section>
 
-      {/* Practical Application Box */}
-      <section className="bg-sage-50 dark:bg-graphite-800/90 border border-sage-200/80 dark:border-sage-800/70 rounded-3xl p-5 sm:p-6 shadow-xs space-y-2">
+      {/* Practical Application Box (Stagger 5) */}
+      <section className="bg-sage-50 dark:bg-graphite-800/90 border border-sage-200/80 dark:border-sage-800/70 rounded-3xl p-5 sm:p-6 shadow-xs space-y-2 ae-reveal-up ae-stagger-5 ae-card">
         <h3 className="text-xs font-bold text-sage-900 dark:text-sage-200 uppercase tracking-wider flex items-center space-x-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-sage-600 dark:bg-sage-400" />
+          <span className="w-1.5 h-1.5 rounded-full bg-sage-600 dark:bg-sage-400 animate-pulse" />
           <span>Aplicação Prática</span>
         </h3>
         <p
@@ -187,8 +187,8 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
         </p>
       </section>
 
-      {/* Suggested Prayer Box */}
-      <section className="bg-sand-100/60 dark:bg-graphite-800/60 border border-sand-300/60 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 shadow-xs space-y-2">
+      {/* Suggested Prayer Box (Stagger 5) */}
+      <section className="bg-sand-100/60 dark:bg-graphite-800/60 border border-sand-300/60 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 shadow-xs space-y-2 ae-reveal-up ae-stagger-5 ae-card">
         <h3 className="text-xs font-bold text-sand-500 dark:text-sand-300 uppercase tracking-wider flex items-center space-x-2">
           <span className="w-1.5 h-1.5 rounded-full bg-sand-400" />
           <span>Oração Sugerida</span>
@@ -201,9 +201,9 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
         </p>
       </section>
 
-      {/* Para Ouvir (Music Recommendation with Search Links) */}
+      {/* Para Ouvir (Music Recommendation with Search Links - Stagger 6) */}
       {verifiedSong && (
-        <section className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 space-y-3 shadow-xs">
+        <section className="bg-white dark:bg-graphite-800 border border-sand-200 dark:border-graphite-700 rounded-3xl p-5 sm:p-6 space-y-3 shadow-xs ae-reveal-up ae-stagger-6 ae-card">
           <div className="flex items-center space-x-2 text-sage-700 dark:text-sage-300 text-xs font-bold uppercase tracking-wider">
             <Headphones className="w-4 h-4" />
             <span>🎧 Louvor Recomendado</span>
@@ -228,7 +228,7 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
                 href={youtubeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-full bg-red-700 hover:bg-red-800 text-white text-xs font-semibold shadow-xs transition-all active:scale-95"
+                className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-full bg-red-700 hover:bg-red-800 text-white text-xs font-semibold shadow-xs ae-btn"
               >
                 <Search className="w-3.5 h-3.5" />
                 <span>Buscar no YouTube</span>
@@ -240,7 +240,7 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
                 href={spotifyUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-full bg-[#1DB954] hover:bg-[#1AA34A] text-white text-xs font-semibold shadow-xs transition-all active:scale-95"
+                className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-full bg-[#1DB954] hover:bg-[#1AA34A] text-white text-xs font-semibold shadow-xs ae-btn"
               >
                 <Search className="w-3.5 h-3.5" />
                 <span>Ouvir no Spotify</span>
@@ -251,11 +251,11 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
         </section>
       )}
 
-      {/* Completion Button */}
-      <div className="pt-3 space-y-2">
+      {/* Completion Button (Stagger 6) */}
+      <div className="pt-3 space-y-2 ae-reveal-up ae-stagger-6">
         <button
           onClick={onComplete}
-          className={`w-full py-4 px-6 rounded-full font-bold text-sm sm:text-base shadow-sm flex items-center justify-center space-x-2 transition-all active:scale-98 ${
+          className={`w-full py-4 px-6 rounded-full font-bold text-sm sm:text-base shadow-md flex items-center justify-center space-x-2 ae-btn ae-btn-shimmer ${
             isCompleted
               ? 'bg-sage-700 hover:bg-sage-800 text-white'
               : 'bg-sage-800 hover:bg-sage-900 text-cream-50'
