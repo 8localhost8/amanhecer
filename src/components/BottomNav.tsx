@@ -42,20 +42,20 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentView, onNavigate, f
                 {isActive ? (
                   /* Raised active circular button with After Effects Spring Pop */
                   <div className="flex flex-col items-center">
-                    <div className="absolute -top-6 w-12 h-12 rounded-full btn-tactile-sage text-white flex items-center justify-center ring-4 ring-cream-100 dark:ring-graphite-950 ae-spring-pop">
+                    <div className="absolute -top-6 w-12 h-12 rounded-full btn-tactile-sage flex items-center justify-center ring-4 ring-cream-100 dark:ring-graphite-950 ae-spring-pop">
                       <Icon className="w-5 h-5" />
                     </div>
-                    <span className="text-[11px] font-bold text-sage-900 dark:text-sage-200 mt-6 tracking-tight ae-reveal-scale">
+                    <span className="text-[11px] font-bold text-sage-900 dark:text-cream-100 mt-6 tracking-tight ae-reveal-scale">
                       {tab.label}
                     </span>
                   </div>
                 ) : (
                   /* Inactive button with subtle micro-interaction */
-                  <div className="flex flex-col items-center text-graphite-400 dark:text-graphite-300 group-hover:text-graphite-700 dark:group-hover:text-graphite-100 transition-all py-1">
+                  <div className="flex flex-col items-center text-graphite-400 dark:text-sand-300/80 group-hover:text-graphite-700 dark:group-hover:text-cream-50 transition-all py-1">
                     <div className="relative group-hover:-translate-y-0.5 group-hover:scale-110 transition-transform">
                       <Icon className="w-5 h-5" />
                       {tab.badge && (
-                        <span className="absolute -top-1 -right-2 px-1 py-0.2 bg-sage-700 text-white rounded-full text-[8px] font-bold ae-spring-pop">
+                        <span className="absolute -top-1 -right-2 px-1 py-0.2 bg-sage-700 dark:bg-sand-300 text-white dark:text-sage-950 rounded-full text-[8px] font-bold ae-spring-pop">
                           {tab.badge}
                         </span>
                       )}

@@ -42,10 +42,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             />
           </div>
           <div>
-            <span className="text-xl font-bold tracking-tight text-graphite-800 dark:text-graphite-50 font-serif block leading-none">
+            <span className="text-xl font-bold tracking-tight text-graphite-800 dark:text-cream-50 font-serif block leading-none">
               Amanhecer
             </span>
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-sage-700 dark:text-sage-400 block mt-0.5">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-sage-700 dark:text-sand-300 block mt-0.5">
               Devocional Diário
             </span>
           </div>
@@ -55,7 +55,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center space-x-1.5">
           {/* Offline indicator */}
           {isOffline && (
-            <div className="ae-spring-pop flex items-center space-x-1 px-2.5 py-1 rounded-full bg-sand-200 dark:bg-graphite-800 text-graphite-700 dark:text-graphite-200 text-xs font-medium">
+            <div className="ae-spring-pop flex items-center space-x-1 px-2.5 py-1 rounded-full bg-sand-200 dark:bg-graphite-800 text-graphite-700 dark:text-cream-100 text-xs font-medium">
               <WifiOff className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
               <span className="hidden sm:inline">Offline</span>
             </div>
@@ -67,24 +67,30 @@ export const Navbar: React.FC<NavbarProps> = ({
             className={`ae-btn p-2 sm:px-3 sm:py-1.5 rounded-full transition-all text-xs font-bold flex items-center sm:space-x-1.5 ${
               currentView === 'audit'
                 ? 'btn-tactile-sage'
-                : 'surface-editorial text-graphite-600 hover:text-graphite-900 dark:text-graphite-300 dark:hover:text-white'
+                : 'surface-editorial text-graphite-600 hover:text-graphite-900 dark:text-cream-100 dark:hover:text-white'
             }`}
             title="Painel de Auditoria e Avaliação Teológica"
             aria-label="Abrir Painel de Avaliação Teológica"
           >
-            <ShieldCheck className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-sage-700 dark:text-sage-300" />
+            <ShieldCheck
+              className={`w-4 h-4 sm:w-3.5 sm:h-3.5 ${
+                currentView === 'audit'
+                  ? 'text-current'
+                  : 'text-sage-700 dark:text-sand-300'
+              }`}
+            />
             <span className="hidden sm:inline text-[11px]">Nota Bíblica</span>
           </button>
 
           {/* Theme Toggle */}
           <button
             onClick={onThemeToggle}
-            className="ae-btn surface-editorial p-2 text-graphite-600 dark:text-graphite-300 hover:text-graphite-900 rounded-full focus:ring-2 focus:ring-sage-600"
+            className="ae-btn surface-editorial p-2 text-graphite-600 dark:text-cream-100 hover:text-graphite-900 rounded-full focus:ring-2 focus:ring-sage-600"
             aria-label={`Alternar tema. Tema atual: ${theme}`}
             title="Alternar tema claro / escuro"
           >
             {theme === 'dark' ? (
-              <Moon className="w-4 h-4 text-sage-300 ae-spring-pop" />
+              <Moon className="w-4 h-4 text-sand-300 ae-spring-pop" />
             ) : (
               <Sun className="w-4 h-4 text-amber-700 ae-spring-pop" />
             )}
@@ -93,11 +99,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Help Button (?) */}
           <button
             onClick={onOpenHelp}
-            className="ae-btn surface-editorial p-2 text-graphite-600 dark:text-graphite-300 hover:text-graphite-900 rounded-full focus:ring-2 focus:ring-sage-600"
+            className="ae-btn surface-editorial p-2 text-graphite-600 dark:text-cream-100 hover:text-graphite-900 rounded-full focus:ring-2 focus:ring-sage-600"
             aria-label="Ajuda e instruções de instalação do aplicativo"
             title="Como instalar no celular ou computador"
           >
-            <HelpCircle className="w-4 h-4 text-sage-700 dark:text-sage-300" />
+            <HelpCircle className="w-4 h-4 text-sage-700 dark:text-sand-300" />
           </button>
         </div>
       </div>

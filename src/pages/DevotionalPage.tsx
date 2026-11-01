@@ -118,7 +118,7 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
 
       {/* Editorial Header (Stagger 2) */}
       <header className="space-y-3 text-left pt-1 ae-reveal-up ae-stagger-2">
-        <div className="inline-flex flex-wrap items-center gap-2 text-[11px] font-bold text-sage-800 dark:text-sage-300 tracking-wider uppercase bg-sage-100/80 dark:bg-sage-950/60 border border-sage-200/80 dark:border-sage-800/70 px-3 py-1 rounded-full">
+        <div className="inline-flex flex-wrap items-center gap-2 text-[11px] font-bold text-sage-800 dark:text-sand-200 tracking-wider uppercase bg-sage-100/80 dark:bg-cream-100/10 border border-sage-200/80 dark:border-sand-300/35 px-3 py-1 rounded-full">
           <span>{devotional.date}</span>
           <span>•</span>
           <span className="flex items-center space-x-1">
@@ -129,7 +129,7 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
           <span>{devotional.theme}</span>
         </div>
 
-        <h1 className="text-2xl sm:text-4xl font-bold font-serif text-graphite-800 dark:text-graphite-50 tracking-tight leading-tight">
+        <h1 className="text-2xl sm:text-4xl font-bold font-serif text-graphite-800 dark:text-cream-50 tracking-tight leading-tight">
           {devotional.title}
         </h1>
       </header>
@@ -139,31 +139,31 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
         className="surface-warm-sand rounded-3xl p-6 sm:p-7 relative overflow-hidden space-y-3.5 ae-reveal-scale ae-stagger-3 ae-card"
         aria-label="Passagem Bíblica do Dia"
       >
-        <div className="absolute left-0 top-5 bottom-5 w-1.5 rounded-r-full bg-gradient-to-b from-sage-600 to-sage-800" />
+        <div className="absolute left-0 top-5 bottom-5 w-1.5 rounded-r-full bg-gradient-to-b from-sage-600 to-sage-800 dark:from-cream-100 dark:to-sand-300" />
         <span
           aria-hidden="true"
-          className="absolute right-5 -top-3 font-serif text-8xl leading-none text-sand-300/40 dark:text-sage-800/25 select-none pointer-events-none"
+          className="absolute right-5 -top-3 font-serif text-8xl leading-none text-sand-300/40 dark:text-sand-300/15 select-none pointer-events-none"
         >
           “
         </span>
 
-        <div className="flex items-center justify-between text-xs font-bold text-sage-800 dark:text-sage-300 pl-2">
+        <div className="flex items-center justify-between text-xs font-bold text-sage-800 dark:text-sand-300 pl-2">
           <span className="flex items-center space-x-1.5 uppercase tracking-wider">
-            <Bookmark className="w-3.5 h-3.5 text-sage-700 dark:text-sage-400" />
+            <Bookmark className="w-3.5 h-3.5 text-sage-700 dark:text-sand-300" />
             <span>Escritura Base • {devotional.verseOfTheDay.reference}</span>
           </span>
         </div>
 
         <blockquote
           style={{ fontSize: `${currentFontSize + 1}px`, lineHeight: 1.65 }}
-          className="font-serif italic text-graphite-800 dark:text-graphite-50 pl-2 relative z-10"
+          className="font-serif italic text-graphite-800 dark:text-cream-50 pl-2 relative z-10"
         >
           "{devotional.verseOfTheDay.text}"
         </blockquote>
 
         {devotional.contextSummary && (
-          <p className="text-xs text-graphite-600 dark:text-graphite-300 border-t border-sand-300/60 dark:border-graphite-700/80 pt-3 pl-2 leading-relaxed">
-            <strong className="text-graphite-800 dark:text-graphite-100">Contexto bíblico:</strong>{' '}
+          <p className="text-xs text-graphite-600 dark:text-cream-200/90 border-t border-sand-300/60 dark:border-sand-300/25 pt-3 pl-2 leading-relaxed">
+            <strong className="text-graphite-800 dark:text-cream-50">Contexto bíblico:</strong>{' '}
             {devotional.contextSummary}
           </p>
         )}
@@ -171,7 +171,7 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
 
       {/* Reflection Content (Stagger 4 - Luxury Book Page Surface) */}
       <section className="surface-editorial rounded-3xl p-6 sm:p-8 space-y-4 ae-reveal-up ae-stagger-4">
-        <div className="flex items-center space-x-2 text-sage-800 dark:text-sage-300">
+        <div className="flex items-center space-x-2 text-sage-800 dark:text-sand-300">
           <BookOpen className="w-4 h-4" />
           <h2 className="text-xs font-bold uppercase tracking-widest">
             Reflexão Bíblica
@@ -180,7 +180,7 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
 
         <div
           style={{ fontSize: `${currentFontSize}px`, lineHeight: 1.82 }}
-          className="text-graphite-700 dark:text-graphite-100 whitespace-pre-line space-y-4 devotional-reading-content"
+          className="text-graphite-700 dark:text-cream-100 whitespace-pre-line space-y-4 devotional-reading-content"
         >
           {devotional.reflection}
         </div>
@@ -188,14 +188,14 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
 
       {/* Practical Application Box (Stagger 5) */}
       <section className="surface-editorial rounded-3xl p-6 sm:p-7 space-y-2.5 ae-reveal-up ae-stagger-5 ae-card relative overflow-hidden">
-        <div className="absolute left-0 top-5 bottom-5 w-1.5 rounded-r-full bg-sage-600" />
-        <h3 className="text-xs font-bold text-sage-800 dark:text-sage-300 uppercase tracking-widest flex items-center space-x-2 pl-2">
-          <Sparkles className="w-3.5 h-3.5 text-sage-600 dark:text-sage-400" />
+        <div className="absolute left-0 top-5 bottom-5 w-1.5 rounded-r-full bg-sage-600 dark:bg-sand-300" />
+        <h3 className="text-xs font-bold text-sage-800 dark:text-sand-300 uppercase tracking-widest flex items-center space-x-2 pl-2">
+          <Sparkles className="w-3.5 h-3.5 text-sage-600 dark:text-sand-300" />
           <span>Aplicação Prática para Hoje</span>
         </h3>
         <p
           style={{ fontSize: `${currentFontSize - 1}px`, lineHeight: 1.7 }}
-          className="text-graphite-700 dark:text-graphite-200 font-sans pl-2"
+          className="text-graphite-700 dark:text-cream-100 font-sans pl-2"
         >
           {devotional.application}
         </p>

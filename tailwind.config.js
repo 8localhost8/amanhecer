@@ -37,18 +37,18 @@ export default {
           950: '#1A261A',
         },
         graphite: {
-          50: '#F2EFE7',
-          100: '#E1DDD4',
-          200: '#C2C9BF',
-          300: '#9DA399',
-          400: '#7A8074',
+          50: '#FAF7F0',  // Creme claro puro para títulos no modo escuro
+          100: '#F4EFE4', // Creme suave para textos no modo escuro
+          200: '#E8DFCC', // Creme/Areia claro (sem tom esverdeado)
+          300: '#D4C8B0', // Areia suave para subtítulos no modo escuro
+          400: '#AA9F8C', // Areia médio para textos secundários
           500: '#60665B',
           600: '#4B4F47',
           700: '#383B35', // Texto principal modo claro
-          800: '#252A26', // Superfície modo escuro
-          850: '#1F2420',
-          900: '#1C201D',
-          950: '#191C1A', // Fundo principal modo escuro
+          800: '#232B23', // Superfície verde-escuro editorial
+          850: '#1C231C',
+          900: '#171E17',
+          950: '#121813', // Fundo principal verde-floresta profundo no modo escuro
         },
         // Compatibilidade com tokens existentes
         dawn: {

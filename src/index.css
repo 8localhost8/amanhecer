@@ -27,13 +27,13 @@ body {
 }
 
 .dark body {
-  background-color: #161917;
+  background-color: #121813;
   background-image:
-    radial-gradient(ellipse 90% 45% at 85% -5%, rgba(80, 96, 75, 0.32) 0%, transparent 65%),
-    radial-gradient(ellipse 70% 40% at 10% 20%, rgba(217, 199, 163, 0.07) 0%, transparent 60%),
-    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(56, 71, 54, 0.22) 0%, transparent 65%);
+    radial-gradient(ellipse 90% 45% at 85% -5%, rgba(217, 199, 163, 0.14) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 40% at 10% 20%, rgba(247, 243, 234, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(217, 199, 163, 0.09) 0%, transparent 65%);
   background-attachment: fixed;
-  color: #F2EFE7;
+  color: #F7F3EA;
 }
 
 /* Devotional reading text typography */
@@ -65,12 +65,12 @@ body {
 }
 
 .dark .surface-editorial {
-  background: linear-gradient(165deg, #242925 0%, #1C201D 100%);
-  border: 1px solid rgba(130, 145, 123, 0.18);
+  background: linear-gradient(165deg, #212A21 0%, #182018 100%);
+  border: 1px solid rgba(217, 199, 163, 0.28);
   box-shadow:
-    0 4px 10px rgba(0, 0, 0, 0.3),
-    0 16px 34px -8px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+    0 4px 10px rgba(0, 0, 0, 0.35),
+    0 16px 34px -8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 0 rgba(247, 243, 234, 0.12);
 }
 
 .surface-hero-sage {
@@ -83,12 +83,12 @@ body {
 }
 
 .dark .surface-hero-sage {
-  background: linear-gradient(135deg, #1F291E 0%, #2F3D2E 52%, #3E4F3C 100%);
-  border: 1px solid rgba(217, 199, 163, 0.22);
+  background: linear-gradient(135deg, #263525 0%, #344632 52%, #445941 100%);
+  border: 1px solid rgba(232, 223, 204, 0.38);
   box-shadow:
     0 12px 28px -6px rgba(0, 0, 0, 0.55),
     0 24px 48px -12px rgba(0, 0, 0, 0.7),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
+    inset 0 1px 0 0 rgba(247, 243, 234, 0.22);
 }
 
 .surface-warm-sand {
@@ -101,11 +101,11 @@ body {
 }
 
 .dark .surface-warm-sand {
-  background: linear-gradient(155deg, #262A26 0%, #1E211E 100%);
-  border: 1px solid rgba(217, 199, 163, 0.15);
+  background: linear-gradient(155deg, #242E24 0%, #1B231B 100%);
+  border: 1px solid rgba(217, 199, 163, 0.34);
   box-shadow:
-    0 8px 24px -6px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    0 8px 24px -6px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 0 rgba(247, 243, 234, 0.14);
 }
 
 .btn-tactile-sage {
@@ -124,6 +124,25 @@ body {
     0 6px 16px -2px rgba(52, 66, 50, 0.45),
     0 14px 28px -6px rgba(52, 66, 50, 0.35),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+/* No modo escuro, os botões e ícones de destaque ficam em Creme/Areia para alto contraste com o Verde Escuro */
+.dark .btn-tactile-sage {
+  background: linear-gradient(180deg, #F7F3EA 0%, #E5DDCB 100%);
+  color: #1D281C;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow:
+    0 4px 14px -2px rgba(0, 0, 0, 0.45),
+    0 10px 22px -6px rgba(217, 199, 163, 0.18),
+    inset 0 1px 0 0 #FFFFFF;
+}
+
+.dark .btn-tactile-sage:hover {
+  background: linear-gradient(180deg, #FAF7F0 0%, #EFE9DC 100%);
+  box-shadow:
+    0 6px 18px -2px rgba(0, 0, 0, 0.55),
+    0 12px 26px -6px rgba(217, 199, 163, 0.25),
+    inset 0 1px 0 0 #FFFFFF;
 }
 
 .btn-tactile-cream {

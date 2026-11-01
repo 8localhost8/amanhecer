@@ -86,24 +86,24 @@ export const HomePage: React.FC<HomePageProps> = ({
       {/* 1. Top Greeting Header with Dimensional Badges */}
       <div className="space-y-2.5 pt-2 ae-reveal-up ae-stagger-1">
         <div className="flex items-center justify-between gap-2">
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full surface-editorial text-graphite-700 dark:text-graphite-200 text-xs font-semibold whitespace-nowrap shrink-0">
-            <GreetingIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 ae-sun-float shrink-0" />
+          <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full surface-editorial text-graphite-700 dark:text-cream-100 text-xs font-semibold whitespace-nowrap shrink-0">
+            <GreetingIcon className="w-3.5 h-3.5 text-amber-600 dark:text-sand-300 ae-sun-float shrink-0" />
             <span>{greeting}</span>
           </div>
 
           {isCompleted && (
-            <div className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-sage-100/90 dark:bg-sage-900/70 border border-sage-300 dark:border-sage-700 text-sage-900 dark:text-sage-200 text-xs font-bold shadow-sm ae-spring-pop whitespace-nowrap shrink-0">
-              <CheckCircle className="w-3.5 h-3.5 text-sage-700 dark:text-sage-300 shrink-0" />
+            <div className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-sage-100/90 dark:bg-cream-100/15 border border-sage-300 dark:border-sand-300/45 text-sage-900 dark:text-cream-100 text-xs font-bold shadow-sm ae-spring-pop whitespace-nowrap shrink-0">
+              <CheckCircle className="w-3.5 h-3.5 text-sage-700 dark:text-sand-300 shrink-0" />
               <span>Concluído</span>
             </div>
           )}
         </div>
 
         <div className="space-y-0.5">
-          <h1 className="text-2xl sm:text-3xl font-bold text-graphite-800 dark:text-graphite-50 font-serif tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-graphite-800 dark:text-cream-50 font-serif tracking-tight">
             {userName.trim() ? `Graça e paz, ${userName.trim()}!` : 'Graça e paz!'}
           </h1>
-          <p className="text-xs font-medium capitalize text-graphite-500 dark:text-graphite-400">
+          <p className="text-xs font-medium capitalize text-graphite-500 dark:text-sand-300">
             {todayFormatted}
           </p>
         </div>
@@ -205,21 +205,21 @@ export const HomePage: React.FC<HomePageProps> = ({
         {/* Decorative serif quotation watermark */}
         <span
           aria-hidden="true"
-          className="absolute right-5 -top-3 font-serif text-8xl leading-none text-sand-300/35 dark:text-sage-800/30 select-none pointer-events-none"
+          className="absolute right-5 -top-3 font-serif text-8xl leading-none text-sand-300/35 dark:text-sand-300/15 select-none pointer-events-none"
         >
           “
         </span>
 
         {/* Left accent bar */}
-        <div className="absolute left-0 top-6 bottom-6 w-1.5 rounded-r-full bg-gradient-to-b from-sage-600 via-sage-700 to-sand-400" />
+        <div className="absolute left-0 top-6 bottom-6 w-1.5 rounded-r-full bg-gradient-to-b from-sage-600 via-sage-700 to-sand-400 dark:from-cream-100 dark:via-sand-300 dark:to-sand-400" />
 
         <div className="relative z-10 pl-2">
           <div className="flex items-center justify-between mb-3.5">
             <div className="flex items-center space-x-2">
-              <span className="w-2 h-2 rounded-full bg-sage-600 dark:bg-sage-400 ring-4 ring-sage-100 dark:ring-sage-900/60" />
+              <span className="w-2 h-2 rounded-full bg-sage-600 dark:bg-sand-300 ring-4 ring-sage-100 dark:ring-sand-300/20" />
               <h2
                 id="verse-of-the-day-heading"
-                className="text-[11px] font-bold uppercase tracking-widest text-sage-800 dark:text-sage-300"
+                className="text-[11px] font-bold uppercase tracking-widest text-sage-800 dark:text-sand-300"
               >
                 Versículo do Dia
               </h2>
@@ -227,7 +227,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
             <button
               onClick={handleShareVerse}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-cream-100/80 dark:bg-graphite-800 border border-sand-200/80 dark:border-graphite-700 text-graphite-600 dark:text-graphite-300 hover:text-sage-800 dark:hover:text-sage-200 text-[11px] font-semibold ae-btn"
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-cream-100/80 dark:bg-cream-100/10 border border-sand-200/80 dark:border-sand-300/35 text-graphite-600 dark:text-cream-100 hover:text-sage-800 dark:hover:text-white text-[11px] font-semibold ae-btn"
               title="Compartilhar versículo"
               aria-label="Compartilhar versículo do dia"
             >
@@ -236,15 +236,15 @@ export const HomePage: React.FC<HomePageProps> = ({
             </button>
           </div>
 
-          <blockquote className="font-serif italic text-lg sm:text-xl text-graphite-800 dark:text-graphite-50 leading-relaxed">
+          <blockquote className="font-serif italic text-lg sm:text-xl text-graphite-800 dark:text-cream-50 leading-relaxed">
             "{dailyVerse.text}"
           </blockquote>
 
-          <div className="mt-4 flex items-center justify-between pt-3.5 border-t border-sand-200/60 dark:border-graphite-700/60 text-xs">
-            <span className="font-bold text-graphite-800 dark:text-graphite-100 tracking-tight">
+          <div className="mt-4 flex items-center justify-between pt-3.5 border-t border-sand-200/60 dark:border-sand-300/20 text-xs">
+            <span className="font-bold text-graphite-800 dark:text-cream-100 tracking-tight">
               — {dailyVerse.reference}
             </span>
-            <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-sage-50 dark:bg-sage-950/70 text-sage-800 dark:text-sage-300 border border-sage-200/70 dark:border-sage-800/70">
+            <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-sage-50 dark:bg-cream-100/15 text-sage-800 dark:text-sand-200 border border-sage-200/70 dark:border-sand-300/35">
               {dailyVerse.category}
             </span>
           </div>
@@ -257,48 +257,48 @@ export const HomePage: React.FC<HomePageProps> = ({
         aria-labelledby="song-of-the-day-heading"
       >
         {/* Subtle decorative vinyl rings in background */}
-        <div className="absolute -right-10 -bottom-10 w-40 h-40 rounded-full border border-sand-300/40 dark:border-graphite-700/40 pointer-events-none" />
-        <div className="absolute -right-4 -bottom-4 w-28 h-28 rounded-full border border-sand-300/50 dark:border-graphite-700/50 pointer-events-none" />
+        <div className="absolute -right-10 -bottom-10 w-40 h-40 rounded-full border border-sand-300/40 dark:border-sand-300/15 pointer-events-none" />
+        <div className="absolute -right-4 -bottom-4 w-28 h-28 rounded-full border border-sand-300/50 dark:border-sand-300/20 pointer-events-none" />
 
         <div className="relative z-10 space-y-4">
           {/* Top Bar: Title + Equalizer */}
           <div className="flex items-center space-x-3">
             <div className="w-9 h-9 rounded-2xl btn-tactile-sage flex items-center justify-center shadow-xs shrink-0">
-              <Headphones className="w-4 h-4 text-cream-50" />
+              <Headphones className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
                 <h2
                   id="song-of-the-day-heading"
-                  className="text-xs font-bold uppercase tracking-widest text-sage-900 dark:text-sage-200"
+                  className="text-xs font-bold uppercase tracking-widest text-sage-900 dark:text-cream-100"
                 >
                   Música do Dia
                 </h2>
                 {/* Animated Equalizer Bars */}
                 <div className="flex items-end space-x-0.5 h-3.5" aria-hidden="true">
-                  <span className="w-0.5 bg-sage-600 dark:bg-sage-400 rounded-full ae-eq-1" />
-                  <span className="w-0.5 bg-sage-700 dark:bg-sage-300 rounded-full ae-eq-2" />
-                  <span className="w-0.5 bg-sage-600 dark:bg-sage-400 rounded-full ae-eq-3" />
+                  <span className="w-0.5 bg-sage-600 dark:bg-sand-300 rounded-full ae-eq-1" />
+                  <span className="w-0.5 bg-sage-700 dark:bg-cream-100 rounded-full ae-eq-2" />
+                  <span className="w-0.5 bg-sage-600 dark:bg-sand-300 rounded-full ae-eq-3" />
                 </div>
               </div>
-              <p className="text-[11px] text-graphite-500 dark:text-graphite-400">
+              <p className="text-[11px] text-graphite-500 dark:text-sand-300/90">
                 Louvor selecionado para edificar o seu dia
               </p>
             </div>
           </div>
 
           {/* Song Info Box */}
-          <div className="p-4 rounded-2xl bg-white/80 dark:bg-graphite-900/70 border border-sand-200/80 dark:border-graphite-700/80 space-y-1.5 shadow-2xs">
+          <div className="p-4 rounded-2xl bg-white/80 dark:bg-cream-100/[0.06] border border-sand-200/80 dark:border-sand-300/25 space-y-1.5 shadow-2xs">
             <div>
-              <h3 className="text-lg sm:text-xl font-bold font-serif text-graphite-800 dark:text-graphite-50 leading-snug">
+              <h3 className="text-lg sm:text-xl font-bold font-serif text-graphite-800 dark:text-cream-50 leading-snug">
                 {songOfTheDay.title}
               </h3>
-              <p className="text-xs font-semibold text-sage-700 dark:text-sage-300 mt-0.5">
+              <p className="text-xs font-semibold text-sage-700 dark:text-sand-300 mt-0.5">
                 {songOfTheDay.artist}
               </p>
             </div>
 
-            <p className="text-xs text-graphite-600 dark:text-graphite-300 italic leading-relaxed pt-1">
+            <p className="text-xs text-graphite-600 dark:text-cream-200/90 italic leading-relaxed pt-1">
               "{songOfTheDay.recommendationReason}"
             </p>
           </div>
@@ -331,10 +331,10 @@ export const HomePage: React.FC<HomePageProps> = ({
       {/* 5. Continue Sua Jornada (Dimensional Bento Grid) */}
       <section className="space-y-3.5 ae-reveal-up ae-stagger-5">
         <div className="flex items-center justify-between px-1">
-          <h3 className="text-xs font-bold text-graphite-500 dark:text-graphite-400 uppercase tracking-widest">
+          <h3 className="text-xs font-bold text-graphite-500 dark:text-sand-300 uppercase tracking-widest">
             Continue Sua Jornada
           </h3>
-          <span className="text-[11px] text-graphite-400 dark:text-graphite-500">
+          <span className="text-[11px] text-graphite-400 dark:text-cream-200/70">
             Acesso rápido e offline
           </span>
         </div>
@@ -347,18 +347,18 @@ export const HomePage: React.FC<HomePageProps> = ({
           >
             <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2.5">
               <div className="w-11 h-11 rounded-2xl btn-tactile-sage flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:-rotate-6 transition-transform">
-                <BookMarked className="w-5 h-5 text-cream-50" />
+                <BookMarked className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold font-serif text-graphite-800 dark:text-graphite-50">
+                <h4 className="text-sm font-bold font-serif text-graphite-800 dark:text-cream-50">
                   Diário de Oração
                 </h4>
-                <p className="text-[11px] text-graphite-500 dark:text-graphite-400 mt-0.5">
+                <p className="text-[11px] text-graphite-500 dark:text-sand-300/90 mt-0.5">
                   Anote preces e gratidão
                 </p>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-graphite-400 group-hover:text-sage-700 group-hover:translate-x-1 transition-all sm:self-end" />
+            <ChevronRight className="w-4 h-4 text-graphite-400 dark:text-sand-300 group-hover:text-sage-700 dark:group-hover:text-cream-50 group-hover:translate-x-1 transition-all sm:self-end" />
           </button>
 
           {/* Card 2: Favoritos */}
@@ -367,19 +367,19 @@ export const HomePage: React.FC<HomePageProps> = ({
             className="surface-editorial text-left p-4 rounded-3xl group flex sm:flex-col items-center sm:items-start justify-between gap-3 ae-card"
           >
             <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2.5">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-sand-400 to-sand-500 text-graphite-900 flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-110 group-hover:rotate-6 transition-transform">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-sand-300 to-sand-400 text-sage-950 flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-110 group-hover:rotate-6 transition-transform">
                 <Heart className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold font-serif text-graphite-800 dark:text-graphite-50">
+                <h4 className="text-sm font-bold font-serif text-graphite-800 dark:text-cream-50">
                   Favoritos
                 </h4>
-                <p className="text-[11px] text-graphite-500 dark:text-graphite-400 mt-0.5">
+                <p className="text-[11px] text-graphite-500 dark:text-sand-300/90 mt-0.5">
                   Mensagens salvas
                 </p>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-graphite-400 group-hover:text-sage-700 group-hover:translate-x-1 transition-all sm:self-end" />
+            <ChevronRight className="w-4 h-4 text-graphite-400 dark:text-sand-300 group-hover:text-sage-700 dark:group-hover:text-cream-50 group-hover:translate-x-1 transition-all sm:self-end" />
           </button>
 
           {/* Card 3: Histórico */}
@@ -388,19 +388,19 @@ export const HomePage: React.FC<HomePageProps> = ({
             className="surface-editorial text-left p-4 rounded-3xl group flex sm:flex-col items-center sm:items-start justify-between gap-3 ae-card"
           >
             <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2.5">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-[#968077] to-[#78645C] text-cream-50 flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-110 group-hover:-rotate-6 transition-transform">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-[#968077] to-[#78645C] dark:from-cream-200 dark:to-sand-300 text-cream-50 dark:text-sage-950 flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-110 group-hover:-rotate-6 transition-transform">
                 <BookOpen className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold font-serif text-graphite-800 dark:text-graphite-50">
+                <h4 className="text-sm font-bold font-serif text-graphite-800 dark:text-cream-50">
                   Histórico
                 </h4>
-                <p className="text-[11px] text-graphite-500 dark:text-graphite-400 mt-0.5">
+                <p className="text-[11px] text-graphite-500 dark:text-sand-300/90 mt-0.5">
                   Leituras anteriores
                 </p>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-graphite-400 group-hover:text-sage-700 group-hover:translate-x-1 transition-all sm:self-end" />
+            <ChevronRight className="w-4 h-4 text-graphite-400 dark:text-sand-300 group-hover:text-sage-700 dark:group-hover:text-cream-50 group-hover:translate-x-1 transition-all sm:self-end" />
           </button>
         </div>
       </section>
