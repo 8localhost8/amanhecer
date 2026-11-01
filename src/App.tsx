@@ -13,6 +13,7 @@ import { OnboardingModal } from './components/OnboardingModal';
 import { CelebrationModal } from './components/CelebrationModal';
 import { InstallModal } from './components/InstallModal';
 import { IntroSplash } from './components/IntroSplash';
+import { NotificationBugfixModal } from './components/NotificationBugfixModal';
 
 import { loadUserPreferences, saveUserPreferences, applyThemeAndFont, UserPreferences } from './storage/preferences';
 import { getDevotionalForDate, getAllPublishedDevotionals } from './content/devotionals/vault';
@@ -24,6 +25,10 @@ import { DevotionalPublic } from './services/ai/schemas';
 export const App: React.FC = () => {
   const [preferences, setPreferences] = useState<UserPreferences>(() => loadUserPreferences());
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => !loadUserPreferences().onboardingCompleted);
+  const [isNotifBugfixOpen, setIsNotifBugfixOpen] = useState<boolean>(() => {
+    const p = loadUserPreferences();
+    return Boolean(p.onboardingCompleted && !p.notifBugfixV23Seen);
+  });
   const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
   const [isCelebrationOpen, setIsCelebrationOpen] = useState<boolean>(false);
   const [isFirstCompletion, setIsFirstCompletion] = useState<boolean>(false);
@@ -289,6 +294,16 @@ export const App: React.FC = () => {
         isOpen={isInstallModalOpen}
         onClose={() => setIsInstallModalOpen(false)}
         deferredPrompt={deferredPrompt}
+      />
+
+      {/* Notification Bugfix Re-permission Modal (for existing users) */}
+      <NotificationBugfixModal
+        isOpen={!showIntro && !isOnboardingOpen && isNotifBugfixOpen}
+        onClose={(updatedPrefs) => {
+          setIsNotifBugfixOpen(false);
+          setPreferences(updatedPrefs);
+        }}
+        userName={preferences.userName}
       />
 
       {/* Intro Video Splash Screen (Plays on every app opening) */}

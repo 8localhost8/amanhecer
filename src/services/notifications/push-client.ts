@@ -183,7 +183,8 @@ function getValidVapidUint8Array(customKey?: string): Uint8Array {
  * block Google FCM Push Service ("Registration failed - push service error").
  */
 export async function requestAndSubscribePush(
-  vapidPublicKey?: string
+  vapidPublicKey?: string,
+  forceRefresh = false
 ): Promise<{ success: boolean; mode?: 'web-push' | 'local-sw'; error?: string }> {
   if (!checkPushSupport()) {
     return {
@@ -204,7 +205,12 @@ export async function requestAndSubscribePush(
     }
 
     // Permission is granted! Enable notifications immediately in user preferences
-    const prefs = saveUserPreferences({ notificationsEnabled: true });
+    const prefs = saveUserPreferences({
+      notificationsEnabled: true,
+      dailyVerseEnabled: true,
+      reminderEnabled: true,
+      notifBugfixV23Seen: true,
+    });
 
     let subscription: PushSubscription | null = null;
 
@@ -213,6 +219,11 @@ export async function requestAndSubscribePush(
       try {
         const reg = await navigator.serviceWorker.ready;
         subscription = await reg.pushManager.getSubscription();
+
+        if (subscription && forceRefresh) {
+          await subscription.unsubscribe().catch(() => {});
+          subscription = null;
+        }
 
         if (!subscription) {
           const convertedVapidKey = getValidVapidUint8Array(vapidPublicKey);

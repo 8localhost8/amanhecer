@@ -11,6 +11,7 @@ export interface UserPreferences {
   dailyVerseEnabled: boolean;
   reminderEnabled: boolean;
   pushSubscriptionToken?: string | null;
+  notifBugfixV23Seen?: boolean;
 }
 
 const PREF_STORAGE_KEY = 'amanhecer_user_preferences_v1';
@@ -25,6 +26,7 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   dailyVerseEnabled: true,
   reminderEnabled: true,
   pushSubscriptionToken: null,
+  notifBugfixV23Seen: false,
 };
 
 export function loadUserPreferences(): UserPreferences {
