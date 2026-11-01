@@ -232,8 +232,6 @@ body {
 }
 
 .ae-btn {
-  position: relative;
-  overflow: hidden;
   transition:
     transform 380ms var(--ease-ae-spring),
     box-shadow 380ms var(--ease-ae-expo),
@@ -248,6 +246,11 @@ body {
 .ae-btn:active {
   transform: translate3d(0, 1px, 0) scale(0.955);
   transition-duration: 120ms;
+}
+
+.ae-btn-shimmer {
+  position: relative;
+  overflow: hidden;
 }
 
 /* Subtle light shimmer sweep inside primary CTA buttons */

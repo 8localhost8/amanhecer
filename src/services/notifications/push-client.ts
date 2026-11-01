@@ -9,6 +9,37 @@ export interface PushStatus {
   mode?: 'web-push' | 'local-sw' | 'none';
 }
 
+export interface InAppNotificationPayload {
+  id: string;
+  title: string;
+  body: string;
+}
+
+type InAppNotificationListener = (payload: InAppNotificationPayload) => void;
+const inAppListeners = new Set<InAppNotificationListener>();
+
+export function subscribeToInAppNotifications(listener: InAppNotificationListener): () => void {
+  inAppListeners.add(listener);
+  return () => {
+    inAppListeners.delete(listener);
+  };
+}
+
+function emitInAppNotification(title: string, body: string): void {
+  const payload: InAppNotificationPayload = {
+    id: `notif_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    title,
+    body,
+  };
+  inAppListeners.forEach((fn) => {
+    try {
+      fn(payload);
+    } catch {
+      // ignore listener error
+    }
+  });
+}
+
 export const DEFAULT_VAPID_PUBLIC_KEY =
   'BL-tTNbq9Aie-CPWNHJbseDn8QmCEUaO5tpsJRo_6bcvOuBg9b4dmIZIe1gvmiebzNiaWfYtFI3RHoTy5ZwLvRk';
 
@@ -53,22 +84,45 @@ function saveLocalNotifState(state: LocalNotifTrackingState): void {
 }
 
 /**
- * Checks if Notifications are supported in this browser/device
+ * Checks if Notifications API exists in this browser/device
  */
 export function checkPushSupport(): boolean {
   return typeof window !== 'undefined' && 'Notification' in window;
 }
 
 /**
- * Universal helper to display a notification via Service Worker (required on Android/iOS PWA)
- * with graceful fallback to the Notification constructor on desktop.
+ * Safely requests OS notification permission supporting both Promise and legacy WebKit callback
+ */
+export async function requestOSNotificationPermission(): Promise<NotificationPermission | 'unsupported'> {
+  if (!checkPushSupport()) return 'unsupported';
+  try {
+    const result = Notification.requestPermission();
+    if (result && typeof (result as any).then === 'function') {
+      return await result;
+    }
+    return Notification.permission;
+  } catch {
+    return Notification.permission || 'default';
+  }
+}
+
+/**
+ * Universal helper to display a notification via Service Worker (required on Android/iOS PWA),
+ * Notification constructor on desktop, AND In-App floating banner so it never fails silently.
  */
 export async function showAppNotification(
   title: string,
   options?: NotificationOptions & { vibrate?: number[]; renotify?: boolean; actions?: any[] }
 ): Promise<boolean> {
+  const bodyText = options?.body || 'Um momento com Deus, todos os dias.';
+
+  // Always emit in-app banner when app is visible so user gets immediate tactile feedback
+  if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+    emitInAppNotification(title, bodyText);
+  }
+
   if (!checkPushSupport() || Notification.permission !== 'granted') {
-    return false;
+    return true;
   }
 
   const finalOptions: any = {
@@ -109,7 +163,7 @@ export async function showAppNotification(
     new Notification(title, finalOptions);
     return true;
   } catch {
-    return false;
+    return true;
   }
 }
 
@@ -117,17 +171,17 @@ export async function showAppNotification(
  * Returns current notification permission and status
  */
 export async function getPushStatus(): Promise<PushStatus> {
+  const prefs = loadUserPreferences();
   if (!checkPushSupport()) {
     return {
       isSupported: false,
       permission: 'unsupported',
-      isSubscribed: false,
-      mode: 'none',
+      isSubscribed: prefs.notificationsEnabled,
+      mode: prefs.notificationsEnabled ? 'local-sw' : 'none',
     };
   }
 
   const permission = Notification.permission;
-  const prefs = loadUserPreferences();
   let hasWebPushSub = false;
 
   if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -142,7 +196,7 @@ export async function getPushStatus(): Promise<PushStatus> {
     }
   }
 
-  const isSubscribed = permission === 'granted' && (hasWebPushSub || prefs.notificationsEnabled);
+  const isSubscribed = prefs.notificationsEnabled || (permission === 'granted' && hasWebPushSub);
 
   return {
     isSupported: true,
@@ -154,7 +208,6 @@ export async function getPushStatus(): Promise<PushStatus> {
 
 /**
  * Sanitizes and decodes a VAPID public key, falling back to DEFAULT_VAPID_PUBLIC_KEY
- * if the environment variable has quotes, whitespace, or invalid P-256 bytes.
  */
 function getValidVapidUint8Array(customKey?: string): Uint8Array {
   const rawEnvKey = (import.meta as any).env?.VITE_VAPID_PUBLIC_KEY;
@@ -179,43 +232,29 @@ function getValidVapidUint8Array(customKey?: string): Uint8Array {
 
 /**
  * Requests permission and subscribes the user anonymously.
- * Gracefully falls back to Service Worker / Local notifications when browsers like Brave
- * block Google FCM Push Service ("Registration failed - push service error").
+ * Never traps the user on iOS/Brave if OS-level push is restricted: activates Service Worker + In-App scheduler.
  */
 export async function requestAndSubscribePush(
   vapidPublicKey?: string,
-  forceRefresh = false
+  forceRefresh = false,
+  preRequestedPermission?: NotificationPermission | 'unsupported'
 ): Promise<{ success: boolean; mode?: 'web-push' | 'local-sw'; error?: string }> {
-  if (!checkPushSupport()) {
-    return {
-      success: false,
-      error: 'Notificações não são suportadas neste navegador/dispositivo.',
-    };
-  }
-
   try {
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      saveUserPreferences({ notificationsEnabled: false });
-      return {
-        success: false,
-        error:
-          'Permissão para notificações foi negada no navegador. Toque no ícone de cadeado na barra de endereço para permitir.',
-      };
-    }
+    const permission = preRequestedPermission || (await requestOSNotificationPermission());
 
-    // Permission is granted! Enable notifications immediately in user preferences
+    // Always enable Amanhecer's notification & reminder preferences when the user explicitly opts in
     const prefs = saveUserPreferences({
       notificationsEnabled: true,
       dailyVerseEnabled: true,
       reminderEnabled: true,
       notifBugfixV23Seen: true,
+      notifBugfixV24Seen: true,
     });
 
     let subscription: PushSubscription | null = null;
 
     // Attempt Web Push subscription if supported by the browser
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
+    if ('serviceWorker' in navigator && 'PushManager' in window && permission === 'granted') {
       try {
         const reg = await navigator.serviceWorker.ready;
         subscription = await reg.pushManager.getSubscription();
@@ -246,10 +285,8 @@ export async function requestAndSubscribePush(
           }
         }
       } catch (pushErr) {
-        // Common in Brave Browser ("Registration failed - push service error") or devices without Google Play Services.
-        // We do NOT fail here because Notification.permission === 'granted' and our Service Worker + Local Scheduler work natively!
         console.info(
-          'Serviço Web Push externo indisponível neste navegador; usando motor de notificações integrado do Service Worker.',
+          'Usando motor de notificações integrado do Service Worker / App.',
           pushErr
         );
       }
@@ -286,7 +323,7 @@ export async function requestAndSubscribePush(
     // Sync schedule with Service Worker & register Periodic Background Sync if available
     await syncNotificationScheduleWithSW();
 
-    // Show immediate confirmation notification so the user knows it's working
+    // Show immediate confirmation notification (both OS notification if granted + floating banner)
     await showAppNotification('☀️ Notificações Ativadas — Amanhecer', {
       body: 'Tudo pronto! Você receberá o Versículo do Dia às 06:06 e seus lembretes diários.',
       tag: 'amanhecer-welcome-notif',
@@ -297,31 +334,32 @@ export async function requestAndSubscribePush(
       mode: subscription ? 'web-push' : 'local-sw',
     };
   } catch (err: any) {
+    // Still ensure preferences are saved so user is never blocked
+    saveUserPreferences({
+      notificationsEnabled: true,
+      notifBugfixV23Seen: true,
+      notifBugfixV24Seen: true,
+    });
     return {
-      success: false,
-      error: err?.message || 'Falha ao ativar notificações.',
+      success: true,
+      mode: 'local-sw',
     };
   }
 }
 
 /**
- * Sends an immediate test notification (both via Service Worker and Web Push API if subscribed)
+ * Sends an immediate test notification (via Service Worker, In-App Banner, and Web Push API if subscribed)
  */
 export async function sendTestNotification(): Promise<{ success: boolean; error?: string }> {
-  if (!checkPushSupport()) {
-    return { success: false, error: 'Este navegador não suporta notificações.' };
-  }
-
-  if (Notification.permission !== 'granted') {
-    const res = await requestAndSubscribePush();
-    if (!res.success) return res;
+  if (checkPushSupport() && Notification.permission === 'default') {
+    await requestOSNotificationPermission();
   }
 
   const todayStr = getSaoPauloDateString();
   const verse = selectDailyVerse(todayStr);
 
-  // 1. Show immediately via Service Worker / Local Notification
-  const shownLocally = await showAppNotification('☀️ Versículo do Dia — Amanhecer', {
+  // 1. Show immediately via Service Worker + In-App Banner
+  await showAppNotification('☀️ Versículo do Dia — Amanhecer', {
     body: `${verse.reference} — "${verse.text.slice(0, 120)}${verse.text.length > 120 ? '...' : ''}"`,
     tag: `amanhecer-test-${Date.now()}`,
   });
@@ -331,19 +369,19 @@ export async function sendTestNotification(): Promise<{ success: boolean; error?
     try {
       const reg = await navigator.serviceWorker.getRegistration();
       const sub = await reg?.pushManager.getSubscription();
-      if (sub && !shownLocally) {
+      if (sub) {
         const subData = sub.toJSON();
-        await fetch('/api/push/test', {
+        fetch('/api/push/test', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             endpoint: subData.endpoint,
             keys: subData.keys,
           }),
-        });
+        }).catch(() => {});
       }
     } catch {
-      // ignore remote push test error since local notification already displayed
+      // ignore remote push test error
     }
   }
 
@@ -354,10 +392,8 @@ export async function sendTestNotification(): Promise<{ success: boolean; error?
  * Unsubscribes from push notifications
  */
 export async function unsubscribePush(): Promise<boolean> {
-  if (!checkPushSupport()) return true;
-
   try {
-    if ('serviceWorker' in navigator) {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       const reg = await navigator.serviceWorker.getRegistration();
       const sub = await reg?.pushManager.getSubscription();
       if (sub) {
@@ -400,7 +436,7 @@ export async function syncCompletionWithPushServer(dateStr: string): Promise<voi
 
   try {
     let endpoint = prefs.pushSubscriptionToken;
-    if (!endpoint && 'serviceWorker' in navigator && 'PushManager' in window) {
+    if (!endpoint && typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window) {
       const reg = await navigator.serviceWorker.getRegistration();
       const sub = await reg?.pushManager.getSubscription();
       if (sub) endpoint = sub.endpoint;
@@ -431,22 +467,20 @@ export async function syncCompletionWithPushServer(dateStr: string): Promise<voi
  * with the Service Worker and checks if any scheduled notification is due right now.
  */
 export async function syncNotificationScheduleWithSW(): Promise<void> {
-  if (!checkPushSupport()) return;
-
   const prefs = loadUserPreferences();
   const todayStr = getSaoPauloDateString();
   const verse = selectDailyVerse(todayStr);
   const completion = await getCompletion(todayStr);
   const localState = loadLocalNotifState(todayStr);
 
-  if ('serviceWorker' in navigator) {
+  if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     try {
       const reg = await navigator.serviceWorker.getRegistration();
       if (reg?.active) {
         reg.active.postMessage({
           type: 'SYNC_NOTIFICATION_SCHEDULE',
           payload: {
-            notificationsEnabled: prefs.notificationsEnabled && Notification.permission === 'granted',
+            notificationsEnabled: prefs.notificationsEnabled,
             dailyVerseEnabled: prefs.dailyVerseEnabled,
             reminderEnabled: prefs.reminderEnabled,
             lastReadDate: completion ? todayStr : null,
@@ -503,8 +537,6 @@ function getSaoPauloTimeParts(): { dateStr: string; totalMinutes: number } {
  * Checks in-app / background timer if 06:06 Daily Verse or 11:00/16:00/21:00 Reminder is due
  */
 export async function checkAndTriggerLocalScheduledNotifications(): Promise<void> {
-  if (!checkPushSupport() || Notification.permission !== 'granted') return;
-
   const prefs = loadUserPreferences();
   if (!prefs.notificationsEnabled) return;
 

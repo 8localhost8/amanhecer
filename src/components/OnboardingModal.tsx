@@ -71,6 +71,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     saveUserPreferences({
       onboardingCompleted: true,
       notifBugfixV23Seen: true,
+      notifBugfixV24Seen: true,
       userName: userName.trim(),
       theme,
       fontSizePreset,

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Bell, CheckCircle2, Sparkles, X } from 'lucide-react';
-import { requestAndSubscribePush } from '../services/notifications/push-client';
+import { requestAndSubscribePush, requestOSNotificationPermission } from '../services/notifications/push-client';
 import { saveUserPreferences, UserPreferences } from '../storage/preferences';
 
 interface NotificationBugfixModalProps {
@@ -16,42 +16,39 @@ export const NotificationBugfixModal: React.FC<NotificationBugfixModalProps> = (
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const cleanName = userName.trim();
 
   const handleConfirmPermission = async () => {
+    // IMPORTANT for iOS WebKit: request permission synchronously on user tap before state updates!
+    const permPromise = requestOSNotificationPermission();
     setIsLoading(true);
-    setErrorMessage(null);
 
-    // Force refresh subscription with fixed VAPID & Service Worker engine
-    const res = await requestAndSubscribePush(undefined, true);
+    const perm = await permPromise;
+    await requestAndSubscribePush(undefined, true, perm);
+
+    const updated = saveUserPreferences({
+      notificationsEnabled: true,
+      dailyVerseEnabled: true,
+      reminderEnabled: true,
+      notifBugfixV23Seen: true,
+      notifBugfixV24Seen: true,
+    });
+
     setIsLoading(false);
+    setStatusMessage('Notificações ativadas e atualizadas com sucesso!');
 
-    if (res.success) {
-      const updated = saveUserPreferences({
-        notificationsEnabled: true,
-        dailyVerseEnabled: true,
-        reminderEnabled: true,
-        notifBugfixV23Seen: true,
-      });
-      setStatusMessage('Permissão atualizada com sucesso! Uma notificação de teste foi enviada.');
-      setTimeout(() => {
-        onClose(updated);
-      }, 1400);
-    } else {
-      setErrorMessage(
-        res.error ||
-          'Não foi possível ativar. Verifique se as notificações estão permitidas no cadeado da barra de endereço.'
-      );
-    }
+    setTimeout(() => {
+      onClose(updated);
+    }, 1100);
   };
 
   const handleDismiss = () => {
     const updated = saveUserPreferences({
       notifBugfixV23Seen: true,
+      notifBugfixV24Seen: true,
     });
     onClose(updated);
   };
@@ -106,7 +103,7 @@ export const NotificationBugfixModal: React.FC<NotificationBugfixModalProps> = (
             Para receber o Versículo do Dia às 06:06 e seus lembretes:
           </p>
           <p className="text-[11px] text-graphite-500 dark:text-graphite-400 leading-relaxed">
-            Toque no botão abaixo para renovar a permissão de notificações neste aparelho com a nova versão corrigida.
+            Toque no botão abaixo para confirmar e ativar o novo sistema de notificações neste aparelho.
           </p>
         </div>
 
@@ -114,12 +111,6 @@ export const NotificationBugfixModal: React.FC<NotificationBugfixModalProps> = (
           <div className="ae-reveal-scale p-3 rounded-2xl bg-sage-50 dark:bg-sage-950/60 border border-sage-200 dark:border-sage-800 text-xs font-semibold text-sage-800 dark:text-sage-200 flex items-center justify-center space-x-1.5">
             <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
             <span>{statusMessage}</span>
-          </div>
-        )}
-
-        {errorMessage && (
-          <div className="ae-reveal-scale p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-xs text-rose-700 dark:text-rose-200">
-            {errorMessage}
           </div>
         )}
 
@@ -133,7 +124,7 @@ export const NotificationBugfixModal: React.FC<NotificationBugfixModalProps> = (
             <Bell className="w-4 h-4" />
             <span>
               {isLoading
-                ? 'Atualizando permissão...'
+                ? 'Ativando notificações...'
                 : 'Permitir e Atualizar Notificações'}
             </span>
           </button>

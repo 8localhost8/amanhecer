@@ -12,6 +12,7 @@ export interface UserPreferences {
   reminderEnabled: boolean;
   pushSubscriptionToken?: string | null;
   notifBugfixV23Seen?: boolean;
+  notifBugfixV24Seen?: boolean;
 }
 
 const PREF_STORAGE_KEY = 'amanhecer_user_preferences_v1';
@@ -27,6 +28,7 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   reminderEnabled: true,
   pushSubscriptionToken: null,
   notifBugfixV23Seen: false,
+  notifBugfixV24Seen: false,
 };
 
 export function loadUserPreferences(): UserPreferences {
