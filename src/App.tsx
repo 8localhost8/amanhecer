@@ -14,7 +14,6 @@ import { CelebrationModal } from './components/CelebrationModal';
 import { InstallModal } from './components/InstallModal';
 import { IntroSplash } from './components/IntroSplash';
 import { NotificationBugfixModal } from './components/NotificationBugfixModal';
-import { InAppNotificationBanner } from './components/InAppNotificationBanner';
 
 import { loadUserPreferences, saveUserPreferences, applyThemeAndFont, UserPreferences } from './storage/preferences';
 import { getDevotionalForDate, getAllPublishedDevotionals } from './content/devotionals/vault';
@@ -28,7 +27,7 @@ export const App: React.FC = () => {
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => !loadUserPreferences().onboardingCompleted);
   const [isNotifBugfixOpen, setIsNotifBugfixOpen] = useState<boolean>(() => {
     const p = loadUserPreferences();
-    return Boolean(p.onboardingCompleted && !p.notifBugfixV24Seen);
+    return Boolean(p.onboardingCompleted && !p.notifBugfixV25Seen);
   });
   const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
   const [isCelebrationOpen, setIsCelebrationOpen] = useState<boolean>(false);
@@ -184,9 +183,6 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-cream-100 dark:bg-graphite-950 text-graphite-700 dark:text-graphite-50 transition-colors">
-      {/* Floating In-App Notification Banner (iOS/Android style) */}
-      <InAppNotificationBanner onOpenDevotional={() => setCurrentView('devotional')} />
-
       <Navbar
         currentView={currentView}
         onNavigate={(view) => setCurrentView(view)}

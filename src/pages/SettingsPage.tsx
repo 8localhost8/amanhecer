@@ -4,6 +4,7 @@ import { UserPreferences, saveUserPreferences, FontSizePreset, AppTheme } from '
 import {
   getPushStatus,
   requestAndSubscribePush,
+  requestOSNotificationPermission,
   unsubscribePush,
   sendTestNotification,
   syncNotificationScheduleWithSW,
@@ -19,6 +20,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
   const [pushStatus, setPushStatus] = useState<PushStatus | null>(null);
   const [isTestingPush, setIsTestingPush] = useState(false);
   const [testSuccessMsg, setTestSuccessMsg] = useState<string | null>(null);
+  const [browserNotifBlocked, setBrowserNotifBlocked] = useState(false);
 
   useEffect(() => {
     checkStatus();
@@ -55,15 +57,19 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
       await unsubscribePush();
       const updated = saveUserPreferences({ notificationsEnabled: false });
       onUpdatePreferences(updated);
+      setBrowserNotifBlocked(false);
     } else {
-      const res = await requestAndSubscribePush();
-      if (res.success) {
+      const permPromise = requestOSNotificationPermission();
+      const perm = await permPromise;
+      const res = await requestAndSubscribePush(undefined, true, perm);
+      if (res.success && res.permission === 'granted') {
         const updated = saveUserPreferences({ notificationsEnabled: true });
         onUpdatePreferences(updated);
-        setTestSuccessMsg('Notificações ativadas com sucesso! Enviamos um aviso de confirmação.');
+        setBrowserNotifBlocked(false);
+        setTestSuccessMsg('Notificações ativadas! Enviamos um aviso na barra do seu celular.');
         setTimeout(() => setTestSuccessMsg(null), 5000);
       } else {
-        alert(res.error || 'Não foi possível ativar notificações.');
+        setBrowserNotifBlocked(true);
       }
     }
     await checkStatus();
@@ -86,10 +92,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
     setTestSuccessMsg(null);
     const res = await sendTestNotification();
     if (res.success) {
-      setTestSuccessMsg('Notificação de teste enviada para o seu aparelho!');
+      setBrowserNotifBlocked(false);
+      setTestSuccessMsg('Notificação enviada na barra do seu celular!');
       setTimeout(() => setTestSuccessMsg(null), 5000);
     } else {
-      alert(res.error || 'Ative as notificações primeiro para realizar o teste.');
+      setBrowserNotifBlocked(true);
     }
     setIsTestingPush(false);
   };
@@ -255,6 +262,22 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
         <p className="text-xs text-graphite-500 dark:text-graphite-400 leading-relaxed">
           Receba o versículo matinal e lembretes discretos para cultivar o seu momento com Deus.
         </p>
+
+        {browserNotifBlocked && (
+          <div className="ae-reveal-scale bg-amber-50/90 dark:bg-amber-950/40 p-4 rounded-2xl border border-amber-300 dark:border-amber-800/80 text-xs space-y-2">
+            <p className="font-bold text-amber-900 dark:text-amber-200">
+              ⚠️ Ligue as notificações do seu navegador padrão!
+            </p>
+            <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+              Para o app enviar notificações na barra do celular, as notificações do seu <strong>navegador padrão</strong> precisam estar ativadas no Android:
+            </p>
+            <ol className="text-[11px] text-graphite-700 dark:text-graphite-200 space-y-1 list-decimal list-inside leading-relaxed">
+              <li>Vá em <strong>Configurações do Android → Aplicativos → seu Navegador Padrão</strong> (Chrome, Brave, etc.) → <strong>Notificações</strong> e ative.</li>
+              <li>Segure o ícone do <strong>Amanhecer</strong> → <strong>Informações do app (ⓘ) → Notificações</strong> e ative.</li>
+              <li>No navegador padrão: <strong>Menu (⋮) → Configurações → Configurações do site → Notificações</strong> e permita o Amanhecer.</li>
+            </ol>
+          </div>
+        )}
 
         {preferences.notificationsEnabled && (
           <div className="space-y-3 pt-2 border-t border-sand-100 dark:border-graphite-700">

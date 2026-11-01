@@ -72,6 +72,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
       onboardingCompleted: true,
       notifBugfixV23Seen: true,
       notifBugfixV24Seen: true,
+      notifBugfixV25Seen: true,
       userName: userName.trim(),
       theme,
       fontSizePreset,
