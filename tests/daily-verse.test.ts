@@ -53,4 +53,19 @@ describe('Motor de Seleção do Versículo do Dia (Amanhecer 2.0)', () => {
     const spDate = getSaoPauloDateString();
     expect(spDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
+
+  it('7. A legenda de compartilhamento deve conter a referência e o contexto do versículo', async () => {
+    const { buildShareCaption } = await import('../src/services/share/verse-image');
+    const caption = buildShareCaption({
+      reference: 'Habacuque 3:17-19',
+      theme: 'Fé e Alegria Inabalável na Escassez',
+      contextSummary: 'Mesmo diante da perda de colheitas, o profeta ancora sua alegria no Senhor.',
+      type: 'verse',
+    });
+
+    expect(caption).toContain('Habacuque 3:17-19');
+    expect(caption).toContain('Fé e Alegria Inabalável na Escassez');
+    expect(caption).toContain('Mesmo diante da perda de colheitas');
+    expect(caption).toContain('https://amanhecer-beta.vercel.app');
+  });
 });

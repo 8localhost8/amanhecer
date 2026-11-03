@@ -75,9 +75,14 @@ export const HomePage: React.FC<HomePageProps> = ({
       {
         text: dailyVerse.text,
         reference: dailyVerse.reference,
-        kicker: 'Versículo do Dia',
+        kicker: dailyVerse.theme || 'Versículo do Dia',
       },
-      buildShareCaption('☀️ Veja o devocional de hoje no Amanhecer:'),
+      buildShareCaption({
+        reference: dailyVerse.reference,
+        theme: dailyVerse.theme,
+        contextSummary: dailyVerse.contextSummary,
+        type: 'verse',
+      }),
       'amanhecer-versiculo-do-dia.jpg'
     );
     setIsSharing(false);

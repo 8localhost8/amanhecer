@@ -75,9 +75,37 @@ function truncate(text: string, max: number): string {
   return text.slice(0, max).replace(/\s+\S*$/, '') + '…';
 }
 
-export function buildShareCaption(inviteText = 'Veja o devocional de hoje no Amanhecer:'): string {
-  const intro = inviteText.trim();
-  return `${intro}\nhttps://amanhecer-beta.vercel.app`;
+export interface ShareCaptionOptions {
+  reference: string;
+  theme?: string;
+  contextSummary?: string;
+  title?: string;
+  type?: 'verse' | 'devotional';
+}
+
+export function buildShareCaption(options?: ShareCaptionOptions | string): string {
+  if (typeof options === 'string') {
+    return `${options.trim()}\nhttps://amanhecer-beta.vercel.app`;
+  }
+
+  if (!options) {
+    return `☀️ Veja o devocional de hoje no Amanhecer:\nhttps://amanhecer-beta.vercel.app`;
+  }
+
+  const { reference, theme, contextSummary, title, type = 'verse' } = options;
+  const headline = title || theme;
+
+  const headerLine = headline
+    ? `${type === 'verse' ? '☀️' : '📖'} *${reference} • ${headline}*`
+    : `${type === 'verse' ? '☀️' : '📖'} *${reference}*`;
+
+  const summaryLine = contextSummary ? `\n"${contextSummary.trim()}"` : '';
+
+  const ctaLine = type === 'devotional'
+    ? 'Leia a reflexão completa no Amanhecer:'
+    : 'Veja o devocional de hoje no Amanhecer:';
+
+  return `${headerLine}${summaryLine}\n\n${ctaLine}\nhttps://amanhecer-beta.vercel.app`;
 }
 
 export async function generateVerseImageBlob(options: VerseImageOptions): Promise<Blob> {
