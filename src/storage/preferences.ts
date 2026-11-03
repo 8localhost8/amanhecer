@@ -18,6 +18,7 @@ export interface UserPreferences {
   featureShareImageV1Seen?: boolean;
   featureShareImageV2Seen?: boolean;
   featureShareImageV3Seen?: boolean;
+  featureShareImageV4Seen?: boolean;
 }
 
 const PREF_STORAGE_KEY = 'amanhecer_user_preferences_v1';
@@ -39,6 +40,7 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   featureShareImageV1Seen: false,
   featureShareImageV2Seen: false,
   featureShareImageV3Seen: false,
+  featureShareImageV4Seen: false,
 };
 
 export function loadUserPreferences(): UserPreferences {

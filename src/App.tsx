@@ -33,7 +33,7 @@ export const App: React.FC = () => {
   });
   const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
   const [isShareNewsOpen, setIsShareNewsOpen] = useState<boolean>(
-    () => !loadUserPreferences().featureShareImageV3Seen
+    () => !loadUserPreferences().featureShareImageV4Seen
   );
   const [isCelebrationOpen, setIsCelebrationOpen] = useState<boolean>(false);
   const [isFirstCompletion, setIsFirstCompletion] = useState<boolean>(false);
@@ -326,7 +326,7 @@ export const App: React.FC = () => {
         isOpen={!showIntro && !isOnboardingOpen && !isNotifBugfixOpen && isShareNewsOpen}
         onClose={() => {
           setIsShareNewsOpen(false);
-          setPreferences(saveUserPreferences({ featureShareImageV3Seen: true }));
+          setPreferences(saveUserPreferences({ featureShareImageV4Seen: true }));
         }}
       />
     </div>
