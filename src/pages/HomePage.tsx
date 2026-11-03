@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   BookOpen,
   CheckCircle,
@@ -22,6 +22,7 @@ import {
   buildYouTubeSearchUrl,
   buildSpotifySearchUrl,
 } from '../content/songs/catalog';
+import { shareVerseImage, buildShareCaption } from '../services/share/verse-image';
 
 interface HomePageProps {
   devotional: DevotionalPublic;
@@ -64,15 +65,25 @@ export const HomePage: React.FC<HomePageProps> = ({
     month: 'long',
   }).format(new Date());
 
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareNotice, setShareNotice] = useState<string | null>(null);
+
   const handleShareVerse = async () => {
-    const text = `☀️ Versículo do Dia no Amanhecer:\n"${dailyVerse.text}"\n— ${dailyVerse.reference}\n\nLeia seu devocional diário gratuitamente em: https://amanhecer-beta.vercel.app`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ text });
-      } catch {}
-    } else {
-      navigator.clipboard.writeText(text);
-      alert('Versículo copiado!');
+    if (isSharing) return;
+    setIsSharing(true);
+    const result = await shareVerseImage(
+      {
+        text: dailyVerse.text,
+        reference: dailyVerse.reference,
+        kicker: 'Versículo do Dia',
+      },
+      buildShareCaption(dailyVerse.reference, dailyVerse.text, '☀️ Versículo do Dia no Amanhecer'),
+      'amanhecer-versiculo-do-dia.jpg'
+    );
+    setIsSharing(false);
+    if (result === 'downloaded') {
+      setShareNotice('Imagem salva! Agora é só enviar para quem você ama.');
+      setTimeout(() => setShareNotice(null), 4500);
     }
   };
 
@@ -225,18 +236,26 @@ export const HomePage: React.FC<HomePageProps> = ({
 
             <button
               onClick={handleShareVerse}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-cream-100/80 dark:bg-cream-100/10 border border-sand-200/80 dark:border-sand-300/35 text-graphite-600 dark:text-cream-100 hover:text-sage-800 dark:hover:text-white text-[11px] font-semibold ae-btn"
+              disabled={isSharing}
+              data-testid="share-verse-button"
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-cream-100/80 dark:bg-cream-100/10 border border-sand-200/80 dark:border-sand-300/35 text-graphite-600 dark:text-cream-100 hover:text-sage-800 dark:hover:text-white text-[11px] font-semibold ae-btn disabled:opacity-60"
               title="Compartilhar versículo"
               aria-label="Compartilhar versículo do dia"
             >
               <Share2 className="w-3 h-3" />
-              <span>Compartilhar</span>
+              <span>{isSharing ? 'Gerando...' : 'Compartilhar'}</span>
             </button>
           </div>
 
           <blockquote className="font-serif italic text-lg sm:text-xl text-graphite-800 dark:text-cream-50 leading-relaxed">
             "{dailyVerse.text}"
           </blockquote>
+
+          {shareNotice && (
+            <p className="ae-reveal-scale mt-3 text-[11px] font-semibold text-sage-800 dark:text-sand-200 bg-sage-50 dark:bg-cream-100/10 border border-sage-200/70 dark:border-sand-300/30 rounded-2xl px-3 py-2">
+              ✓ {shareNotice}
+            </p>
+          )}
 
           <div className="mt-4 flex items-center justify-between pt-3.5 border-t border-sand-200/60 dark:border-sand-300/20 text-xs">
             <span className="font-bold text-graphite-800 dark:text-cream-100 tracking-tight">

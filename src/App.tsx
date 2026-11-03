@@ -14,6 +14,7 @@ import { CelebrationModal } from './components/CelebrationModal';
 import { InstallModal } from './components/InstallModal';
 import { IntroSplash } from './components/IntroSplash';
 import { NotificationBugfixModal } from './components/NotificationBugfixModal';
+import { NewFeatureShareModal } from './components/NewFeatureShareModal';
 
 import { loadUserPreferences, saveUserPreferences, applyThemeAndFont, UserPreferences } from './storage/preferences';
 import { getDevotionalForDate, getAllPublishedDevotionals } from './content/devotionals/vault';
@@ -31,6 +32,9 @@ export const App: React.FC = () => {
     return Boolean(p.onboardingCompleted && !p.forceNotifPromptV1Seen);
   });
   const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
+  const [isShareNewsOpen, setIsShareNewsOpen] = useState<boolean>(
+    () => !loadUserPreferences().featureShareImageV1Seen
+  );
   const [isCelebrationOpen, setIsCelebrationOpen] = useState<boolean>(false);
   const [isFirstCompletion, setIsFirstCompletion] = useState<boolean>(false);
   const [showIntro, setShowIntro] = useState<boolean>(true);
@@ -313,6 +317,15 @@ export const App: React.FC = () => {
 
       {/* Intro Video Splash Screen (Plays on every app opening) */}
       {showIntro && <IntroSplash onComplete={() => setShowIntro(false)} />}
+
+      {/* Novidade: compartilhamento em imagem (aparece uma vez para todos os usuários) */}
+      <NewFeatureShareModal
+        isOpen={!showIntro && !isOnboardingOpen && !isNotifBugfixOpen && isShareNewsOpen}
+        onClose={() => {
+          setIsShareNewsOpen(false);
+          setPreferences(saveUserPreferences({ featureShareImageV1Seen: true }));
+        }}
+      />
     </div>
   );
 };

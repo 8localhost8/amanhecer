@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { DevotionalPublic } from '../services/ai/schemas';
 import { saveUserPreferences, loadUserPreferences } from '../storage/preferences';
+import { shareVerseImage, buildShareCaption } from '../services/share/verse-image';
 
 interface DevotionalPageProps {
   devotional: DevotionalPublic;
@@ -41,15 +42,29 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
     saveUserPreferences({ fineFontSize: nextSize });
   };
 
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareNotice, setShareNotice] = useState<string | null>(null);
+
   const handleShare = async () => {
-    const text = `📖 Devocional: "${devotional.title}"\n${devotional.verseOfTheDay.reference}: "${devotional.verseOfTheDay.text}"\n\nLeia gratuitamente no Amanhecer: https://amanhecer-beta.vercel.app`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ text });
-      } catch {}
-    } else {
-      navigator.clipboard.writeText(text);
-      alert('Devocional copiado!');
+    if (isSharing) return;
+    setIsSharing(true);
+    const result = await shareVerseImage(
+      {
+        text: devotional.verseOfTheDay.text,
+        reference: devotional.verseOfTheDay.reference,
+        kicker: devotional.title,
+      },
+      buildShareCaption(
+        devotional.verseOfTheDay.reference,
+        devotional.verseOfTheDay.text,
+        `📖 Devocional: ${devotional.title}`
+      ),
+      'amanhecer-devocional.jpg'
+    );
+    setIsSharing(false);
+    if (result === 'downloaded') {
+      setShareNotice('Imagem salva! Agora é só enviar para quem você ama.');
+      setTimeout(() => setShareNotice(null), 4500);
     }
   };
 
@@ -107,7 +122,9 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
 
           <button
             onClick={handleShare}
-            className="surface-editorial p-2.5 text-graphite-500 hover:text-graphite-800 dark:text-graphite-300 dark:hover:text-white rounded-full ae-btn"
+            disabled={isSharing}
+            data-testid="share-devotional-button"
+            className="surface-editorial p-2.5 text-graphite-500 hover:text-graphite-800 dark:text-graphite-300 dark:hover:text-white rounded-full ae-btn disabled:opacity-60"
             title="Compartilhar"
             aria-label="Compartilhar devocional"
           >
@@ -115,6 +132,12 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
           </button>
         </div>
       </div>
+
+      {shareNotice && (
+        <p className="ae-reveal-scale text-[11px] font-semibold text-sage-800 dark:text-sand-200 bg-sage-50 dark:bg-cream-100/10 border border-sage-200/70 dark:border-sand-300/30 rounded-2xl px-3 py-2">
+          ✓ {shareNotice}
+        </p>
+      )}
 
       {/* Editorial Header (Stagger 2) */}
       <header className="space-y-3 text-left pt-1 ae-reveal-up ae-stagger-2">

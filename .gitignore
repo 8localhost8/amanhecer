@@ -33,3 +33,4 @@ dist-ssr
 api/push/.subscriptions.json
 editorial/evaluations/*
 !editorial/evaluations/.gitkeep
+*.zip
