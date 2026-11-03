@@ -75,7 +75,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       {
         text: dailyVerse.text,
         reference: dailyVerse.reference,
-        kicker: dailyVerse.theme || 'Versículo do Dia',
+        kicker: 'Versículo do Dia',
       },
       buildShareCaption({
         reference: dailyVerse.reference,

@@ -89,23 +89,24 @@ export function buildShareCaption(options?: ShareCaptionOptions | string): strin
   }
 
   if (!options) {
-    return `☀️ Veja o devocional de hoje no Amanhecer:\nhttps://amanhecer-beta.vercel.app`;
+    return `☀️ *Versículo do Dia*\nVeja o devocional de hoje no Amanhecer:\nhttps://amanhecer-beta.vercel.app`;
   }
 
   const { reference, theme, contextSummary, title, type = 'verse' } = options;
-  const headline = title || theme;
 
-  const headerLine = headline
-    ? `${type === 'verse' ? '☀️' : '📖'} *${reference} • ${headline}*`
-    : `${type === 'verse' ? '☀️' : '📖'} *${reference}*`;
+  if (type === 'devotional') {
+    const mainTitle = title || theme || 'A Palavra de Hoje';
+    const subTheme = theme && theme !== title ? `\nTema: ${theme}` : '';
+    const summaryBlock = contextSummary ? `\n"${contextSummary.trim()}"` : '';
 
-  const summaryLine = contextSummary ? `\n"${contextSummary.trim()}"` : '';
+    return `📖 *Devocional do Dia • ${mainTitle}*\nPassagem: ${reference}${subTheme}${summaryBlock}\n\nLeia a reflexão completa no Amanhecer:\nhttps://amanhecer-beta.vercel.app`;
+  }
 
-  const ctaLine = type === 'devotional'
-    ? 'Leia a reflexão completa no Amanhecer:'
-    : 'Veja o devocional de hoje no Amanhecer:';
+  // type === 'verse'
+  const themeBlock = theme ? `\nTema: ${theme}` : '';
+  const summaryBlock = contextSummary ? `\n"${contextSummary.trim()}"` : '';
 
-  return `${headerLine}${summaryLine}\n\n${ctaLine}\nhttps://amanhecer-beta.vercel.app`;
+  return `☀️ *Versículo do Dia • ${reference}*${themeBlock}${summaryBlock}\n\nVeja o devocional de hoje no Amanhecer:\nhttps://amanhecer-beta.vercel.app`;
 }
 
 export async function generateVerseImageBlob(options: VerseImageOptions): Promise<Blob> {

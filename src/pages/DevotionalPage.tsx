@@ -52,7 +52,7 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
       {
         text: devotional.verseOfTheDay.text,
         reference: devotional.verseOfTheDay.reference,
-        kicker: devotional.title || devotional.theme || 'Devocional',
+        kicker: 'Devocional do Dia',
       },
       buildShareCaption({
         reference: devotional.verseOfTheDay.reference,

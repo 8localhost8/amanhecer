@@ -56,16 +56,29 @@ describe('Motor de Seleção do Versículo do Dia (Amanhecer 2.0)', () => {
 
   it('7. A legenda de compartilhamento deve conter a referência e o contexto do versículo', async () => {
     const { buildShareCaption } = await import('../src/services/share/verse-image');
-    const caption = buildShareCaption({
+    const captionVerse = buildShareCaption({
       reference: 'Habacuque 3:17-19',
       theme: 'Fé e Alegria Inabalável na Escassez',
       contextSummary: 'Mesmo diante da perda de colheitas, o profeta ancora sua alegria no Senhor.',
       type: 'verse',
     });
 
-    expect(caption).toContain('Habacuque 3:17-19');
-    expect(caption).toContain('Fé e Alegria Inabalável na Escassez');
-    expect(caption).toContain('Mesmo diante da perda de colheitas');
-    expect(caption).toContain('https://amanhecer-beta.vercel.app');
+    expect(captionVerse).toContain('Versículo do Dia • Habacuque 3:17-19');
+    expect(captionVerse).toContain('Tema: Fé e Alegria Inabalável na Escassez');
+    expect(captionVerse).toContain('Mesmo diante da perda de colheitas');
+    expect(captionVerse).toContain('https://amanhecer-beta.vercel.app');
+
+    const captionDevotional = buildShareCaption({
+      reference: 'Habacuque 3:17-19',
+      title: 'A Alegria Inabalável em Meio à Crise',
+      theme: 'Fé e Alegria Inabalável na Escassez',
+      contextSummary: 'O profeta ancora sua alegria na salvação.',
+      type: 'devotional',
+    });
+
+    expect(captionDevotional).toContain('Devocional do Dia • A Alegria Inabalável em Meio à Crise');
+    expect(captionDevotional).toContain('Passagem: Habacuque 3:17-19');
+    expect(captionDevotional).toContain('Tema: Fé e Alegria Inabalável na Escassez');
+    expect(captionDevotional).toContain('O profeta ancora sua alegria na salvação.');
   });
 });
