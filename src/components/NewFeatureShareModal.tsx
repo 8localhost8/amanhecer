@@ -13,7 +13,6 @@ export const NewFeatureShareModal: React.FC<NewFeatureShareModalProps> = ({ isOp
 
   useEffect(() => {
     if (isOpen) {
-      // Ativa transição suave de opacidade idêntica à IntroSplash
       const frame = requestAnimationFrame(() => setIsVisible(true));
       const video = videoRef.current;
       if (video) {
@@ -30,7 +29,7 @@ export const NewFeatureShareModal: React.FC<NewFeatureShareModalProps> = ({ isOp
     setIsClosing(true);
     setTimeout(() => {
       onClose();
-    }, 200); // 200ms limpos e imediatos
+    }, 200);
   };
 
   if (!isOpen) return null;
@@ -51,30 +50,34 @@ export const NewFeatureShareModal: React.FC<NewFeatureShareModalProps> = ({ isOp
         style={{ willChange: 'opacity', transform: 'translateZ(0)' }}
         className="surface-editorial rounded-3xl max-w-sm w-full max-h-[92vh] overflow-y-auto relative shadow-2xl transition-opacity duration-200 ease-out cursor-default"
       >
-        <button
-          onClick={handleClose}
-          className="ae-btn absolute top-3 right-3 z-10 p-1.5 rounded-full bg-graphite-950/60 text-cream-50 hover:bg-graphite-950/80 transition-colors"
-          aria-label="Fechar novidade"
-        >
-          <X className="w-4 h-4" />
-        </button>
-
-        {/* Demo video renderizado de forma ultra-suave como a IntroSplash */}
-        <div className="relative bg-sage-900 rounded-t-3xl overflow-hidden aspect-[9/16] max-h-[50vh]">
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            poster="/news/compartilhar-versiculo-poster.jpg"
-            className="w-full h-full object-contain mx-auto block pointer-events-none"
-            aria-label="Demonstração: como compartilhar o versículo em imagem"
+        {/* Top bar with demo video strictly centered */}
+        <div className="w-full bg-[#1e271c] dark:bg-graphite-950 flex flex-col items-center justify-center pt-5 pb-3 px-4 rounded-t-3xl overflow-hidden relative">
+          <button
+            onClick={handleClose}
+            className="ae-btn absolute top-3 right-3 z-20 p-1.5 rounded-full bg-graphite-950/70 text-cream-50 hover:bg-graphite-950/90 transition-colors shadow-md"
+            aria-label="Fechar novidade"
           >
-            <source src="/news/compartilhar-versiculo.mp4" type="video/mp4" />
-            <source src="/news/compartilhar-versiculo.webm" type="video/webm" />
-          </video>
+            <X className="w-4 h-4" />
+          </button>
+
+          {/* Centered phone video mockup */}
+          <div className="relative w-auto flex items-center justify-center mx-auto">
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              poster="/news/compartilhar-versiculo-poster.jpg"
+              style={{ objectFit: 'contain', objectPosition: 'center', margin: '0 auto', display: 'block' }}
+              className="max-h-[46vh] w-auto max-w-[260px] rounded-2xl shadow-2xl mx-auto block pointer-events-none border border-sand-300/15"
+              aria-label="Demonstração: como compartilhar o versículo em imagem"
+            >
+              <source src="/news/compartilhar-versiculo.mp4" type="video/mp4" />
+              <source src="/news/compartilhar-versiculo.webm" type="video/webm" />
+            </video>
+          </div>
         </div>
 
         <div className="p-5 space-y-3 text-center">

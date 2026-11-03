@@ -33,6 +33,7 @@ interface HomePageProps {
   isFav: boolean;
   onToggleFav: () => void;
   userName?: string;
+  onOpenShareNews?: () => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
@@ -44,6 +45,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   isFav,
   onToggleFav,
   userName = '',
+  onOpenShareNews,
 }) => {
   // Deterministic daily song based on devotional date (same song for all users on the same day)
   const songOfTheDay: ChristianSong = getDailyVerifiedSong(devotional.date);
@@ -239,17 +241,31 @@ export const HomePage: React.FC<HomePageProps> = ({
               </h2>
             </div>
 
-            <button
-              onClick={handleShareVerse}
-              disabled={isSharing}
-              data-testid="share-verse-button"
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-cream-100/80 dark:bg-cream-100/10 border border-sand-200/80 dark:border-sand-300/35 text-graphite-600 dark:text-cream-100 hover:text-sage-800 dark:hover:text-white text-[11px] font-semibold ae-btn disabled:opacity-60"
-              title="Compartilhar versículo"
-              aria-label="Compartilhar versículo do dia"
-            >
-              <Share2 className="w-3 h-3" />
-              <span>{isSharing ? 'Gerando...' : 'Compartilhar'}</span>
-            </button>
+            <div className="flex items-center space-x-2">
+              {onOpenShareNews && (
+                <button
+                  onClick={onOpenShareNews}
+                  className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-full bg-sage-100/70 dark:bg-cream-100/10 text-sage-800 dark:text-sand-300 text-[10px] font-bold uppercase tracking-wider hover:bg-sage-200/80 transition-colors"
+                  title="Ver demonstração da novidade"
+                  aria-label="Ver demonstração de compartilhamento em imagem"
+                >
+                  <Sparkles className="w-3 h-3 text-sage-600 dark:text-sand-300" />
+                  <span>Novidade</span>
+                </button>
+              )}
+
+              <button
+                onClick={handleShareVerse}
+                disabled={isSharing}
+                data-testid="share-verse-button"
+                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-cream-100/80 dark:bg-cream-100/10 border border-sand-200/80 dark:border-sand-300/35 text-graphite-600 dark:text-cream-100 hover:text-sage-800 dark:hover:text-white text-[11px] font-semibold ae-btn disabled:opacity-60"
+                title="Compartilhar versículo"
+                aria-label="Compartilhar versículo do dia"
+              >
+                <Share2 className="w-3 h-3" />
+                <span>{isSharing ? 'Gerando...' : 'Compartilhar'}</span>
+              </button>
+            </div>
           </div>
 
           <blockquote className="font-serif italic text-lg sm:text-xl text-graphite-800 dark:text-cream-50 leading-relaxed">

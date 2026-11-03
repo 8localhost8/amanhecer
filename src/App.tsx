@@ -215,6 +215,7 @@ export const App: React.FC = () => {
             isFav={isCurrentFav}
             onToggleFav={handleToggleFav}
             userName={preferences.userName}
+            onOpenShareNews={() => setIsShareNewsOpen(true)}
           />
         )}
 
