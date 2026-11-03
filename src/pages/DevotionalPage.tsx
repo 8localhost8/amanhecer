@@ -54,11 +54,7 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
         reference: devotional.verseOfTheDay.reference,
         kicker: devotional.title,
       },
-      buildShareCaption(
-        devotional.verseOfTheDay.reference,
-        devotional.verseOfTheDay.text,
-        `📖 Devocional: ${devotional.title}`
-      ),
+      buildShareCaption(),
       'amanhecer-devocional.jpg'
     );
     setIsSharing(false);

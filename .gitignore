@@ -34,3 +34,8 @@ api/push/.subscriptions.json
 editorial/evaluations/*
 !editorial/evaluations/.gitkeep
 *.zip
+
+# Raw local assets in root
+/versiculo.png
+/exemplo.png
+/cygroteskkey-bold-1793638474-0/

@@ -15,11 +15,10 @@ export const IntroSplash: React.FC<IntroSplashProps> = ({ onComplete }) => {
     setIsFadingOut(true);
     setTimeout(() => {
       onComplete();
-    }, 500); // 500ms fade transition
+    }, 200); // Transição ultrarrápida e leve de 200ms
   };
 
   useEffect(() => {
-    // Attempt playback immediately
     const video = videoRef.current;
     if (video) {
       video.play().catch((err) => {
@@ -27,10 +26,10 @@ export const IntroSplash: React.FC<IntroSplashProps> = ({ onComplete }) => {
       });
     }
 
-    // Safety timeout: video is 3.0s, finish at 3.5s max
+    // Safety timeout: encerra com folga caso o evento onEnded demore
     const timer = setTimeout(() => {
       handleFinish();
-    }, 3500);
+    }, 3200);
 
     return () => clearTimeout(timer);
   }, []);
@@ -38,8 +37,9 @@ export const IntroSplash: React.FC<IntroSplashProps> = ({ onComplete }) => {
   return (
     <div
       onClick={handleFinish}
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-[#384736] transition-all duration-500 ease-out select-none cursor-pointer ${
-        isFadingOut ? 'opacity-0 scale-105 blur-xs pointer-events-none' : 'opacity-100 scale-100 blur-0'
+      style={{ willChange: 'opacity', transform: 'translateZ(0)' }}
+      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-[#384736] transition-opacity duration-200 ease-out select-none cursor-pointer ${
+        isFadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
       aria-label="Introdução Amanhecer"
       role="banner"
@@ -66,7 +66,7 @@ export const IntroSplash: React.FC<IntroSplashProps> = ({ onComplete }) => {
             e.stopPropagation();
             handleFinish();
           }}
-          className="absolute bottom-6 right-6 px-3.5 py-1.5 rounded-full bg-cream-50/15 hover:bg-cream-50/25 backdrop-blur-xs text-cream-50/70 hover:text-cream-50 text-xs font-sans tracking-wide transition-colors"
+          className="absolute bottom-6 right-6 px-3.5 py-1.5 rounded-full bg-cream-50/20 hover:bg-cream-50/30 text-cream-50/80 hover:text-cream-50 text-xs font-sans tracking-wide transition-colors"
           aria-label="Pular introdução"
         >
           Pular

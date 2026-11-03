@@ -77,7 +77,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         reference: dailyVerse.reference,
         kicker: 'Versículo do Dia',
       },
-      buildShareCaption(dailyVerse.reference, dailyVerse.text, '☀️ Versículo do Dia no Amanhecer'),
+      buildShareCaption(),
       'amanhecer-versiculo-do-dia.jpg'
     );
     setIsSharing(false);

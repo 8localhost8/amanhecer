@@ -33,7 +33,7 @@ export const App: React.FC = () => {
   });
   const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
   const [isShareNewsOpen, setIsShareNewsOpen] = useState<boolean>(
-    () => !loadUserPreferences().featureShareImageV1Seen
+    () => !loadUserPreferences().featureShareImageV3Seen
   );
   const [isCelebrationOpen, setIsCelebrationOpen] = useState<boolean>(false);
   const [isFirstCompletion, setIsFirstCompletion] = useState<boolean>(false);
@@ -77,12 +77,15 @@ export const App: React.FC = () => {
   }, [preferences]);
 
   // Initialize autonomous notification scheduler (06:06 Daily Verse & Reminders)
-  // and record anonymous installation if running as standalone PWA
+  // and record anonymous installation after initial paint to prevent launch stutter
   useEffect(() => {
-    initLocalNotificationScheduler();
-    if (isStandalone) {
-      recordAppInstallationOnce();
-    }
+    const timer = setTimeout(() => {
+      initLocalNotificationScheduler();
+      if (isStandalone) {
+        recordAppInstallationOnce();
+      }
+    }, 800);
+    return () => clearTimeout(timer);
   }, [isStandalone]);
 
   // Network offline listener
@@ -323,7 +326,7 @@ export const App: React.FC = () => {
         isOpen={!showIntro && !isOnboardingOpen && !isNotifBugfixOpen && isShareNewsOpen}
         onClose={() => {
           setIsShareNewsOpen(false);
-          setPreferences(saveUserPreferences({ featureShareImageV1Seen: true }));
+          setPreferences(saveUserPreferences({ featureShareImageV3Seen: true }));
         }}
       />
     </div>

@@ -186,6 +186,12 @@ TEXTO BÍBLICO AUTORIZADO: "${passage.text}"
 CONTEXTO DA PASSAGEM: ${passage.contextSummary}
 TEMA CENTRAL: ${passage.theme}
 
+DIRETRIZES EDITORIAIS E DE DIVERSIDADE BÍBLICA:
+1. AMPLA VARIEDADE BÍBLICA: Explore toda a riqueza das Escrituras através dos 66 livros do cânon bíblico protestante (livros históricos, poéticos, profetas maiores e menores, evangelhos e epístolas). Evite focar unicamente nos mesmos versículos ultraconhecidos e clichês repetitivos (como Salmo 23 ou João 3:16 isolados sem contexto). Busque profundidade pastoral e beleza textual.
+2. PROIBIÇÃO ABSOLUTA DE ÁRVORES GENEALÓGICAS: NUNCA crie reflexões ou selecione trechos que sejam árvores genealógicas (ex.: listas de "gerou a", "filho de"), censos genealógicos ou sequências puras de nomes tribais sem mensagem devocional direta. O foco é a instrução bíblica pastoral, a edificação da fé, a oração e o evangelho da graça em Cristo.
+3. ANTI-REPETIÇÃO: Traga sempre uma reflexão original, viva e profunda, evitando repetir fórmulas prontas ou temas idênticos aos de dias recentes.
+4. RIGOR CRISTOCÊNTRICO: Fidelidade bíblica, graça, esperança e santidade, sem teologia da prosperidade, sem triunfalismo terreno e sem legalismo acusador.
+
 CATÁLOGO DE MÚSICAS VERIFICADAS DISPONÍVEIS:
 ${songsList}
 
@@ -239,7 +245,9 @@ Avalie os 8 critérios com notas inteiras de 0 a 10:
 - responsibility (peso 10%, mínimo 8)
 - originality (peso 5%, mínimo 8)
 
-Se houver qualquer erro bíblico grave, distorção de prosperidade, versículo inexistente ou música desconhecida, aponte no array criticalErrors.
+DIRETRIZES DE REJEIÇÃO:
+1. Se a reflexão for sobre árvore genealógica ou mera lista de nomes/gerações sem mensagem prática edificante, aponte ERRO CRÍTICO no array criticalErrors.
+2. Se houver qualquer distorção de prosperidade, legalismo, versículo inexistente ou música desconhecida, aponte no array criticalErrors.
 
 Retorne EXCLUSIVAMENTE um JSON com as chaves:
 {

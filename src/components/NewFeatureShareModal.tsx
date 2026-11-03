@@ -11,6 +11,7 @@ export const NewFeatureShareModal: React.FC<NewFeatureShareModalProps> = ({ isOp
 
   useEffect(() => {
     if (isOpen && videoRef.current) {
+      videoRef.current.load();
       videoRef.current.play().catch(() => {
         // autoplay bloqueado: o usuário pode tocar no vídeo
       });
@@ -45,7 +46,7 @@ export const NewFeatureShareModal: React.FC<NewFeatureShareModalProps> = ({ isOp
             muted
             loop
             playsInline
-            preload="auto"
+            preload="none"
             className="w-full max-h-[52vh] object-contain mx-auto block"
             aria-label="Demonstração: como compartilhar o versículo em imagem"
           >

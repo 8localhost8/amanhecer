@@ -16,6 +16,8 @@ export interface UserPreferences {
   notifBugfixV25Seen?: boolean;
   forceNotifPromptV1Seen?: boolean;
   featureShareImageV1Seen?: boolean;
+  featureShareImageV2Seen?: boolean;
+  featureShareImageV3Seen?: boolean;
 }
 
 const PREF_STORAGE_KEY = 'amanhecer_user_preferences_v1';
@@ -35,6 +37,8 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   notifBugfixV25Seen: false,
   forceNotifPromptV1Seen: false,
   featureShareImageV1Seen: false,
+  featureShareImageV2Seen: false,
+  featureShareImageV3Seen: false,
 };
 
 export function loadUserPreferences(): UserPreferences {
