@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Share2, X, Sparkles, ImageIcon } from 'lucide-react';
 
 interface NewFeatureShareModalProps {
@@ -7,60 +7,69 @@ interface NewFeatureShareModalProps {
 }
 
 export const NewFeatureShareModal: React.FC<NewFeatureShareModalProps> = ({ isOpen, onClose }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isVideoActive, setIsVideoActive] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) {
-      setIsVideoActive(false);
-      return;
-    }
-
-    // Espera a animação de entrada do card (240ms) concluir suavemente antes de acionar o decodificador de vídeo da GPU
-    const timer = setTimeout(() => {
-      setIsVideoActive(true);
-      if (videoRef.current) {
-        videoRef.current.play().catch(() => {
-          // Autoplay pode ser silenciado ou pausado
-        });
+    if (isOpen) {
+      // Ativa transição suave de opacidade idêntica à IntroSplash
+      const frame = requestAnimationFrame(() => setIsVisible(true));
+      const video = videoRef.current;
+      if (video) {
+        video.play().catch(() => {});
       }
-    }, 280);
-
-    return () => clearTimeout(timer);
+      return () => cancelAnimationFrame(frame);
+    } else {
+      setIsVisible(false);
+      setIsClosing(false);
+    }
   }, [isOpen]);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+    }, 200); // 200ms limpos e imediatos
+  };
 
   if (!isOpen) return null;
 
   return (
     <div
-      className="ae-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
-      style={{ transform: 'translateZ(0)', willChange: 'opacity' }}
+      onClick={handleClose}
+      style={{ willChange: 'opacity', transform: 'translateZ(0)' }}
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 transition-opacity duration-200 ease-out select-none cursor-pointer ${
+        isVisible && !isClosing ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      }`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="news-share-title"
     >
       <div
-        className="ae-modal-card surface-editorial rounded-3xl max-w-sm w-full max-h-[92vh] overflow-y-auto relative shadow-2xl"
-        style={{ transform: 'translateZ(0)', willChange: 'transform, opacity' }}
+        onClick={(e) => e.stopPropagation()}
+        style={{ willChange: 'opacity', transform: 'translateZ(0)' }}
+        className="surface-editorial rounded-3xl max-w-sm w-full max-h-[92vh] overflow-y-auto relative shadow-2xl transition-opacity duration-200 ease-out cursor-default"
       >
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="ae-btn absolute top-3 right-3 z-10 p-1.5 rounded-full bg-graphite-950/60 text-cream-50 hover:bg-graphite-950/80 transition-colors"
           aria-label="Fechar novidade"
         >
           <X className="w-4 h-4" />
         </button>
 
-        {/* Demo video com poster prévio para renderização instantânea a 60/120 FPS */}
+        {/* Demo video renderizado de forma ultra-suave como a IntroSplash */}
         <div className="relative bg-sage-900 rounded-t-3xl overflow-hidden aspect-[9/16] max-h-[50vh]">
           <video
             ref={videoRef}
-            poster="/news/compartilhar-versiculo-poster.jpg"
+            autoPlay
             muted
             loop
             playsInline
-            preload={isVideoActive ? 'auto' : 'none'}
-            className="w-full h-full object-contain mx-auto block"
+            preload="auto"
+            poster="/news/compartilhar-versiculo-poster.jpg"
+            className="w-full h-full object-contain mx-auto block pointer-events-none"
             aria-label="Demonstração: como compartilhar o versículo em imagem"
           >
             <source src="/news/compartilhar-versiculo.mp4" type="video/mp4" />
@@ -97,7 +106,7 @@ export const NewFeatureShareModal: React.FC<NewFeatureShareModalProps> = ({ isOp
           </div>
 
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="w-full mt-1 py-3 px-6 rounded-full font-bold text-sm btn-tactile-sage ae-btn"
           >
             Entendi, vou testar!
