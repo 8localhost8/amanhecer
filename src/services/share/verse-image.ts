@@ -75,10 +75,9 @@ function truncate(text: string, max: number): string {
   return text.slice(0, max).replace(/\s+\S*$/, '') + '…';
 }
 
-export function buildShareCaption(_extra?: string): string {
-  // A imagem já contém o versículo completo, kicker e referência.
-  // Enviamos apenas o link limpo do Amanhecer para visualização ou instalação.
-  return 'https://amanhecer-beta.vercel.app';
+export function buildShareCaption(inviteText = 'Veja o devocional de hoje no Amanhecer:'): string {
+  const intro = inviteText.trim();
+  return `${intro}\nhttps://amanhecer-beta.vercel.app`;
 }
 
 export async function generateVerseImageBlob(options: VerseImageOptions): Promise<Blob> {

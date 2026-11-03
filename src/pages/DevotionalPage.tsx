@@ -54,7 +54,7 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
         reference: devotional.verseOfTheDay.reference,
         kicker: devotional.title,
       },
-      buildShareCaption(),
+      buildShareCaption('📖 Veja a reflexão e o devocional de hoje no Amanhecer:'),
       'amanhecer-devocional.jpg'
     );
     setIsSharing(false);
