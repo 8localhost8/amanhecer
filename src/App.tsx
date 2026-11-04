@@ -20,7 +20,7 @@ import { loadUserPreferences, saveUserPreferences, applyThemeAndFont, UserPrefer
 import { getDevotionalForDate, getAllPublishedDevotionals } from './content/devotionals/vault';
 import { selectDailyVerse, getSaoPauloDateString } from './services/daily-verse/selection-engine';
 import { saveCompletion, getCompletion, getAllCompletions, toggleFavorite, isFavorite, getAllFavorites } from './storage/db';
-import { syncCompletionWithPushServer, initLocalNotificationScheduler } from './services/notifications/push-client';
+import { syncCompletionWithPushServer, initLocalNotificationScheduler, resyncPushSubscription } from './services/notifications/push-client';
 import { recordAppInstallationOnce } from './services/stats/install-counter';
 import { DevotionalPublic } from './services/ai/schemas';
 
@@ -81,6 +81,7 @@ export const App: React.FC = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       initLocalNotificationScheduler();
+      resyncPushSubscription();
       if (isStandalone) {
         recordAppInstallationOnce();
       }

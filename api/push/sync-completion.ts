@@ -28,7 +28,7 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
 
   const { endpoint, date } = body || {};
   if (endpoint && date) {
-    recordCompletion(endpoint, date);
+    await recordCompletion(endpoint, date);
   }
 
   res.statusCode = 200;

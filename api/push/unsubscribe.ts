@@ -28,7 +28,7 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
 
   const { endpoint } = body || {};
   if (endpoint) {
-    removeSubscription(endpoint);
+    await removeSubscription(endpoint);
   }
 
   res.statusCode = 200;

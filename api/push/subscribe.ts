@@ -35,7 +35,7 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
     return;
   }
 
-  const saved = saveSubscription({
+  const saved = await saveSubscription({
     endpoint,
     keys,
     timezone: timezone || 'America/Sao_Paulo',

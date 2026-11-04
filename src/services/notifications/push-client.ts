@@ -387,6 +387,50 @@ export async function sendTestNotification(): Promise<{ success: boolean; error?
 }
 
 /**
+ * Re-registers (idempotently) the device's Web Push subscription with the backend every
+ * time the app opens. Keeps the server-side list durable and up to date, so scheduled
+ * notifications keep arriving even when the app stays closed for days.
+ */
+export async function resyncPushSubscription(): Promise<void> {
+  try {
+    if (!checkPushSupport() || Notification.permission !== 'granted') return;
+    const prefs = loadUserPreferences();
+    if (!prefs.notificationsEnabled) return;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      // Permission already granted: subscribing again does not show any prompt.
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: getValidVapidUint8Array() as any,
+      });
+    }
+    const subData = sub.toJSON();
+    const res = await fetch('/api/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        endpoint: subData.endpoint,
+        keys: subData.keys,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Paulo',
+        dailyVerseEnabled: prefs.dailyVerseEnabled,
+        reminderEnabled: prefs.reminderEnabled,
+      }),
+    });
+    if (res.ok) {
+      const data = await res.json().catch(() => ({}));
+      if (data?.token && data.token !== prefs.pushSubscriptionToken) {
+        saveUserPreferences({ pushSubscriptionToken: data.token });
+      }
+    }
+  } catch {
+    // Offline or backend unreachable; will retry on next launch
+  }
+}
+
+/**
  * Unsubscribes from push notifications
  */
 export async function unsubscribePush(): Promise<boolean> {

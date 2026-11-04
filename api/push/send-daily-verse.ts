@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import webpush from 'web-push';
-import { getAllSubscriptions, updateSubscription, removeSubscription } from './_store';
+import { getAllSubscriptions, updateSubscription, removeSubscription, getStorageMode } from './_store';
 import { selectDailyVerse, getSaoPauloDateString } from '../../src/services/daily-verse/selection-engine';
 
 export default async function handler(req: IncomingMessage & { body?: any }, res: ServerResponse) {
@@ -31,8 +31,16 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
     webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
   }
 
-  const subscriptions = getAllSubscriptions();
+  if (!(vapidPublicKey && vapidPrivateKey)) {
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ success: false, error: 'VAPID_PRIVATE_KEY n?o configurada no servidor: nenhum push foi enviado.' }));
+    return;
+  }
+
+  const subscriptions = await getAllSubscriptions();
   const results = {
+    storage: getStorageMode(),
     total: subscriptions.length,
     sent: 0,
     skipped: 0,
@@ -74,12 +82,12 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
         }, payload);
       }
       sub.lastVerseSentDate = todayStr;
-      updateSubscription(sub);
+      await updateSubscription(sub);
       results.sent++;
     } catch (err: any) {
       if (err.statusCode === 404 || err.statusCode === 410) {
         // Expired subscription - remove clean
-        removeSubscription(sub.endpoint);
+        await removeSubscription(sub.endpoint);
         results.cleaned++;
       } else {
         results.failed++;
