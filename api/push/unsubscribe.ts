@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { removeSubscription } from './_store';
+import { removeSubscription } from './_store.js';
 
 export default async function handler(req: IncomingMessage & { body?: any }, res: ServerResponse) {
   if (req.method !== 'POST') {

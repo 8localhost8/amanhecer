@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { getAllSubscriptions } from '../push/_store';
+import { getAllSubscriptions } from '../push/_store.js';
 
 interface InstallStatsData {
   count: number;
@@ -20,7 +20,7 @@ function getStatsFilePath(): string {
   return path.join(os.tmpdir(), 'amanhecer-install-stats.json');
 }
 
-function readLocalCount(): number {
+async function readLocalCount(): Promise<number> {
   try {
     const file = getStatsFilePath();
     if (fs.existsSync(file)) {
@@ -32,7 +32,12 @@ function readLocalCount(): number {
   } catch {
     // ignore read errors
   }
-  const activeSubs = getAllSubscriptions().length;
+  let activeSubs = 0;
+  try {
+    activeSubs = (await getAllSubscriptions()).length;
+  } catch {
+    // ignore sub count errors
+  }
   return Math.max(memoryCount, INITIAL_BASELINE + activeSubs);
 }
 
@@ -76,7 +81,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   res.setHeader('Cache-Control', 'no-store, max-age=0');
 
   if (req.method === 'POST') {
-    const localNext = readLocalCount() + 1;
+    const localNext = (await readLocalCount()) + 1;
     writeLocalCount(localNext);
 
     const externalCount = await fetchExternalCounter(true);
@@ -89,7 +94,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   }
 
   // GET: Return current install count
-  const localCurrent = readLocalCount();
+  const localCurrent = await readLocalCount();
   const externalCount = await fetchExternalCounter(false);
   const finalCount = externalCount !== null ? Math.max(localCurrent, externalCount) : localCurrent;
   writeLocalCount(finalCount);

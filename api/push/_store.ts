@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { put, list } from '@vercel/blob';
 
 export interface AnonymousPushRecord {
   id: string;
@@ -15,20 +16,12 @@ export interface AnonymousPushRecord {
   reminderEnabled: boolean;
   lastReadDate?: string;
   lastVerseSentDate?: string;
-  sentRemindersToday?: string[]; // e.g. ['2026-11-04_11:00']
+  sentRemindersToday?: string[]; // e.g. ['2026-11-08_11:00']
   createdAt: string;
   updatedAt: string;
 }
 
-/**
- * Armazenamento das inscrições push.
- *
- * Em produção (Vercel) o disco (/tmp) é efêmero e NÃO é compartilhado entre as
- * execuções das funções: uma inscrição salva no momento em que o usuário ativa as
- * notificações some antes do cron rodar, e o servidor nunca tem para quem enviar.
- * Por isso, quando há um Redis REST configurado (Upstash / Vercel KV), ele é usado
- * como armazenamento durável. O arquivo local fica só como fallback de desenvolvimento.
- */
+const BLOB_FILENAME = 'amanhecer/push-subscriptions.json';
 const REDIS_HASH_KEY = 'amanhecer:push:subscriptions';
 
 function redisConfig(): { url: string; token: string } | null {
@@ -38,8 +31,14 @@ function redisConfig(): { url: string; token: string } | null {
   return null;
 }
 
-export function getStorageMode(): 'redis' | 'ephemeral-file' {
-  return redisConfig() ? 'redis' : 'ephemeral-file';
+function hasBlobStorage(): boolean {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+}
+
+export function getStorageMode(): 'blob' | 'redis' | 'ephemeral-file' {
+  if (hasBlobStorage()) return 'blob';
+  if (redisConfig()) return 'redis';
+  return 'ephemeral-file';
 }
 
 async function redisCommand(command: (string | number)[]): Promise<any> {
@@ -61,7 +60,36 @@ function fieldFor(endpoint: string): string {
   return crypto.createHash('sha1').update(endpoint).digest('hex');
 }
 
-// ---------- Fallback em arquivo (apenas desenvolvimento local) ----------
+// ---------- Blob Storage (Vercel Blob) ----------
+async function readBlobRecords(): Promise<AnonymousPushRecord[]> {
+  try {
+    const { blobs } = await list({ prefix: BLOB_FILENAME });
+    const target = blobs.find((b) => b.pathname === BLOB_FILENAME);
+    if (!target) return [];
+
+    const res = await fetch(target.url, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.error('Erro ao ler Vercel Blob:', err);
+    return [];
+  }
+}
+
+async function writeBlobRecords(records: AnonymousPushRecord[]): Promise<void> {
+  try {
+    await put(BLOB_FILENAME, JSON.stringify(records, null, 2), {
+      access: 'public',
+      addRandomSuffix: false,
+      contentType: 'application/json',
+    });
+  } catch (err) {
+    console.error('Erro ao salvar no Vercel Blob:', err);
+  }
+}
+
+// ---------- Fallback em arquivo local (desenvolvimento) ----------
 let memoryCache: AnonymousPushRecord[] | null = null;
 
 function resolveStorageFile(): string {
@@ -103,13 +131,16 @@ function writeFileRecords(records: AnonymousPushRecord[]): void {
         'utf-8'
       );
     } catch (err) {
-      console.error('Erro ao persistir inscrições push:', err);
+      console.error('Erro ao persistir inscrições push em arquivo:', err);
     }
   }
 }
 
-// ---------- API pública (assíncrona) ----------
+// ---------- API pública assíncrona ----------
 export async function getAllSubscriptions(): Promise<AnonymousPushRecord[]> {
+  if (hasBlobStorage()) {
+    return readBlobRecords();
+  }
   if (redisConfig()) {
     const flat: string[] = (await redisCommand(['HGETALL', REDIS_HASH_KEY])) || [];
     const out: AnonymousPushRecord[] = [];
@@ -117,7 +148,7 @@ export async function getAllSubscriptions(): Promise<AnonymousPushRecord[]> {
       try {
         out.push(JSON.parse(flat[i]));
       } catch {
-        // ignora registro corrompido
+        // ignora registro inválido
       }
     }
     return out;
@@ -126,19 +157,34 @@ export async function getAllSubscriptions(): Promise<AnonymousPushRecord[]> {
 }
 
 async function findByEndpointOrId(key: string): Promise<AnonymousPushRecord | null> {
-  if (redisConfig()) {
-    const direct = await redisCommand(['HGET', REDIS_HASH_KEY, fieldFor(key)]);
-    if (direct) return JSON.parse(direct);
-    const all = await getAllSubscriptions();
-    return all.find((r) => r.id === key) || null;
-  }
-  return readFileRecords().find((r) => r.endpoint === key || r.id === key) || null;
+  const all = await getAllSubscriptions();
+  return all.find((r) => r.endpoint === key || r.id === key) || null;
 }
 
 export async function saveSubscription(
   record: Omit<AnonymousPushRecord, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<AnonymousPushRecord> {
   const now = new Date().toISOString();
+
+  if (hasBlobStorage()) {
+    const records = await readBlobRecords();
+    const idx = records.findIndex((r) => r.endpoint === record.endpoint);
+    let result: AnonymousPushRecord;
+    if (idx >= 0) {
+      result = { ...records[idx], ...record, updatedAt: now };
+      records[idx] = result;
+    } else {
+      result = {
+        id: `sub_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+        ...record,
+        createdAt: now,
+        updatedAt: now,
+      };
+      records.push(result);
+    }
+    await writeBlobRecords(records);
+    return result;
+  }
 
   if (redisConfig()) {
     const field = fieldFor(record.endpoint);
@@ -176,6 +222,12 @@ export async function saveSubscription(
 }
 
 export async function removeSubscription(endpoint: string): Promise<void> {
+  if (hasBlobStorage()) {
+    const records = await readBlobRecords();
+    const filtered = records.filter((r) => r.endpoint !== endpoint);
+    await writeBlobRecords(filtered);
+    return;
+  }
   if (redisConfig()) {
     await redisCommand(['HDEL', REDIS_HASH_KEY, fieldFor(endpoint)]);
     return;
@@ -192,6 +244,15 @@ export async function recordCompletion(endpoint: string, dateStr: string): Promi
 }
 
 export async function updateSubscription(record: AnonymousPushRecord): Promise<void> {
+  if (hasBlobStorage()) {
+    const records = await readBlobRecords();
+    const idx = records.findIndex((r) => r.id === record.id || r.endpoint === record.endpoint);
+    if (idx >= 0) {
+      records[idx] = record;
+      await writeBlobRecords(records);
+    }
+    return;
+  }
   if (redisConfig()) {
     await redisCommand(['HSET', REDIS_HASH_KEY, fieldFor(record.endpoint), JSON.stringify(record)]);
     return;

@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import webpush from 'web-push';
-import { selectDailyVerse, getSaoPauloDateString } from '../../src/services/daily-verse/selection-engine';
+import { selectDailyVerse, getSaoPauloDateString } from './_verse.js';
 
 const DEFAULT_VAPID_PUBLIC_KEY =
   'BL-tTNbq9Aie-CPWNHJbseDn8QmCEUaO5tpsJRo_6bcvOuBg9b4dmIZIe1gvmiebzNiaWfYtFI3RHoTy5ZwLvRk';

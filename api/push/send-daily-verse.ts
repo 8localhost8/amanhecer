@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import webpush from 'web-push';
-import { getAllSubscriptions, updateSubscription, removeSubscription, getStorageMode } from './_store';
-import { selectDailyVerse, getSaoPauloDateString } from '../../src/services/daily-verse/selection-engine';
+import { getAllSubscriptions, updateSubscription, removeSubscription, getStorageMode } from './_store.js';
+import { selectDailyVerse, getSaoPauloDateString } from './_verse.js';
 
 export default async function handler(req: IncomingMessage & { body?: any }, res: ServerResponse) {
   // Verify Cron / Admin secret if configured
