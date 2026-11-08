@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon, Sparkles, Type, Bell, ShieldCheck, BookOpen, Send, User } from 'lucide-react';
+import { Sun, Moon, Sparkles, Type, Bell, ShieldCheck, BookOpen, Send, User, Zap } from 'lucide-react';
 import { UserPreferences, saveUserPreferences, FontSizePreset, AppTheme } from '../storage/preferences';
 import { TermsAndPrivacyModal } from '../components/TermsAndPrivacyModal';
+import { ExtremeTestModal } from '../components/ExtremeTestModal';
 import {
   getPushStatus,
   requestAndSubscribePush,
@@ -23,6 +24,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
   const [testSuccessMsg, setTestSuccessMsg] = useState<string | null>(null);
   const [browserNotifBlocked, setBrowserNotifBlocked] = useState(false);
   const [isTermsOpen, setIsTermsOpen] = useState(false);
+  const [isExtremeTestOpen, setIsExtremeTestOpen] = useState(false);
 
   useEffect(() => {
     checkStatus();
@@ -319,6 +321,16 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
               <span>{isTestingPush ? 'Enviando...' : 'Testar Notificação Agora'}</span>
             </button>
 
+            {/* Recurso Temporário: Testar Notificação Extreme */}
+            <button
+              onClick={() => setIsExtremeTestOpen(true)}
+              type="button"
+              className="ae-btn mt-2 w-full py-2.5 px-3 bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-200 border border-amber-500/40 text-xs font-bold rounded-full flex items-center justify-center space-x-1.5 transition-all cursor-pointer shadow-xs"
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 fill-amber-500" />
+              <span>Testar Notificação Extreme (Temporário)</span>
+            </button>
+
             {testSuccessMsg && (
               <p className="ae-reveal-scale text-center text-[11px] font-semibold text-sage-800 dark:text-sage-300 bg-sage-50 dark:bg-sage-950/60 py-2 px-3 rounded-2xl border border-sage-200 dark:border-sage-800">
                 ✓ {testSuccessMsg}
@@ -361,6 +373,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
       <TermsAndPrivacyModal
         isOpen={isTermsOpen}
         onClose={() => setIsTermsOpen(false)}
+      />
+
+      <ExtremeTestModal
+        isOpen={isExtremeTestOpen}
+        onClose={() => setIsExtremeTestOpen(false)}
       />
     </div>
   );

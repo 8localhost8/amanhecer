@@ -15,6 +15,8 @@ import { InstallModal } from './components/InstallModal';
 import { IntroSplash } from './components/IntroSplash';
 import { NotificationBugfixModal } from './components/NotificationBugfixModal';
 import { NewFeatureShareModal } from './components/NewFeatureShareModal';
+import { AppUpdateModal } from './components/AppUpdateModal';
+import { CURRENT_UPDATE } from './content/updates/current-update';
 
 import { loadUserPreferences, saveUserPreferences, applyThemeAndFont, UserPreferences } from './storage/preferences';
 import { getDevotionalForDate, getAllPublishedDevotionals } from './content/devotionals/vault';
@@ -35,6 +37,11 @@ export const App: React.FC = () => {
   const [isShareNewsOpen, setIsShareNewsOpen] = useState<boolean>(
     () => !loadUserPreferences().featureShareImageV6Seen
   );
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const seen = localStorage.getItem('amanhecer_seen_update_version');
+    return seen !== CURRENT_UPDATE.version;
+  });
   const [isCelebrationOpen, setIsCelebrationOpen] = useState<boolean>(false);
   const [isFirstCompletion, setIsFirstCompletion] = useState<boolean>(false);
   const [showIntro, setShowIntro] = useState<boolean>(true);
@@ -106,6 +113,28 @@ export const App: React.FC = () => {
       window.removeEventListener('offline', handleOffline);
     };
   }, [todayStr]);
+
+  // Check for new server deployments / updates on focus and online
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      try {
+        const res = await fetch('/api/version', { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          const seen = localStorage.getItem('amanhecer_seen_update_version');
+          if (data.version && data.version !== seen) {
+            setIsUpdateModalOpen(true);
+          }
+        }
+      } catch {
+        // Offline; ignore
+      }
+    };
+
+    checkForUpdates();
+    window.addEventListener('focus', checkForUpdates);
+    return () => window.removeEventListener('focus', checkForUpdates);
+  }, []);
 
   // Capture PWA beforeinstallprompt
   useEffect(() => {
@@ -216,7 +245,7 @@ export const App: React.FC = () => {
             isFav={isCurrentFav}
             onToggleFav={handleToggleFav}
             userName={preferences.userName}
-            onOpenShareNews={() => setIsShareNewsOpen(true)}
+            onOpenShareNews={() => setIsUpdateModalOpen(true)}
           />
         )}
 
@@ -330,6 +359,13 @@ export const App: React.FC = () => {
           setIsShareNewsOpen(false);
           setPreferences(saveUserPreferences({ featureShareImageV6Seen: true }));
         }}
+      />
+
+      {/* Card de Nova Atualização (acessado automaticamente a cada novo deploy ou pelo botão Novidade) */}
+      <AppUpdateModal
+        isOpen={!showIntro && !isOnboardingOpen && !isNotifBugfixOpen && !isShareNewsOpen && isUpdateModalOpen}
+        onClose={() => setIsUpdateModalOpen(false)}
+        updateInfo={CURRENT_UPDATE}
       />
     </div>
   );

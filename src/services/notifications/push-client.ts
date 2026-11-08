@@ -431,6 +431,70 @@ export async function resyncPushSubscription(): Promise<void> {
 }
 
 /**
+ * Dispatches an extreme test push notification after a chosen delay (in seconds),
+ * triggered through the server to test background arrival when the app is completely closed.
+ */
+export async function scheduleExtremeTestNotification(
+  delaySeconds: number,
+  title?: string,
+  message?: string
+): Promise<{ success: boolean; error?: string; delaySeconds: number }> {
+  if (!checkPushSupport()) {
+    return { success: false, error: 'Este dispositivo não suporta notificações.', delaySeconds };
+  }
+
+  if (Notification.permission !== 'granted') {
+    const res = await requestAndSubscribePush();
+    if (!res.success) {
+      return { success: false, error: res.error || 'Permissão de notificação negada.', delaySeconds };
+    }
+  }
+
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      const convertedVapidKey = getValidVapidUint8Array();
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: convertedVapidKey as any,
+      });
+    }
+
+    const subData = sub.toJSON();
+
+    const response = await fetch('/api/push/schedule-extreme-test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        endpoint: subData.endpoint,
+        keys: subData.keys,
+        delaySeconds,
+        title: title || '⚡ Notificação Extreme — Amanhecer',
+        body: message || 'Sucesso! A notificação agendada chegou na barra do seu celular.',
+      }),
+    });
+
+    if (!response.ok) {
+      const errJson = await response.json().catch(() => ({}));
+      return {
+        success: false,
+        error: errJson.error || `Erro do servidor (${response.status})`,
+        delaySeconds,
+      };
+    }
+
+    return { success: true, delaySeconds };
+  } catch (err: any) {
+    return {
+      success: false,
+      error: err?.message || 'Falha ao agendar teste extreme.',
+      delaySeconds,
+    };
+  }
+}
+
+/**
  * Unsubscribes from push notifications
  */
 export async function unsubscribePush(): Promise<boolean> {
