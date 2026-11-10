@@ -159,33 +159,54 @@ async function checkAndDispatchDueNotifications() {
 
 // 1. Web Push Event Listener
 self.addEventListener('push', (event) => {
-  let data = {};
-  if (event.data) {
-    try {
-      data = event.data.json();
-    } catch {
-      data = {
-        title: 'Amanhecer • Devocional Diário',
-        body: event.data.text() || 'Um momento com Deus para hoje.',
+  event.waitUntil(
+    (async () => {
+      let data = {};
+      if (event.data) {
+        try {
+          data = event.data.json();
+        } catch {
+          data = {
+            title: 'Amanhecer • Devocional Diário',
+            body: event.data.text() || 'Um momento com Deus para hoje.',
+          };
+        }
+      }
+
+      const title = data.title || 'Amanhecer • Devocional Diário';
+      const targetUrl = data.data?.url || '/';
+      const tag = data.tag || `amanhecer-push-${Date.now()}`;
+
+      const options = {
+        body: data.body || 'Um momento com Deus para hoje.',
+        icon: data.icon || '/icons/icon-192x192.png',
+        badge: data.badge || '/icons/icon-192x192.png',
+        tag,
+        renotify: true,
+        vibrate: [200, 100, 200],
+        data: { url: targetUrl, timestamp: Date.now() },
+        actions: [
+          { action: 'open', title: 'Ler Devocional' },
+          { action: 'dismiss', title: 'Fechar' },
+        ],
       };
-    }
-  }
 
-  const title = data.title || 'Amanhecer • Devocional Diário';
-  const options = {
-    body: data.body || 'Um momento com Deus para hoje.',
-    icon: data.icon || '/icons/icon-192x192.png',
-    badge: data.badge || '/icons/icon-192x192.png',
-    tag: data.tag || `amanhecer-push-${Date.now()}`,
-    vibrate: [100, 50, 100],
-    data: data.data || { url: '/' },
-    actions: [
-      { action: 'open', title: 'Ler Devocional' },
-      { action: 'dismiss', title: 'Fechar' },
-    ],
-  };
-
-  event.waitUntil(self.registration.showNotification(title, options));
+      try {
+        await self.registration.showNotification(title, options);
+      } catch (err) {
+        // Fallback resiliente caso o browser mobile rejeite vibrate ou actions
+        try {
+          await self.registration.showNotification(title, {
+            body: options.body,
+            icon: '/icons/icon-192x192.png',
+            tag,
+          });
+        } catch (fallbackErr) {
+          console.error('Erro crítico ao exibir notificação:', fallbackErr);
+        }
+      }
+    })()
+  );
 });
 
 // 2. Notification Click Listener

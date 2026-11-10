@@ -1,5 +1,10 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import webpush from 'web-push';
+import { waitUntil } from '@vercel/functions';
+
+export const config = {
+  maxDuration: 60,
+};
 
 const cleanEnvKey = (v?: string) => (v || '').replace(/["'\s]/g, '').trim();
 
@@ -53,11 +58,6 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
 
   const delay = Math.max(0, Math.min(Number(delaySeconds) || 0, 55));
 
-  // Aguarda o tempo selecionado no servidor para simular entrega com o app fechado
-  if (delay > 0) {
-    await new Promise((resolve) => setTimeout(resolve, delay * 1000));
-  }
-
   const payload = JSON.stringify({
     title: title || '⚡ Notificação Extreme — Amanhecer',
     body:
@@ -72,23 +72,38 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
     },
   });
 
-  try {
-    await webpush.sendNotification({ endpoint, keys }, payload);
-    res.statusCode = 200;
-    res.end(
-      JSON.stringify({
-        success: true,
-        deliveredAt: new Date().toISOString(),
-        delaySeconds: delay,
-      })
-    );
-  } catch (err: any) {
-    res.statusCode = 500;
-    res.end(
-      JSON.stringify({
-        success: false,
-        error: err?.message || 'Falha ao enviar notificação push agendada.',
-      })
-    );
-  }
+  // Responde IMEDIATAMENTE (em ~50ms) com 200 OK para o celular!
+  // Dessa forma, a conexão HTTP termina com sucesso e o usuário pode FECHAR o app completamente!
+  res.statusCode = 200;
+  res.end(
+    JSON.stringify({
+      success: true,
+      scheduled: true,
+      delaySeconds: delay,
+      message: `Agendado para disparar em ${delay} segundos na nuvem. Pode fechar o app!`,
+    })
+  );
+
+  // Executa o disparo no background da nuvem (Vercel Lambda)
+  // O waitUntil mantém o processo vivo na Vercel mesmo após a resposta ser entregue ao cliente.
+  waitUntil(
+    (async () => {
+      try {
+        if (delay > 0) {
+          await new Promise((resolve) => setTimeout(resolve, delay * 1000));
+        }
+
+        await webpush.sendNotification(
+          { endpoint, keys },
+          payload,
+          {
+            TTL: 86400,
+            urgency: 'high',
+          }
+        );
+      } catch (err) {
+        console.error('Erro ao enviar push em background no Extreme Test:', err);
+      }
+    })()
+  );
 }

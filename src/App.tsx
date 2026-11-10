@@ -363,7 +363,7 @@ export const App: React.FC = () => {
 
       {/* Card de Nova Atualização (acessado automaticamente a cada novo deploy ou pelo botão Novidade) */}
       <AppUpdateModal
-        isOpen={!showIntro && !isOnboardingOpen && !isNotifBugfixOpen && !isShareNewsOpen && isUpdateModalOpen}
+        isOpen={!showIntro && !isOnboardingOpen && !isNotifBugfixOpen && isUpdateModalOpen}
         onClose={() => setIsUpdateModalOpen(false)}
         updateInfo={CURRENT_UPDATE}
       />

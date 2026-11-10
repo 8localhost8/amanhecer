@@ -128,10 +128,17 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
     // 5. Send notification
     try {
       if (vapidPublicKey && vapidPrivateKey) {
-        await webpush.sendNotification({
-          endpoint: sub.endpoint,
-          keys: sub.keys
-        }, payload);
+        await webpush.sendNotification(
+          {
+            endpoint: sub.endpoint,
+            keys: sub.keys,
+          },
+          payload,
+          {
+            TTL: 86400,
+            urgency: 'high',
+          }
+        );
       }
       sub.sentRemindersToday.push(`${todayStr}_${activeSlot}`);
       await updateSubscription(sub);

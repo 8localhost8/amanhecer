@@ -73,7 +73,10 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
       },
     });
 
-    await webpush.sendNotification({ endpoint, keys }, payload);
+    await webpush.sendNotification({ endpoint, keys }, payload, {
+      TTL: 86400,
+      urgency: 'high',
+    });
 
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');

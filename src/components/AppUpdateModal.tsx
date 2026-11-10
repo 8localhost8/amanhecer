@@ -27,35 +27,36 @@ export const AppUpdateModal: React.FC<AppUpdateModalProps> = ({
       // 1. Marca a versão atual como vista no localStorage
       localStorage.setItem('amanhecer_seen_update_version', updateInfo.version);
 
-      // 2. Notifica o Service Worker para atualizar imediatamente se houver worker esperando
-      if ('serviceWorker' in navigator) {
-        const reg = await navigator.serviceWorker.getRegistration();
-        if (reg?.waiting) {
-          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-        }
-      }
-
-      // 3. Limpa CacheStorage das versões anteriores (preserva IndexedDB e localStorage)
-      if ('caches' in window) {
-        const cacheKeys = await caches.keys();
-        await Promise.all(
-          cacheKeys
-            // Preserva apenas caches de fontes externas se houver
-            .filter((key) => !key.includes('google-fonts'))
-            .map((key) => caches.delete(key))
-        );
-      }
-
       if (onUpdateApp) {
         onUpdateApp();
       }
 
-      // 4. Recarrega o app sem cache, garantindo o novo bundle com timestamp
-      const cleanUrl = new URL(window.location.href);
-      cleanUrl.searchParams.set('v', `${Date.now()}`);
-      window.location.replace(cleanUrl.toString());
+      // 2. Atualiza o Service Worker de forma segura e limpa
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) {
+          await reg.update().catch(() => {});
+
+          if (reg.waiting) {
+            let reloaded = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+              if (!reloaded) {
+                reloaded = true;
+                window.location.reload();
+              }
+            });
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+            setTimeout(() => {
+              if (!reloaded) window.location.reload();
+            }, 800);
+            return;
+          }
+        }
+      }
+
+      // 3. Recarrega o app suavemente
+      window.location.reload();
     } catch {
-      // Fallback padrão
       window.location.reload();
     }
   };
