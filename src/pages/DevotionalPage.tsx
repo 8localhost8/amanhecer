@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ArrowLeft,
   Clock,
@@ -14,6 +14,10 @@ import {
 import { DevotionalPublic } from '../services/ai/schemas';
 import { saveUserPreferences, loadUserPreferences } from '../storage/preferences';
 import { shareVerseImage, buildShareCaption } from '../services/share/verse-image';
+import {
+  trackEvent,
+  recordActiveReadingDayAndGetStreak,
+} from '../services/analytics/analytics-client';
 
 interface DevotionalPageProps {
   devotional: DevotionalPublic;
@@ -36,10 +40,65 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
     return loadUserPreferences().fineFontSize || 18;
   });
 
+  const openedAtRef = useRef<number>(Date.now());
+  const readingStartedLoggedRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    openedAtRef.current = Date.now();
+    readingStartedLoggedRef.current = false;
+
+    trackEvent('devotional_opened', {
+      devotional_id: devotional.id,
+      date: devotional.date,
+      title: devotional.title,
+      theme: devotional.theme,
+      already_completed: isCompleted,
+    });
+
+    const timer = setTimeout(() => {
+      if (!readingStartedLoggedRef.current) {
+        readingStartedLoggedRef.current = true;
+        trackEvent('reading_started', {
+          devotional_id: devotional.id,
+          date: devotional.date,
+          title: devotional.title,
+          theme: devotional.theme,
+        });
+      }
+    }, 4500);
+
+    return () => clearTimeout(timer);
+  }, [devotional.id, devotional.date, devotional.title, devotional.theme]);
+
   const handleAdjustFontSize = (delta: number) => {
     const nextSize = Math.min(32, Math.max(16, currentFontSize + delta));
     setCurrentFontSize(nextSize);
     saveUserPreferences({ fineFontSize: nextSize });
+    trackEvent('settings_changed', {
+      setting: 'font_size',
+      value: `${nextSize}px`,
+    });
+  };
+
+  const handleConfirmCompletionClick = () => {
+    const readingDurationSec = Math.max(
+      1,
+      Math.round((Date.now() - openedAtRef.current) / 1000)
+    );
+    const streakDays = recordActiveReadingDayAndGetStreak(devotional.date);
+
+    trackEvent('devotional_completed', {
+      devotional_id: devotional.id,
+      date: devotional.date,
+      title: devotional.title,
+      theme: devotional.theme,
+      reference: devotional.verseOfTheDay.reference,
+      reading_duration_sec: readingDurationSec,
+      is_repeat_confirmation: isCompleted,
+      streak_days: streakDays,
+    });
+
+    onComplete();
   };
 
   const [isSharing, setIsSharing] = useState(false);
@@ -244,7 +303,8 @@ export const DevotionalPage: React.FC<DevotionalPageProps> = ({
       {/* Completion Button (Stagger 6 - 3D Tactile Button) */}
       <div className="pt-2 space-y-2.5 ae-reveal-up ae-stagger-6">
         <button
-          onClick={onComplete}
+          onClick={handleConfirmCompletionClick}
+          data-testid="confirm-reading-button"
           className="w-full py-4 px-6 rounded-full font-bold text-sm sm:text-base flex items-center justify-center space-x-2.5 btn-tactile-sage ae-btn ae-btn-shimmer"
           aria-label="Concluir a leitura de hoje"
         >

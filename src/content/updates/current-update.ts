@@ -21,16 +21,16 @@ export interface AppUpdateInfo {
  * ==============================================================================
  */
 export const CURRENT_UPDATE: AppUpdateInfo = {
-  version: '2.2.1',
+  version: '2.3.0',
   releaseDate: '10 de Novembro de 2026',
-  badge: 'v2.2.1 • Novidades',
+  badge: 'v2.3.0 • Novidades',
   title: 'Nova Atualização Disponível',
   subtitle: 'Atualize para ter a versão mais recente do Amanhecer.',
-  summary: 'Notificações com prioridade máxima para chegar com o app 100% fechado, teste extreme desacoplado e recarregamento seguro sem falhas.',
+  summary: 'Controles completos de Privacidade e Dados (LGPD), páginas públicas de transparência e melhorias de estabilidade e desempenho.',
   changes: [
-    '🔔 Notificações com app fechado: prioridade máxima (Urgency: High) configurada para despertar o celular e exibir a notificação mesmo com o app encerrado e tela bloqueada.',
-    '⚡ Teste Extreme na Nuvem: agora o agendamento é disparado em background pelo servidor, permitindo que você feche o app imediatamente após agendar.',
-    '🔄 Recarregamento Seguro: corrigido o erro que ocorria ao atualizar o app. A atualização agora é limpa e imediata, preservando suas notas, nome e diário.',
-    '🛡️ Resiliência no Service Worker: proteção contra rejeições de notificação no Android e ativação automática da nova versão.'
+    '🛡️ Privacidade por Padrão (LGPD): controle total sobre métricas anônimas de uso em Configurações → Privacidade e Dados, com revogação e exclusão imediata.',
+    '📜 Transparência Pública: novas páginas dedicadas de Termos de Uso, Política de Privacidade e Política de Cookies e Armazenamento Local.',
+    '🔔 Notificações com app fechado: prioridade máxima (Urgency: High) configurada para despertar o celular mesmo com a tela bloqueada.',
+    '🔄 Recarregamento Seguro: atualização limpa e imediata, preservando suas notas privadas, favoritos, sequência e diário.'
   ]
 };

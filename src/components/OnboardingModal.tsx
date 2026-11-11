@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Sun, Moon, Sparkles, Bell, ArrowRight, Check, Type } from 'lucide-react';
 import { UserPreferences, saveUserPreferences, FontSizePreset, AppTheme } from '../storage/preferences';
 import { requestAndSubscribePush } from '../services/notifications/push-client';
+import { trackEvent } from '../services/analytics/analytics-client';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -49,9 +50,19 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   };
 
   const handleActivatePush = async () => {
-    await requestAndSubscribePush();
+    const res = await requestAndSubscribePush();
+    if (res.success) {
+      trackEvent('notification_permission_granted', { source: 'onboarding', mode: res.mode || 'web-push' });
+      trackEvent('notification_scheduled', {
+        daily_verse: dailyVerseEnabled,
+        reminders: reminderEnabled,
+        mode: res.mode || 'web-push',
+      });
+    } else {
+      trackEvent('notification_permission_denied', { source: 'onboarding' });
+    }
     saveUserPreferences({
-      notificationsEnabled: true,
+      notificationsEnabled: res.success,
       dailyVerseEnabled,
       reminderEnabled,
     });

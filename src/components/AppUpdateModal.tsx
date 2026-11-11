@@ -24,14 +24,25 @@ export const AppUpdateModal: React.FC<AppUpdateModalProps> = ({
     setIsUpdating(true);
 
     try {
-      // 1. Marca a versão atual como vista no localStorage
+      // 1. Marca a versão atual como vista no localStorage (preservando nome, notas e diário)
       localStorage.setItem('amanhecer_seen_update_version', updateInfo.version);
+      localStorage.setItem('amanhecer_force_update_v230', 'true');
 
       if (onUpdateApp) {
         onUpdateApp();
       }
 
-      // 2. Atualiza o Service Worker de forma segura e limpa
+      // 2. Limpa caches estáticos antigos do Workbox/SW (NÃO toca em localStorage nem IndexedDB)
+      if ('caches' in window) {
+        try {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((key) => caches.delete(key)));
+        } catch {
+          // ignore cache deletion errors
+        }
+      }
+
+      // 3. Atualiza o Service Worker de forma segura e limpa
       if ('serviceWorker' in navigator) {
         const reg = await navigator.serviceWorker.getRegistration();
         if (reg) {
@@ -54,7 +65,7 @@ export const AppUpdateModal: React.FC<AppUpdateModalProps> = ({
         }
       }
 
-      // 3. Recarrega o app suavemente
+      // 4. Recarrega o app suavemente
       window.location.reload();
     } catch {
       window.location.reload();

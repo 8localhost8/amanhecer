@@ -3,6 +3,8 @@
  * Usa o template oficial `versiculo.png` (otimizado) e a fonte Cy Grotesk Key Bold.
  */
 
+import { trackEvent } from '../analytics/analytics-client';
+
 const TEMPLATE_URL = '/share/versiculo-template.jpg';
 const FONT_URL = '/fonts/CyGrotesk-KeyBold.otf';
 const FONT_FAMILY = 'CyGroteskKeyBold';
@@ -213,8 +215,22 @@ export async function shareVerseImage(
   fileName = 'amanhecer-versiculo.jpg'
 ): Promise<ShareResult> {
   let blob: Blob | null = null;
+  const contentType =
+    options.kicker && options.kicker.toLowerCase().includes('devocional')
+      ? 'devotional'
+      : 'verse';
+
+  trackEvent('share_initiated', {
+    reference: options.reference,
+    content_type: contentType,
+  });
+
   try {
     blob = await generateVerseImageBlob(options);
+    trackEvent('verse_image_generated', {
+      reference: options.reference,
+      content_type: contentType,
+    });
   } catch (err) {
     console.warn('Falha ao gerar imagem, compartilhando apenas texto.', err);
   }
@@ -226,6 +242,12 @@ export async function shareVerseImage(
     if (nav.share && nav.canShare && nav.canShare({ files: [file] })) {
       try {
         await nav.share({ files: [file], text: caption });
+        trackEvent('share_completed', {
+          reference: options.reference,
+          content_type: contentType,
+          result: 'shared',
+          method: 'web_share_files',
+        });
         return 'shared';
       } catch (err: any) {
         if (err?.name === 'AbortError') return 'cancelled';
@@ -243,15 +265,35 @@ export async function shareVerseImage(
     setTimeout(() => URL.revokeObjectURL(url), 4000);
     try {
       await navigator.clipboard?.writeText(caption);
+      trackEvent('verse_text_copied', {
+        reference: options.reference,
+        content_type: contentType,
+      });
     } catch {
       // ignore
     }
+    trackEvent('verse_image_downloaded', {
+      reference: options.reference,
+      content_type: contentType,
+    });
+    trackEvent('share_completed', {
+      reference: options.reference,
+      content_type: contentType,
+      result: 'downloaded',
+      method: 'download_fallback',
+    });
     return 'downloaded';
   }
 
   if (navigator.share) {
     try {
       await navigator.share({ text: caption });
+      trackEvent('share_completed', {
+        reference: options.reference,
+        content_type: contentType,
+        result: 'shared',
+        method: 'web_share_text',
+      });
       return 'shared';
     } catch (err: any) {
       if (err?.name === 'AbortError') return 'cancelled';
@@ -259,6 +301,16 @@ export async function shareVerseImage(
   }
   try {
     await navigator.clipboard.writeText(caption);
+    trackEvent('verse_text_copied', {
+      reference: options.reference,
+      content_type: contentType,
+    });
+    trackEvent('share_completed', {
+      reference: options.reference,
+      content_type: contentType,
+      result: 'copied',
+      method: 'clipboard',
+    });
     return 'copied';
   } catch {
     return 'cancelled';

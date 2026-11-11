@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, Smartphone, Apple, Monitor, HelpCircle, CheckCircle2, Share2, PlusSquare } from 'lucide-react';
+import { X, Smartphone, Apple, Monitor, CheckCircle2, Share2, PlusSquare } from 'lucide-react';
+import { trackEvent } from '../services/analytics/analytics-client';
 
 interface InstallModalProps {
   isOpen: boolean;
@@ -13,12 +14,23 @@ export const InstallModal: React.FC<InstallModalProps> = ({ isOpen, onClose, def
 
   if (!isOpen) return null;
 
+  const handleTabChange = (platform: 'android' | 'ios' | 'desktop') => {
+    setActiveTab(platform);
+    trackEvent('install_tutorial_tab_changed', { platform });
+  };
+
   const handleInstallClick = async () => {
+    trackEvent('install_prompt_triggered', { source: 'install_modal' });
     if (deferredPrompt) {
       try {
         deferredPrompt.prompt();
         const choiceResult = await deferredPrompt.userChoice;
+        trackEvent('install_prompt_outcome', {
+          outcome: choiceResult.outcome || 'unknown',
+          source: 'install_modal',
+        });
         if (choiceResult.outcome === 'accepted') {
+          trackEvent('pwa_appinstalled_detected', { source: 'install_modal_accepted' });
           setInstalled(true);
           setTimeout(() => {
             onClose();
@@ -74,7 +86,7 @@ export const InstallModal: React.FC<InstallModalProps> = ({ isOpen, onClose, def
         {/* Platform Selector Tabs */}
         <div className="flex bg-sand-100 dark:bg-graphite-850 p-1 rounded-full mt-4">
           <button
-            onClick={() => setActiveTab('android')}
+            onClick={() => handleTabChange('android')}
             className={`flex-1 py-1.5 px-3 rounded-full text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all ${
               activeTab === 'android'
                 ? 'bg-white dark:bg-graphite-800 text-sage-900 dark:text-sage-200 shadow-xs'
@@ -85,7 +97,7 @@ export const InstallModal: React.FC<InstallModalProps> = ({ isOpen, onClose, def
             <span>Android</span>
           </button>
           <button
-            onClick={() => setActiveTab('ios')}
+            onClick={() => handleTabChange('ios')}
             className={`flex-1 py-1.5 px-3 rounded-full text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all ${
               activeTab === 'ios'
                 ? 'bg-white dark:bg-graphite-800 text-sage-900 dark:text-sage-200 shadow-xs'
@@ -96,7 +108,7 @@ export const InstallModal: React.FC<InstallModalProps> = ({ isOpen, onClose, def
             <span>iPhone</span>
           </button>
           <button
-            onClick={() => setActiveTab('desktop')}
+            onClick={() => handleTabChange('desktop')}
             className={`flex-1 py-1.5 px-3 rounded-full text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all ${
               activeTab === 'desktop'
                 ? 'bg-white dark:bg-graphite-800 text-sage-900 dark:text-sage-200 shadow-xs'

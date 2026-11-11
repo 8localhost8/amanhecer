@@ -25,8 +25,33 @@ import { saveCompletion, getCompletion, getAllCompletions, toggleFavorite, isFav
 import { syncCompletionWithPushServer, initLocalNotificationScheduler, resyncPushSubscription } from './services/notifications/push-client';
 import { recordAppInstallationOnce } from './services/stats/install-counter';
 import { DevotionalPublic } from './services/ai/schemas';
+import { initAnalyticsSDK, trackEvent } from './services/analytics/analytics-client';
+import { isAnalyticsConsentGranted } from './services/consent/consent-manager';
+import { PrivacyConsentBanner } from './components/PrivacyConsentBanner';
+import { LegalPages, LegalRouteType } from './pages/LegalPages';
+import { AnalyticsDashboardPage } from './pages/analytics/AnalyticsDashboardPage';
 
 export const App: React.FC = () => {
+  const [pathname, setPathname] = useState<string>(() =>
+    typeof window !== 'undefined' ? window.location.pathname : '/'
+  );
+
+  const navigateToPath = (nextPath: string) => {
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', nextPath);
+      setPathname(window.location.pathname);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  useEffect(() => {
+    initAnalyticsSDK();
+    const handlePopState = () => {
+      setPathname(window.location.pathname);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
   const [preferences, setPreferences] = useState<UserPreferences>(() => loadUserPreferences());
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => !loadUserPreferences().onboardingCompleted);
   const [isNotifBugfixOpen, setIsNotifBugfixOpen] = useState<boolean>(() => {
@@ -40,7 +65,8 @@ export const App: React.FC = () => {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     const seen = localStorage.getItem('amanhecer_seen_update_version');
-    return seen !== CURRENT_UPDATE.version;
+    const forcedV230 = localStorage.getItem('amanhecer_force_update_v230');
+    return seen !== CURRENT_UPDATE.version || forcedV230 !== 'true';
   });
   const [isCelebrationOpen, setIsCelebrationOpen] = useState<boolean>(false);
   const [isFirstCompletion, setIsFirstCompletion] = useState<boolean>(false);
@@ -89,12 +115,26 @@ export const App: React.FC = () => {
     const timer = setTimeout(() => {
       initLocalNotificationScheduler();
       resyncPushSubscription();
+      trackEvent('app_opened', {
+        mode: isStandalone ? 'standalone' : 'browser',
+        initial_view: currentView,
+      });
       if (isStandalone) {
-        recordAppInstallationOnce();
+        trackEvent('pwa_standalone_opened', { source: 'launch' });
+        if (isAnalyticsConsentGranted()) {
+          recordAppInstallationOnce();
+        }
       }
     }, 800);
     return () => clearTimeout(timer);
   }, [isStandalone]);
+
+  // Track internal view navigation when consent is active
+  useEffect(() => {
+    if (currentView !== 'landing') {
+      trackEvent('page_viewed', { view: currentView });
+    }
+  }, [currentView]);
 
   // Network offline listener
   useEffect(() => {
@@ -118,11 +158,15 @@ export const App: React.FC = () => {
   useEffect(() => {
     const checkForUpdates = async () => {
       try {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistration().then((reg) => reg?.update()).catch(() => {});
+        }
         const res = await fetch('/api/version', { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           const seen = localStorage.getItem('amanhecer_seen_update_version');
-          if (data.version && data.version !== seen) {
+          const forcedV230 = localStorage.getItem('amanhecer_force_update_v230');
+          if ((data.version && data.version !== seen) || forcedV230 !== 'true') {
             setIsUpdateModalOpen(true);
           }
         }
@@ -182,12 +226,20 @@ export const App: React.FC = () => {
     setIsCurrentFav(added);
     const updatedFavs = await getAllFavorites();
     setFavorites(updatedFavs);
+    if (added) {
+      trackEvent('devotional_favorited', {
+        devotional_id: devotional.id,
+        date: devotional.date,
+        title: devotional.title,
+      });
+    }
   };
 
   const handleThemeToggle = () => {
     const nextTheme = preferences.theme === 'dark' ? 'light' : 'dark';
     const updated = saveUserPreferences({ theme: nextTheme });
     setPreferences(updated);
+    trackEvent('settings_changed', { setting: 'theme', value: nextTheme });
   };
 
   const handleSelectDevotionalFromList = (d: DevotionalPublic) => {
@@ -206,6 +258,26 @@ export const App: React.FC = () => {
     }
   };
 
+  // Rota Administrativa: /colossenses323analytics
+  const normalizedPath = pathname.replace(/\/+$/, '') || '/';
+  if (normalizedPath === '/colossenses323analytics') {
+    return <AnalyticsDashboardPage onExitToApp={() => navigateToPath('/')} />;
+  }
+
+  // Rotas Públicas Legais (LGPD): /termos-de-uso, /politica-de-privacidade, /politica-de-cookies
+  if (
+    normalizedPath === '/termos-de-uso' ||
+    normalizedPath === '/politica-de-privacidade' ||
+    normalizedPath === '/politica-de-cookies'
+  ) {
+    return (
+      <LegalPages
+        route={normalizedPath as LegalRouteType}
+        onNavigate={(target) => navigateToPath(target)}
+      />
+    );
+  }
+
   if (currentView === 'landing') {
     return (
       <main className="min-h-screen bg-cream-100 dark:bg-graphite-950 text-graphite-700 dark:text-graphite-50">
@@ -213,11 +285,16 @@ export const App: React.FC = () => {
           onEnterApp={handleEnterAppFromLanding}
           onOpenHelp={() => setIsInstallModalOpen(true)}
           deferredPrompt={deferredPrompt}
+          onNavigateLegal={(target) => navigateToPath(target)}
         />
         <InstallModal
           isOpen={isInstallModalOpen}
           onClose={() => setIsInstallModalOpen(false)}
           deferredPrompt={deferredPrompt}
+        />
+        <PrivacyConsentBanner
+          origin="landing"
+          onNavigateLegal={(target) => navigateToPath(target)}
         />
       </main>
     );
@@ -289,6 +366,7 @@ export const App: React.FC = () => {
           <SettingsPage
             preferences={preferences}
             onUpdatePreferences={(updated) => setPreferences(updated)}
+            onNavigateLegal={(target) => navigateToPath(target)}
           />
         )}
 
@@ -341,7 +419,7 @@ export const App: React.FC = () => {
 
       {/* Notification Bugfix Re-permission Modal (for existing users) */}
       <NotificationBugfixModal
-        isOpen={!showIntro && !isOnboardingOpen && isNotifBugfixOpen}
+        isOpen={!showIntro && !isOnboardingOpen && !isUpdateModalOpen && isNotifBugfixOpen}
         onClose={(updatedPrefs) => {
           setIsNotifBugfixOpen(false);
           setPreferences(updatedPrefs);
@@ -354,19 +432,31 @@ export const App: React.FC = () => {
 
       {/* Novidade: compartilhamento em imagem (aparece uma vez para todos os usuários) */}
       <NewFeatureShareModal
-        isOpen={!showIntro && !isOnboardingOpen && !isNotifBugfixOpen && isShareNewsOpen}
+        isOpen={!showIntro && !isOnboardingOpen && !isUpdateModalOpen && !isNotifBugfixOpen && isShareNewsOpen}
         onClose={() => {
           setIsShareNewsOpen(false);
           setPreferences(saveUserPreferences({ featureShareImageV6Seen: true }));
         }}
       />
 
-      {/* Card de Nova Atualização (acessado automaticamente a cada novo deploy ou pelo botão Novidade) */}
+      {/* Card de Nova Atualização (prioridade máxima após o splash para forçar aviso de atualização) */}
       <AppUpdateModal
-        isOpen={!showIntro && !isOnboardingOpen && !isNotifBugfixOpen && isUpdateModalOpen}
-        onClose={() => setIsUpdateModalOpen(false)}
+        isOpen={!showIntro && isUpdateModalOpen}
+        onClose={() => {
+          localStorage.setItem('amanhecer_seen_update_version', CURRENT_UPDATE.version);
+          localStorage.setItem('amanhecer_force_update_v230', 'true');
+          setIsUpdateModalOpen(false);
+        }}
         updateInfo={CURRENT_UPDATE}
       />
+
+      {/* Gestor de Privacidade e Consentimento (LGPD - exibe apenas se ainda não decidido) */}
+      {!showIntro && !isOnboardingOpen && (
+        <PrivacyConsentBanner
+          origin="pwa"
+          onNavigateLegal={(target) => navigateToPath(target)}
+        />
+      )}
     </div>
   );
 };

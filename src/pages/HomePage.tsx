@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BookOpen,
   CheckCircle,
@@ -23,6 +23,7 @@ import {
   buildSpotifySearchUrl,
 } from '../content/songs/catalog';
 import { shareVerseImage, buildShareCaption } from '../services/share/verse-image';
+import { trackEvent } from '../services/analytics/analytics-client';
 
 interface HomePageProps {
   devotional: DevotionalPublic;
@@ -70,8 +71,21 @@ export const HomePage: React.FC<HomePageProps> = ({
   const [isSharing, setIsSharing] = useState(false);
   const [shareNotice, setShareNotice] = useState<string | null>(null);
 
+  useEffect(() => {
+    trackEvent('verse_viewed', {
+      reference: dailyVerse.reference,
+      category: dailyVerse.category,
+      date: devotional.date,
+    });
+  }, [dailyVerse.reference, dailyVerse.category, devotional.date]);
+
   const handleShareVerse = async () => {
     if (isSharing) return;
+    trackEvent('verse_clicked', {
+      reference: dailyVerse.reference,
+      category: dailyVerse.category,
+      action: 'share_button',
+    });
     setIsSharing(true);
     const result = await shareVerseImage(
       {

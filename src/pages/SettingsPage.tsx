@@ -1,5 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon, Sparkles, Type, Bell, ShieldCheck, BookOpen, Send, User, Zap } from 'lucide-react';
+import {
+  Sun,
+  Moon,
+  Sparkles,
+  Type,
+  Bell,
+  ShieldCheck,
+  BookOpen,
+  Send,
+  User,
+  Zap,
+  Trash2,
+  ExternalLink,
+  Mail,
+} from 'lucide-react';
 import { UserPreferences, saveUserPreferences, FontSizePreset, AppTheme } from '../storage/preferences';
 import { TermsAndPrivacyModal } from '../components/TermsAndPrivacyModal';
 import { ExtremeTestModal } from '../components/ExtremeTestModal';
@@ -12,22 +26,42 @@ import {
   syncNotificationScheduleWithSW,
   PushStatus,
 } from '../services/notifications/push-client';
+import { trackEvent } from '../services/analytics/analytics-client';
+import {
+  getConsentRecord,
+  grantAnalyticsConsent,
+  revokeAnalyticsConsent,
+  requestAnalyticsDataDeletion,
+  onConsentChange,
+  CURRENT_POLICY_VERSION,
+} from '../services/consent/consent-manager';
 
 interface SettingsPageProps {
   preferences: UserPreferences;
   onUpdatePreferences: (updated: UserPreferences) => void;
+  onNavigateLegal?: (path: '/termos-de-uso' | '/politica-de-privacidade' | '/politica-de-cookies') => void;
 }
 
-export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdatePreferences }) => {
-  const [pushStatus, setPushStatus] = useState<PushStatus | null>(null);
+export const SettingsPage: React.FC<SettingsPageProps> = ({
+  preferences,
+  onUpdatePreferences,
+  onNavigateLegal,
+}) => {
+  const [, setPushStatus] = useState<PushStatus | null>(null);
   const [isTestingPush, setIsTestingPush] = useState(false);
   const [testSuccessMsg, setTestSuccessMsg] = useState<string | null>(null);
   const [browserNotifBlocked, setBrowserNotifBlocked] = useState(false);
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isExtremeTestOpen, setIsExtremeTestOpen] = useState(false);
 
+  const [consentRecord, setConsentRecord] = useState(() => getConsentRecord());
+  const [privacyNotice, setPrivacyNotice] = useState<string | null>(null);
+  const [isDeletingAnalytics, setIsDeletingAnalytics] = useState(false);
+
   useEffect(() => {
     checkStatus();
+    const unsub = onConsentChange((rec) => setConsentRecord(rec));
+    return unsub;
   }, []);
 
   const checkStatus = async () => {
@@ -38,6 +72,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
   const handleThemeChange = (theme: AppTheme) => {
     const updated = saveUserPreferences({ theme });
     onUpdatePreferences(updated);
+    trackEvent('settings_changed', { setting: 'theme', value: theme });
   };
 
   const handleFontSizePresetChange = (preset: FontSizePreset) => {
@@ -48,12 +83,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
     if (preset === 'xlarge') size = 26;
     const updated = saveUserPreferences({ fontSizePreset: preset, fineFontSize: size });
     onUpdatePreferences(updated);
+    trackEvent('settings_changed', { setting: 'font_size', value: `${size}px` });
   };
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const size = parseInt(e.target.value, 10);
     const updated = saveUserPreferences({ fineFontSize: size });
     onUpdatePreferences(updated);
+    trackEvent('settings_changed', { setting: 'font_size', value: `${size}px` });
   };
 
   const handleTogglePushNotifications = async () => {
@@ -62,6 +99,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
       const updated = saveUserPreferences({ notificationsEnabled: false });
       onUpdatePreferences(updated);
       setBrowserNotifBlocked(false);
+      trackEvent('notification_disabled', { source: 'settings' });
     } else {
       const permPromise = requestOSNotificationPermission();
       const perm = await permPromise;
@@ -70,10 +108,17 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
         const updated = saveUserPreferences({ notificationsEnabled: true });
         onUpdatePreferences(updated);
         setBrowserNotifBlocked(false);
+        trackEvent('notification_permission_granted', { source: 'settings', mode: res.mode || 'web-push' });
+        trackEvent('notification_scheduled', {
+          daily_verse: updated.dailyVerseEnabled,
+          reminders: updated.reminderEnabled,
+          mode: res.mode || 'web-push',
+        });
         setTestSuccessMsg('Notificações ativadas! Enviamos um aviso na barra do seu celular.');
         setTimeout(() => setTestSuccessMsg(null), 5000);
       } else {
         setBrowserNotifBlocked(true);
+        trackEvent('notification_permission_denied', { source: 'settings' });
       }
     }
     await checkStatus();
@@ -83,12 +128,20 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
     const updated = saveUserPreferences({ dailyVerseEnabled: enabled });
     onUpdatePreferences(updated);
     syncNotificationScheduleWithSW();
+    trackEvent('notification_scheduled', {
+      daily_verse: enabled,
+      reminders: updated.reminderEnabled,
+    });
   };
 
   const handleToggleReminders = (enabled: boolean) => {
     const updated = saveUserPreferences({ reminderEnabled: enabled });
     onUpdatePreferences(updated);
     syncNotificationScheduleWithSW();
+    trackEvent('notification_scheduled', {
+      daily_verse: updated.dailyVerseEnabled,
+      reminders: enabled,
+    });
   };
 
   const handleSendTestNotification = async () => {
@@ -340,7 +393,147 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ preferences, onUpdat
         )}
       </section>
 
-      {/* 4. Compromisso Teológico */}
+      {/* 4. Privacidade e Dados (LGPD — Seção 23) */}
+      <section
+        data-testid="privacy-settings-section"
+        className="ae-reveal-up ae-stagger-5 ae-card surface-editorial rounded-3xl p-5 sm:p-6 space-y-4"
+      >
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-xs font-bold text-graphite-400 dark:text-graphite-400 uppercase tracking-wider flex items-center space-x-2">
+            <ShieldCheck className="w-3.5 h-3.5 text-sage-600 dark:text-sage-400" />
+            <span>Privacidade e Dados (LGPD)</span>
+          </h2>
+
+          <button
+            type="button"
+            data-testid="toggle-optional-analytics-btn"
+            onClick={() => {
+              if (consentRecord.analyticsAllowed) {
+                const updated = revokeAnalyticsConsent('settings');
+                setConsentRecord(updated);
+                setPrivacyNotice(
+                  'Coleta opcional desativada. Identificadores e filas locais foram limpos imediatamente.'
+                );
+              } else {
+                const updated = grantAnalyticsConsent('settings', true);
+                setConsentRecord(updated);
+                setPrivacyNotice('Analytics opcionais autorizados com sucesso.');
+              }
+            }}
+            className={`py-1.5 px-3.5 rounded-full text-xs font-bold transition-all ${
+              consentRecord.analyticsAllowed
+                ? 'bg-sage-800 text-cream-50'
+                : 'bg-sand-200 dark:bg-graphite-700 text-graphite-600 dark:text-graphite-300'
+            }`}
+          >
+            {consentRecord.analyticsAllowed ? 'Analytics Ativos' : 'Analytics Desativados'}
+          </button>
+        </div>
+
+        <div className="p-3.5 rounded-2xl bg-sand-50 dark:bg-graphite-900 border border-sand-200 dark:border-graphite-700 text-xs space-y-1.5 text-graphite-600 dark:text-graphite-300">
+          <p>
+            <strong>Escolha atual:</strong>{' '}
+            {consentRecord.analyticsAllowed
+              ? 'Coleta opcional autorizada'
+              : consentRecord.status === 'revoked'
+              ? 'Consentimento revogado (Coleta bloqueada)'
+              : consentRecord.status === 'refused'
+              ? 'Analytics recusados (Coleta bloqueada)'
+              : 'Não decidido (Coleta bloqueada por padrão)'}
+          </p>
+          <p className="text-[11px] text-graphite-400">
+            Versão da Política: {CURRENT_POLICY_VERSION}
+            {consentRecord.decidedAt &&
+              ` • Decisão registrada em ${new Date(consentRecord.decidedAt).toLocaleString('pt-BR')}`}
+          </p>
+        </div>
+
+        <p className="text-xs text-graphite-500 dark:text-graphite-400 leading-relaxed">
+          Você pode ativar, desativar ou revogar o consentimento de estatísticas de uso a qualquer
+          momento. A recusa nunca afeta a leitura dos devocionais nem apaga seu Diário de Oração.
+        </p>
+
+        {privacyNotice && (
+          <div className="p-3 rounded-2xl bg-sage-50 dark:bg-sage-950/60 border border-sage-200 dark:border-sage-800 text-xs text-sage-900 dark:text-sage-200 font-medium">
+            ✓ {privacyNotice}
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-2 pt-1">
+          <button
+            type="button"
+            disabled={isDeletingAnalytics}
+            data-testid="delete-analytics-data-btn"
+            onClick={async () => {
+              setIsDeletingAnalytics(true);
+              const res = await requestAnalyticsDataDeletion();
+              setConsentRecord(getConsentRecord());
+              setPrivacyNotice(res.message);
+              setIsDeletingAnalytics(false);
+            }}
+            className="py-2 px-3.5 rounded-full border border-rose-300 dark:border-rose-800 bg-rose-50/70 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 text-xs font-semibold inline-flex items-center gap-1.5"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>
+              {isDeletingAnalytics
+                ? 'Eliminando registros...'
+                : 'Revogar e Eliminar Dados Analíticos Anteriores'}
+            </span>
+          </button>
+
+          <a
+            href="mailto:contato@amanhecer.app?subject=Privacidade%20e%20Direitos%20LGPD%20-%20Amanhecer"
+            className="py-2 px-3.5 rounded-full border border-sand-200 dark:border-graphite-700 bg-sand-50 dark:bg-graphite-800 text-graphite-700 dark:text-graphite-200 text-xs font-semibold inline-flex items-center gap-1.5"
+          >
+            <Mail className="w-3.5 h-3.5" />
+            <span>Contatar Responsável (LGPD)</span>
+          </a>
+        </div>
+
+        <div className="pt-2 border-t border-sand-200/70 dark:border-graphite-700 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs">
+          <a
+            href="/politica-de-privacidade"
+            onClick={(e) => {
+              if (onNavigateLegal) {
+                e.preventDefault();
+                onNavigateLegal('/politica-de-privacidade');
+              }
+            }}
+            className="font-semibold underline text-sage-800 dark:text-sand-300 inline-flex items-center gap-1"
+          >
+            <span>Política de Privacidade</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+          <a
+            href="/termos-de-uso"
+            onClick={(e) => {
+              if (onNavigateLegal) {
+                e.preventDefault();
+                onNavigateLegal('/termos-de-uso');
+              }
+            }}
+            className="font-semibold underline text-sage-800 dark:text-sand-300 inline-flex items-center gap-1"
+          >
+            <span>Termos de Uso</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+          <a
+            href="/politica-de-cookies"
+            onClick={(e) => {
+              if (onNavigateLegal) {
+                e.preventDefault();
+                onNavigateLegal('/politica-de-cookies');
+              }
+            }}
+            className="font-semibold underline text-sage-800 dark:text-sand-300 inline-flex items-center gap-1"
+          >
+            <span>Política de Cookies e Armazenamento</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+      </section>
+
+      {/* 5. Compromisso Teológico */}
       <section className="ae-reveal-up ae-stagger-6 ae-card surface-warm-sand rounded-3xl p-5 sm:p-6 space-y-2.5 text-xs text-graphite-600 dark:text-graphite-300">
         <h2 className="text-xs font-bold text-graphite-700 dark:text-graphite-200 uppercase tracking-wider flex items-center space-x-2">
           <BookOpen className="w-4 h-4 text-sage-700 dark:text-sage-300" />

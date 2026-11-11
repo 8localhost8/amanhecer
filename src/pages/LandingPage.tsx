@@ -6,17 +6,20 @@ import {
   recordAppInstallationOnce,
 } from '../services/stats/install-counter';
 import { TermsAndPrivacyModal } from '../components/TermsAndPrivacyModal';
+import { trackEvent } from '../services/analytics/analytics-client';
 
 interface LandingPageProps {
   onEnterApp: () => void;
   onOpenHelp: () => void;
   deferredPrompt: any;
+  onNavigateLegal?: (path: '/termos-de-uso' | '/politica-de-privacidade' | '/politica-de-cookies') => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
   onEnterApp,
   onOpenHelp,
   deferredPrompt,
+  onNavigateLegal,
 }) => {
   const [installSuccessMessage, setInstallSuccessMessage] = useState<string | null>(null);
   const [installCount, setInstallCount] = useState<number>(() => getCachedInstallCount());
@@ -24,11 +27,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   useEffect(() => {
     let mounted = true;
+    trackEvent('landing_viewed', { page: 'landing' });
+
     fetchInstallCount().then((count) => {
       if (mounted) setInstallCount(count);
     });
 
     const handleAppInstalled = () => {
+      trackEvent('pwa_appinstalled_detected', { source: 'landing_appinstalled_event' });
       recordAppInstallationOnce().then((newCount) => {
         if (mounted) setInstallCount(newCount);
       });
@@ -42,11 +48,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   }, []);
 
   const handleInstallClick = async () => {
+    trackEvent('landing_interacted', { action: 'install_button' });
+    trackEvent('landing_cta_clicked', { cta: 'install', has_native_prompt: Boolean(deferredPrompt) });
+
     if (deferredPrompt) {
       try {
+        trackEvent('install_prompt_triggered', { source: 'landing' });
         deferredPrompt.prompt();
         const choice = await deferredPrompt.userChoice;
+        trackEvent('install_prompt_outcome', { outcome: choice.outcome || 'unknown' });
         if (choice.outcome === 'accepted') {
+          trackEvent('pwa_appinstalled_detected', { source: 'beforeinstallprompt_accepted' });
           const updatedCount = await recordAppInstallationOnce();
           setInstallCount(updatedCount);
           setInstallSuccessMessage(
@@ -55,9 +67,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         }
       } catch (err) {
         console.warn('Erro ao acionar prompt de instalação:', err);
+        trackEvent('install_tutorial_opened', { source: 'landing_fallback' });
         onOpenHelp();
       }
     } else {
+      trackEvent('install_tutorial_opened', { source: 'landing_direct' });
       onOpenHelp();
     }
   };
@@ -85,7 +99,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
 
         <button
-          onClick={onOpenHelp}
+          onClick={() => {
+            trackEvent('landing_interacted', { action: 'help_button' });
+            trackEvent('landing_cta_clicked', { cta: 'help' });
+            trackEvent('install_tutorial_opened', { source: 'landing_top_help' });
+            onOpenHelp();
+          }}
           className="flex items-center space-x-1 px-3 py-1.5 rounded-full surface-editorial text-graphite-700 dark:text-cream-100 text-xs font-medium ae-btn"
           title="Ajuda de instalação"
           aria-label="Abrir ajuda de instalação"
@@ -181,7 +200,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           {/* Secondary Action: Usar no Navegador */}
           <button
-            onClick={onEnterApp}
+            onClick={() => {
+              trackEvent('landing_interacted', { action: 'use_browser' });
+              trackEvent('landing_cta_clicked', { cta: 'use_browser' });
+              onEnterApp();
+            }}
             className="w-full py-2.5 px-6 bg-transparent hover:bg-sand-200/60 dark:hover:bg-cream-100/10 text-graphite-600 dark:text-sand-200 font-medium rounded-full text-xs flex items-center justify-center space-x-1.5 ae-btn group"
           >
             <span>Usar no navegador</span>
@@ -190,19 +213,58 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
 
         {/* Legal Notice & Terms Trigger (LGPD) */}
-        <div className="pt-1 ae-reveal-up ae-stagger-6">
+        <div className="pt-1 ae-reveal-up ae-stagger-6 space-y-1.5">
           <p className="text-[11px] text-graphite-500 dark:text-sand-300/90 leading-relaxed">
-            Ao baixar ou usar o app, contabilizamos sua instalação de forma anônima conforme nossos{' '}
+            Compromisso com a transparência e proteção de dados:{' '}
             <button
               type="button"
               onClick={() => setIsTermsOpen(true)}
               className="underline font-semibold text-sage-800 dark:text-cream-100 hover:text-sage-950 dark:hover:text-white inline-flex items-center gap-0.5"
             >
               <ShieldCheck className="w-3 h-3 inline" />
-              <span>Termos de Uso e Privacidade (LGPD)</span>
+              <span>Resumo de Privacidade (LGPD)</span>
             </button>
-            .
           </p>
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] text-graphite-500 dark:text-sand-300/80">
+            <a
+              href="/termos-de-uso"
+              onClick={(e) => {
+                if (onNavigateLegal) {
+                  e.preventDefault();
+                  onNavigateLegal('/termos-de-uso');
+                }
+              }}
+              className="underline hover:text-graphite-800 dark:hover:text-white"
+            >
+              Termos de Uso
+            </a>
+            <span>•</span>
+            <a
+              href="/politica-de-privacidade"
+              onClick={(e) => {
+                if (onNavigateLegal) {
+                  e.preventDefault();
+                  onNavigateLegal('/politica-de-privacidade');
+                }
+              }}
+              className="underline hover:text-graphite-800 dark:hover:text-white"
+            >
+              Política de Privacidade
+            </a>
+            <span>•</span>
+            <a
+              href="/politica-de-cookies"
+              onClick={(e) => {
+                if (onNavigateLegal) {
+                  e.preventDefault();
+                  onNavigateLegal('/politica-de-cookies');
+                }
+              }}
+              className="underline hover:text-graphite-800 dark:hover:text-white"
+            >
+              Cookies e Dados
+            </a>
+          </div>
         </div>
       </div>
 
