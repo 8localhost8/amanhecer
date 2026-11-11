@@ -24,6 +24,7 @@ import {
 } from '../content/songs/catalog';
 import { shareVerseImage, buildShareCaption } from '../services/share/verse-image';
 import { trackEvent } from '../services/analytics/analytics-client';
+import { DonationCard } from '../components/DonationCard';
 
 interface HomePageProps {
   devotional: DevotionalPublic;
@@ -456,6 +457,9 @@ export const HomePage: React.FC<HomePageProps> = ({
           </button>
         </div>
       </section>
+
+      {/* 6. Apoie o Projeto Amanhecer (Doação Voluntária via Pix) */}
+      <DonationCard source="home" className="ae-reveal-up ae-stagger-5" />
     </div>
   );
 };

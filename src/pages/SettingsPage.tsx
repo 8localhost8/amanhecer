@@ -17,6 +17,7 @@ import {
 import { UserPreferences, saveUserPreferences, FontSizePreset, AppTheme } from '../storage/preferences';
 import { TermsAndPrivacyModal } from '../components/TermsAndPrivacyModal';
 import { ExtremeTestModal } from '../components/ExtremeTestModal';
+import { DonationCard } from '../components/DonationCard';
 import {
   getPushStatus,
   requestAndSubscribePush,
@@ -533,7 +534,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         </div>
       </section>
 
-      {/* 5. Compromisso Teológico */}
+      {/* 5. Apoie o Projeto Amanhecer */}
+      <DonationCard source="settings" />
+
+      {/* 6. Compromisso Teológico */}
       <section className="ae-reveal-up ae-stagger-6 ae-card surface-warm-sand rounded-3xl p-5 sm:p-6 space-y-2.5 text-xs text-graphite-600 dark:text-graphite-300">
         <h2 className="text-xs font-bold text-graphite-700 dark:text-graphite-200 uppercase tracking-wider flex items-center space-x-2">
           <BookOpen className="w-4 h-4 text-sage-700 dark:text-sage-300" />

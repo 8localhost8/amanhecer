@@ -53,6 +53,8 @@ export type AnalyticsEventName =
   // Configurações (agregadas)
   | 'settings_changed'
   | 'settings_error'
+  // Doação & Apoio Comunitário
+  | 'donation_pix_copied'
   // Monitoramento Técnico & Web Vitals
   | 'technical_error'
   | 'web_vital_measured';

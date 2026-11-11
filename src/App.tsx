@@ -64,9 +64,9 @@ export const App: React.FC = () => {
   );
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
-    const seen = localStorage.getItem('amanhecer_seen_update_version');
-    const forcedV230 = localStorage.getItem('amanhecer_force_update_v230');
-    return seen !== CURRENT_UPDATE.version || forcedV230 !== 'true';
+    // Exibe a cada inicialização do app, a menos que o usuário tenha marcado explicitamente para não mostrar mais nesta versão
+    const dismissed = localStorage.getItem(`amanhecer_dismiss_update_${CURRENT_UPDATE.version}`) === 'true';
+    return !dismissed;
   });
   const [isCelebrationOpen, setIsCelebrationOpen] = useState<boolean>(false);
   const [isFirstCompletion, setIsFirstCompletion] = useState<boolean>(false);
@@ -164,9 +164,9 @@ export const App: React.FC = () => {
         const res = await fetch('/api/version', { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
-          const seen = localStorage.getItem('amanhecer_seen_update_version');
-          const forcedV230 = localStorage.getItem('amanhecer_force_update_v230');
-          if ((data.version && data.version !== seen) || forcedV230 !== 'true') {
+          const targetVersion = data.version || CURRENT_UPDATE.version;
+          const dismissed = localStorage.getItem(`amanhecer_dismiss_update_${targetVersion}`) === 'true';
+          if (!dismissed) {
             setIsUpdateModalOpen(true);
           }
         }
@@ -439,12 +439,14 @@ export const App: React.FC = () => {
         }}
       />
 
-      {/* Card de Nova Atualização (prioridade máxima após o splash para forçar aviso de atualização) */}
+      {/* Card de Nova Atualização (aparece a cada inicialização até que o usuário marque para não mostrar mais) */}
       <AppUpdateModal
         isOpen={!showIntro && isUpdateModalOpen}
-        onClose={() => {
+        onClose={(dontShowAgain) => {
           localStorage.setItem('amanhecer_seen_update_version', CURRENT_UPDATE.version);
-          localStorage.setItem('amanhecer_force_update_v230', 'true');
+          if (dontShowAgain) {
+            localStorage.setItem(`amanhecer_dismiss_update_${CURRENT_UPDATE.version}`, 'true');
+          }
           setIsUpdateModalOpen(false);
         }}
         updateInfo={CURRENT_UPDATE}
