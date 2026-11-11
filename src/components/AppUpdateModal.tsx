@@ -4,7 +4,7 @@ import { AppUpdateInfo } from '../content/updates/current-update';
 
 interface AppUpdateModalProps {
   isOpen: boolean;
-  onClose: (dontShowAgain?: boolean) => void;
+  onClose: () => void;
   updateInfo: AppUpdateInfo;
   onUpdateApp?: () => void;
 }
@@ -17,7 +17,6 @@ export const AppUpdateModal: React.FC<AppUpdateModalProps> = ({
 }) => {
   const [showDetails, setShowDetails] = useState<boolean>(false);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
-  const [dontShowAgain, setDontShowAgain] = useState<boolean>(false);
 
   if (!isOpen) return null;
 
@@ -25,15 +24,15 @@ export const AppUpdateModal: React.FC<AppUpdateModalProps> = ({
     setIsUpdating(true);
 
     try {
-      // 1. Marca a versão atual como vista no localStorage
+      // 1. Marca imediatamente a versão como vista e atualizada no localStorage
       localStorage.setItem('amanhecer_seen_update_version', updateInfo.version);
-      if (dontShowAgain) {
-        localStorage.setItem(`amanhecer_dismiss_update_${updateInfo.version}`, 'true');
-      }
 
       if (onUpdateApp) {
         onUpdateApp();
       }
+
+      // Fecha o modal imediatamente
+      onClose();
 
       // 2. Limpa caches estáticos antigos do Workbox/SW (NÃO toca em localStorage nem IndexedDB)
       if ('caches' in window) {
@@ -62,14 +61,16 @@ export const AppUpdateModal: React.FC<AppUpdateModalProps> = ({
             reg.waiting.postMessage({ type: 'SKIP_WAITING' });
             setTimeout(() => {
               if (!reloaded) window.location.reload();
-            }, 800);
+            }, 600);
             return;
           }
         }
       }
 
-      // 4. Recarrega o app suavemente
-      window.location.reload();
+      // 4. Recarrega suavemente
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
     } catch {
       window.location.reload();
     }
@@ -88,10 +89,10 @@ export const AppUpdateModal: React.FC<AppUpdateModalProps> = ({
       >
         {/* Botão Fechar no topo */}
         <button
-          onClick={() => onClose(dontShowAgain)}
+          onClick={onClose}
           disabled={isUpdating}
           className="ae-btn absolute top-3.5 right-3.5 p-1.5 rounded-full bg-sand-100 dark:bg-graphite-800 text-graphite-500 hover:text-graphite-800 dark:text-graphite-300 transition-colors cursor-pointer"
-          aria-label="Fechar aviso"
+          aria-label="Lembrar mais tarde"
         >
           <X className="w-4 h-4" />
         </button>
@@ -130,28 +131,6 @@ export const AppUpdateModal: React.FC<AppUpdateModalProps> = ({
           <RefreshCw className={`w-4 h-4 ${isUpdating ? 'animate-spin' : ''}`} />
           <span>{isUpdating ? 'Atualizando aplicativo...' : 'Atualizar para a versão mais atual'}</span>
         </button>
-
-        {/* Checkbox: Não mostrar novamente & Lembrar mais tarde */}
-        <div className="pt-1 flex flex-col items-center space-y-2">
-          <label className="flex items-center space-x-2 text-xs text-graphite-600 dark:text-cream-200/90 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={dontShowAgain}
-              onChange={(e) => setDontShowAgain(e.target.checked)}
-              className="rounded border-sand-300 dark:border-graphite-600 text-sage-700 focus:ring-sage-500 w-4 h-4 cursor-pointer"
-            />
-            <span>Não mostrar este aviso novamente</span>
-          </label>
-
-          <button
-            type="button"
-            onClick={() => onClose(dontShowAgain)}
-            disabled={isUpdating}
-            className="text-[11px] font-semibold text-graphite-400 hover:text-graphite-600 dark:text-graphite-400 dark:hover:text-cream-200 underline transition-colors cursor-pointer"
-          >
-            Lembrar mais tarde
-          </button>
-        </div>
 
         {/* Botão Discreto: "O que há de novo?" */}
         <div className="pt-1 border-t border-sand-200/60 dark:border-graphite-700/60">

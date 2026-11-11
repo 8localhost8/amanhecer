@@ -16,6 +16,7 @@ import { IntroSplash } from './components/IntroSplash';
 import { NotificationBugfixModal } from './components/NotificationBugfixModal';
 import { NewFeatureShareModal } from './components/NewFeatureShareModal';
 import { AppUpdateModal } from './components/AppUpdateModal';
+import { DonationModal } from './components/DonationModal';
 import { CURRENT_UPDATE } from './content/updates/current-update';
 
 import { loadUserPreferences, saveUserPreferences, applyThemeAndFont, UserPreferences } from './storage/preferences';
@@ -64,9 +65,14 @@ export const App: React.FC = () => {
   );
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
-    // Exibe a cada inicialização do app, a menos que o usuário tenha marcado explicitamente para não mostrar mais nesta versão
-    const dismissed = localStorage.getItem(`amanhecer_dismiss_update_${CURRENT_UPDATE.version}`) === 'true';
-    return !dismissed;
+    const seen = localStorage.getItem('amanhecer_seen_update_version');
+    return seen !== CURRENT_UPDATE.version;
+  });
+  const [isDonationModalOpen, setIsDonationModalOpen] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    // O modal de doação aparece a cada inicialização do app até que o usuário marque "Não mostrar mais"
+    const hide = localStorage.getItem('amanhecer_hide_donation_modal') === 'true';
+    return !hide;
   });
   const [isCelebrationOpen, setIsCelebrationOpen] = useState<boolean>(false);
   const [isFirstCompletion, setIsFirstCompletion] = useState<boolean>(false);
@@ -165,8 +171,8 @@ export const App: React.FC = () => {
         if (res.ok) {
           const data = await res.json();
           const targetVersion = data.version || CURRENT_UPDATE.version;
-          const dismissed = localStorage.getItem(`amanhecer_dismiss_update_${targetVersion}`) === 'true';
-          if (!dismissed) {
+          const seen = localStorage.getItem('amanhecer_seen_update_version');
+          if (targetVersion !== seen) {
             setIsUpdateModalOpen(true);
           }
         }
@@ -439,17 +445,22 @@ export const App: React.FC = () => {
         }}
       />
 
-      {/* Card de Nova Atualização (aparece a cada inicialização até que o usuário marque para não mostrar mais) */}
+      {/* Card de Nova Atualização Obrigatório (não possui opção de não mostrar mais; atualiza o app) */}
       <AppUpdateModal
         isOpen={!showIntro && isUpdateModalOpen}
-        onClose={(dontShowAgain) => {
-          localStorage.setItem('amanhecer_seen_update_version', CURRENT_UPDATE.version);
-          if (dontShowAgain) {
-            localStorage.setItem(`amanhecer_dismiss_update_${CURRENT_UPDATE.version}`, 'true');
-          }
-          setIsUpdateModalOpen(false);
-        }}
+        onClose={() => setIsUpdateModalOpen(false)}
         updateInfo={CURRENT_UPDATE}
+      />
+
+      {/* Modal de Doação na Inicialização (aparece a cada abertura até o usuário marcar 'Não mostrar mais') */}
+      <DonationModal
+        isOpen={!showIntro && !isUpdateModalOpen && !isOnboardingOpen && isDonationModalOpen}
+        onClose={(dontShowAgain) => {
+          if (dontShowAgain) {
+            localStorage.setItem('amanhecer_hide_donation_modal', 'true');
+          }
+          setIsDonationModalOpen(false);
+        }}
       />
 
       {/* Gestor de Privacidade e Consentimento (LGPD - exibe apenas se ainda não decidido) */}
