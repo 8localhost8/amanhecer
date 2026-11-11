@@ -1,7 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "cleanUrls": true,
   "headers": [
     {
       "source": "/(.*)",
@@ -39,7 +38,11 @@
   },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/colossenses323analytics", "destination": "/index.html" },
+    { "source": "/termos-de-uso", "destination": "/index.html" },
+    { "source": "/politica-de-privacidade", "destination": "/index.html" },
+    { "source": "/politica-de-cookies", "destination": "/index.html" },
+    { "source": "/((?!api/|assets/|icons/|intro/).*)", "destination": "/index.html" }
   ],
   "crons": [
     {
