@@ -32,7 +32,7 @@ import { PrivacyConsentBanner } from './components/PrivacyConsentBanner';
 import { LegalPages, LegalRouteType } from './pages/LegalPages';
 import { AnalyticsDashboardPage } from './pages/analytics/AnalyticsDashboardPage';
 import { ProductDemoStudioPage } from './pages/ProductDemoStudioPage';
-import { resolveActiveWallpaperUrl } from './content/wallpapers/catalog';
+import { resolveActiveWallpaperUrl, loadCustomWallpaperHighRes } from './content/wallpapers/catalog';
 
 export const App: React.FC = () => {
   const [pathname, setPathname] = useState<string>(() =>
@@ -112,9 +112,16 @@ export const App: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isOffline, setIsOffline] = useState<boolean>(!navigator.onLine);
 
+  const [customWallpaperUrl, setCustomWallpaperUrl] = useState<string | null>(null);
+
   // Apply theme and font styles on mount
   useEffect(() => {
     applyThemeAndFont(preferences);
+    if (preferences.wallpaperId === 'custom') {
+      loadCustomWallpaperHighRes().then((url) => {
+        if (url) setCustomWallpaperUrl(url);
+      });
+    }
   }, [preferences]);
 
   // Initialize autonomous notification scheduler (06:06 Daily Verse & Reminders)
@@ -311,7 +318,10 @@ export const App: React.FC = () => {
     );
   }
 
-  const activeWallpaperUrl = resolveActiveWallpaperUrl(preferences.wallpaperId);
+  const activeWallpaperUrl = resolveActiveWallpaperUrl(
+    preferences.wallpaperId,
+    customWallpaperUrl
+  );
   const activeWallpaperOpacity =
     typeof preferences.wallpaperOpacity === 'number' ? preferences.wallpaperOpacity : 55;
   const hasActiveWallpaper = Boolean(

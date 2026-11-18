@@ -48,6 +48,7 @@ import {
   WallpaperCategorySlug,
   compressGalleryImageToDataUrl,
   getCustomWallpaperDataUrl,
+  loadCustomWallpaperHighRes,
   saveCustomWallpaperDataUrl,
   resolveActiveWallpaperUrl,
 } from '../content/wallpapers/catalog';
@@ -117,6 +118,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
   useEffect(() => {
     checkStatus();
+    loadCustomWallpaperHighRes().then((url) => {
+      if (url) setCustomGalleryUrl(url);
+    });
     const unsub = onConsentChange((rec) => setConsentRecord(rec));
     return unsub;
   }, []);
@@ -180,7 +184,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
     try {
       const compressedDataUrl = await compressGalleryImageToDataUrl(file);
-      const saved = saveCustomWallpaperDataUrl(compressedDataUrl);
+      const saved = await saveCustomWallpaperDataUrl(compressedDataUrl);
       if (saved) {
         setCustomGalleryUrl(compressedDataUrl);
         const currentOpacity =
