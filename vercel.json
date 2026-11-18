@@ -42,7 +42,7 @@
     { "source": "/termos-de-uso", "destination": "/index.html" },
     { "source": "/politica-de-privacidade", "destination": "/index.html" },
     { "source": "/politica-de-cookies", "destination": "/index.html" },
-    { "source": "/((?!api/|assets/|icons/|intro/).*)", "destination": "/index.html" }
+    { "source": "/((?!api/|assets/|icons/|intro/|wallpapers/).*)", "destination": "/index.html" }
   ],
   "crons": [
     {

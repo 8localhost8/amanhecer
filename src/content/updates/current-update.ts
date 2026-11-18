@@ -18,16 +18,16 @@ export interface AppUpdateInfo {
  * ==============================================================================
  */
 export const CURRENT_UPDATE: AppUpdateInfo = {
-  version: '2.3.2',
-  releaseDate: '11 de Novembro de 2026',
-  badge: 'v2.3.2 • Apoio & Melhorias',
+  version: '2.4.0',
+  releaseDate: '18 de Novembro de 2026',
+  badge: 'v2.4.0 • Papéis de Parede & UX',
   title: 'Nova Atualização Disponível',
   subtitle: 'Atualize para ter a versão mais recente do Amanhecer.',
-  summary: 'Pop-up de apoio comunitário via Pix na inicialização e atualização instantânea sem retenção de card.',
+  summary: 'Nova galeria de Papéis de Parede com prévia ao vivo e envio da galeria, barra inferior com animação líquida, ícones animados e Configurações organizadas em seções.',
   changes: [
-    '💖 Apoio Voluntário via Pix: conheça a nova forma de apoiar os desenvolvedores mantendo o app 100% gratuito e sem anúncios.',
-    '⚡ Atualização Instantânea: fechamento imediato do modal de atualização ao clicar no botão atualizar.',
-    '🛡️ Transparência e LGPD: central de métricas anônimas em /colossenses323analytics.',
-    '🔄 Recarregamento Seguro PWA: seus dados locais, diário de oração, notas e histórico de leituras continuam 100% preservados.'
+    '🖼️ Papéis de Parede (Wallpapers): escolha entre 38 paisagens (Amanhecer, Céu Estrelado, Montanhas, Florestas, Oceanos e Desertos) ou suba sua própria foto da galeria com controle de opacidade e prévia real.',
+    '⚙️ Configurações em Seções: novo menu organizado estilo ajustes do celular para acesso rápido e limpo.',
+    '✨ Barra Inferior Líquida & Ícones Animados: nova animação fluida na navegação principal e microinterações nos ícones.',
+    '🔄 Persistência Garantida: seu papel de parede, nome, diário e notas continuam 100% salvos após atualizar.'
   ]
 };

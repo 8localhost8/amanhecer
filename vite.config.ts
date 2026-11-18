@@ -55,7 +55,22 @@ export default defineConfig({
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
         globPatterns: ['**/*.{js,css,html,ico,png,jpg,otf,svg,json,webmanifest,mp4,webm}'],
+        globIgnores: ['**/wallpapers/**'],
         runtimeCaching: [
+          {
+            urlPattern: /\/wallpapers\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'amanhecer-wallpapers-cache-v1',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 365
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',

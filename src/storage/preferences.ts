@@ -21,6 +21,8 @@ export interface UserPreferences {
   featureShareImageV4Seen?: boolean;
   featureShareImageV5Seen?: boolean;
   featureShareImageV6Seen?: boolean;
+  wallpaperId?: string; // 'none' | catalog id | 'custom'
+  wallpaperOpacity?: number; // 0 (preto total) a 100 (imagem sólida)
 }
 
 const PREF_STORAGE_KEY = 'amanhecer_user_preferences_v1';
@@ -45,6 +47,8 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   featureShareImageV4Seen: false,
   featureShareImageV5Seen: false,
   featureShareImageV6Seen: false,
+  wallpaperId: 'none',
+  wallpaperOpacity: 55,
 };
 
 export function loadUserPreferences(): UserPreferences {

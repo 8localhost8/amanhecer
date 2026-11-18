@@ -445,3 +445,187 @@ body {
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 1rem);
 }
+
+/* ==========================================================================
+   ANIMATED UX ICONS (Inspired by icones.mp4 Reference)
+   ========================================================================== */
+
+@keyframes uxStrokeDraw {
+  0% {
+    stroke-dashoffset: 64;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes uxCheckDraw {
+  0% {
+    stroke-dashoffset: 24;
+    opacity: 0.3;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes uxHeartBeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.22);
+  }
+  55% {
+    transform: scale(0.92);
+  }
+  75% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes uxBellRing {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(15deg);
+  }
+  40% {
+    transform: rotate(-13deg);
+  }
+  60% {
+    transform: rotate(9deg);
+  }
+  80% {
+    transform: rotate(-5deg);
+  }
+}
+
+@keyframes uxGearSpin {
+  0% {
+    transform: rotate(0deg) scale(0.92);
+  }
+  60% {
+    transform: rotate(105deg) scale(1.06);
+  }
+  100% {
+    transform: rotate(90deg) scale(1);
+  }
+}
+
+@keyframes uxClockSweep {
+  0% {
+    transform: rotate(-90deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes uxRibbonDrop {
+  0% {
+    transform: translateY(-4px) scaleY(0.75);
+  }
+  60% {
+    transform: translateY(1.5px) scaleY(1.08);
+  }
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+@keyframes uxSendFly {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  45% {
+    transform: translate(2.5px, -2.5px) scale(1.08);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes uxUploadBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  45% {
+    transform: translateY(-2.5px);
+  }
+}
+
+@keyframes uxMoonTilt {
+  0% {
+    transform: rotate(-22deg) scale(0.88);
+  }
+  70% {
+    transform: rotate(8deg) scale(1.06);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+.ux-anim-icon {
+  overflow: visible;
+  transform-origin: center;
+}
+
+.ux-icon-active .ux-stroke-draw,
+button:hover .ux-anim-icon .ux-stroke-draw,
+button:active .ux-anim-icon .ux-stroke-draw {
+  stroke-dasharray: 64;
+  animation: uxStrokeDraw 560ms var(--ease-ae-expo) both;
+}
+
+.ux-icon-active .ux-check-draw,
+button:hover .ux-anim-icon .ux-check-draw {
+  stroke-dasharray: 24;
+  animation: uxCheckDraw 480ms 100ms var(--ease-ae-expo) both;
+}
+
+.ux-icon-active.ux-heart-beat,
+button:hover .ux-heart-beat {
+  animation: uxHeartBeat 620ms var(--ease-ae-spring) both;
+}
+
+.ux-icon-active.ux-bell-ring,
+button:hover .ux-bell-ring {
+  transform-origin: 50% 15%;
+  animation: uxBellRing 680ms var(--ease-ae-smooth) both;
+}
+
+.ux-icon-active.ux-gear-spin,
+button:hover .ux-gear-spin {
+  animation: uxGearSpin 640ms var(--ease-ae-spring) both;
+}
+
+.ux-icon-active .ux-clock-hand,
+button:hover .ux-anim-icon .ux-clock-hand {
+  transform-origin: 12px 12px;
+  animation: uxClockSweep 540ms var(--ease-ae-spring) both;
+}
+
+.ux-icon-active .ux-bookmark-ribbon,
+button:hover .ux-anim-icon .ux-bookmark-ribbon {
+  transform-origin: 11.5px 2px;
+  animation: uxRibbonDrop 520ms var(--ease-ae-spring) both;
+}
+
+.ux-icon-active.ux-send-fly,
+button:hover .ux-send-fly {
+  animation: uxSendFly 520ms var(--ease-ae-spring) both;
+}
+
+.ux-icon-active .ux-upload-arrow,
+button:hover .ux-anim-icon .ux-upload-arrow {
+  animation: uxUploadBounce 520ms var(--ease-ae-spring) both;
+}
+
+.ux-icon-active.ux-moon-tilt,
+button:hover .ux-moon-tilt {
+  animation: uxMoonTilt 560ms var(--ease-ae-spring) both;
+}

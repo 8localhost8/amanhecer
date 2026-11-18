@@ -1,6 +1,12 @@
 import React from 'react';
-import { Sun, Moon, HelpCircle, WifiOff, ShieldCheck } from 'lucide-react';
+import { WifiOff } from 'lucide-react';
 import { AppTheme } from '../storage/preferences';
+import {
+  AnimatedHelpCircleIcon,
+  AnimatedMoonIcon,
+  AnimatedShieldCheckIcon,
+  AnimatedSunIcon,
+} from './AnimatedIcons';
 
 interface NavbarProps {
   currentView: string;
@@ -72,7 +78,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Painel de Auditoria e Avaliação Teológica"
             aria-label="Abrir Painel de Avaliação Teológica"
           >
-            <ShieldCheck
+            <AnimatedShieldCheckIcon
+              active={currentView === 'audit'}
               className={`w-4 h-4 sm:w-3.5 sm:h-3.5 ${
                 currentView === 'audit'
                   ? 'text-current'
@@ -90,9 +97,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Alternar tema claro / escuro"
           >
             {theme === 'dark' ? (
-              <Moon className="w-4 h-4 text-sand-300 ae-spring-pop" />
+              <AnimatedMoonIcon active={true} className="w-4 h-4 text-sand-300" />
             ) : (
-              <Sun className="w-4 h-4 text-amber-700 ae-spring-pop" />
+              <AnimatedSunIcon active={true} className="w-4 h-4 text-amber-700" />
             )}
           </button>
 
@@ -103,7 +110,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             aria-label="Ajuda e instruções de instalação do aplicativo"
             title="Como instalar no celular ou computador"
           >
-            <HelpCircle className="w-4 h-4 text-sage-700 dark:text-sand-300" />
+            <AnimatedHelpCircleIcon className="w-4 h-4 text-sage-700 dark:text-sand-300" />
           </button>
         </div>
       </div>

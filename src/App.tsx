@@ -31,6 +31,8 @@ import { isAnalyticsConsentGranted } from './services/consent/consent-manager';
 import { PrivacyConsentBanner } from './components/PrivacyConsentBanner';
 import { LegalPages, LegalRouteType } from './pages/LegalPages';
 import { AnalyticsDashboardPage } from './pages/analytics/AnalyticsDashboardPage';
+import { ProductDemoStudioPage } from './pages/ProductDemoStudioPage';
+import { resolveActiveWallpaperUrl } from './content/wallpapers/catalog';
 
 export const App: React.FC = () => {
   const [pathname, setPathname] = useState<string>(() =>
@@ -264,8 +266,11 @@ export const App: React.FC = () => {
     }
   };
 
-  // Rota Administrativa: /colossenses323analytics
+  // Rota Administrativa: /colossenses323analytics e estúdio de vídeo /demo-video-studio
   const normalizedPath = pathname.replace(/\/+$/, '') || '/';
+  if (normalizedPath === '/demo-video-studio') {
+    return <ProductDemoStudioPage />;
+  }
   if (normalizedPath === '/colossenses323analytics') {
     return <AnalyticsDashboardPage onExitToApp={() => navigateToPath('/')} />;
   }
@@ -306,8 +311,32 @@ export const App: React.FC = () => {
     );
   }
 
+  const activeWallpaperUrl = resolveActiveWallpaperUrl(preferences.wallpaperId);
+  const activeWallpaperOpacity =
+    typeof preferences.wallpaperOpacity === 'number' ? preferences.wallpaperOpacity : 55;
+  const hasActiveWallpaper = Boolean(
+    activeWallpaperUrl && preferences.wallpaperId && preferences.wallpaperId !== 'none'
+  );
+
   return (
-    <div className="min-h-screen flex flex-col bg-cream-100 dark:bg-graphite-950 text-graphite-700 dark:text-graphite-50 transition-colors">
+    <div
+      className={`min-h-screen flex flex-col relative text-graphite-700 dark:text-graphite-50 transition-colors ${
+        hasActiveWallpaper ? 'bg-black' : 'bg-cream-100 dark:bg-graphite-950'
+      }`}
+    >
+      {/* Camada Global de Papel de Parede (0% = preto total, 100% = imagem sólida) */}
+      {hasActiveWallpaper && activeWallpaperUrl && (
+        <div className="fixed inset-0 z-0 pointer-events-none bg-black overflow-hidden">
+          <img
+            src={activeWallpaperUrl}
+            alt=""
+            aria-hidden="true"
+            style={{ opacity: activeWallpaperOpacity / 100 }}
+            className="w-full h-full object-cover transition-opacity duration-200"
+          />
+        </div>
+      )}
+
       <Navbar
         currentView={currentView}
         onNavigate={(view) => setCurrentView(view)}
@@ -317,7 +346,7 @@ export const App: React.FC = () => {
         isOffline={isOffline}
       />
 
-      <main key={currentView} className="flex-1 max-w-xl w-full mx-auto px-4 pt-4 pb-20">
+      <main key={currentView} className="relative z-10 flex-1 max-w-xl w-full mx-auto px-4 pt-4 pb-24">
         {currentView === 'home' && (
           <HomePage
             devotional={devotional}

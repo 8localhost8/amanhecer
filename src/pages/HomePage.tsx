@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-  BookOpen,
   CheckCircle,
   Clock,
   Share2,
-  Heart,
-  BookMarked,
   Sun,
   Sunset,
   Moon,
@@ -25,6 +22,12 @@ import {
 import { shareVerseImage, buildShareCaption } from '../services/share/verse-image';
 import { trackEvent } from '../services/analytics/analytics-client';
 import { DonationCard } from '../components/DonationCard';
+import {
+  AnimatedBookOpenIcon,
+  AnimatedBookmarkDiaryIcon,
+  AnimatedHeadphonesIcon,
+  AnimatedHeartIcon,
+} from '../components/AnimatedIcons';
 
 interface HomePageProps {
   devotional: DevotionalPublic;
@@ -218,9 +221,11 @@ export const HomePage: React.FC<HomePageProps> = ({
               title={isFav ? 'Remover dos favoritos' : 'Salvar nos favoritos'}
               aria-label="Salvar devocional nos favoritos"
             >
-              <Heart
+              <AnimatedHeartIcon
+                active={isFav}
+                filled={isFav}
                 className={`w-4 h-4 transition-transform ${
-                  isFav ? 'fill-current scale-110 text-rose-300' : ''
+                  isFav ? 'scale-110 text-rose-300' : ''
                 }`}
               />
             </button>
@@ -317,7 +322,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           {/* Top Bar: Title + Equalizer */}
           <div className="flex items-center space-x-3">
             <div className="w-9 h-9 rounded-2xl btn-tactile-sage flex items-center justify-center shadow-xs shrink-0">
-              <Headphones className="w-4 h-4" />
+              <AnimatedHeadphonesIcon active={true} className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
@@ -400,7 +405,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           >
             <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2.5">
               <div className="w-11 h-11 rounded-2xl btn-tactile-sage flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:-rotate-6 transition-transform">
-                <BookMarked className="w-5 h-5" />
+                <AnimatedBookmarkDiaryIcon className="w-5 h-5" />
               </div>
               <div>
                 <h4 className="text-sm font-bold font-serif text-graphite-800 dark:text-cream-50">
@@ -421,7 +426,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           >
             <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2.5">
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-sand-300 to-sand-400 text-sage-950 flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-110 group-hover:rotate-6 transition-transform">
-                <Heart className="w-5 h-5" />
+                <AnimatedHeartIcon className="w-5 h-5" />
               </div>
               <div>
                 <h4 className="text-sm font-bold font-serif text-graphite-800 dark:text-cream-50">
@@ -442,7 +447,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           >
             <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2.5">
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-[#968077] to-[#78645C] dark:from-cream-200 dark:to-sand-300 text-cream-50 dark:text-sage-950 flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-110 group-hover:-rotate-6 transition-transform">
-                <BookOpen className="w-5 h-5" />
+                <AnimatedBookOpenIcon className="w-5 h-5" />
               </div>
               <div>
                 <h4 className="text-sm font-bold font-serif text-graphite-800 dark:text-cream-50">

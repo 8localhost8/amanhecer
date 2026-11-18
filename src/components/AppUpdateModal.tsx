@@ -119,7 +119,7 @@ export const AppUpdateModal: React.FC<AppUpdateModalProps> = ({
         {/* Garantia de dados salvos */}
         <div className="flex items-center justify-center space-x-1.5 text-[11px] font-medium text-sage-700 dark:text-sand-300 bg-sage-50/80 dark:bg-graphite-900 py-1.5 px-3 rounded-full border border-sage-200/60 dark:border-graphite-700">
           <ShieldCheck className="w-3.5 h-3.5 text-sage-600 dark:text-sand-300 shrink-0" />
-          <span>Seu nome, diário e notas continuam 100% salvos.</span>
+          <span>Seu wallpaper, nome, diário e notas continuam 100% salvos.</span>
         </div>
 
         {/* Botão de Ação Principal: Atualizar Agora */}
