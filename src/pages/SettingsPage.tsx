@@ -43,9 +43,7 @@ import {
   CURRENT_POLICY_VERSION,
 } from '../services/consent/consent-manager';
 import {
-  WALLPAPER_CATEGORIES,
   WALLPAPER_CATALOG,
-  WallpaperCategorySlug,
   compressGalleryImageToDataUrl,
   getCustomWallpaperDataUrl,
   loadCustomWallpaperHighRes,
@@ -107,7 +105,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   const [isDeletingAnalytics, setIsDeletingAnalytics] = useState(false);
 
   // Wallpaper state
-  const [selectedCategory, setSelectedCategory] = useState<'all' | WallpaperCategorySlug>('all');
   const [customGalleryUrl, setCustomGalleryUrl] = useState<string | null>(() =>
     getCustomWallpaperDataUrl()
   );
@@ -287,13 +284,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
       : activeWallpaperId === 'custom'
       ? `Foto da Galeria • ${activeWallpaperOpacity}%`
       : `${
-          WALLPAPER_CATALOG.find((w) => w.id === activeWallpaperId)?.title || 'Personalizado'
+          WALLPAPER_CATALOG.find((w) => w.id === activeWallpaperId)?.title || 'Fundo 1'
         } • ${activeWallpaperOpacity}%`;
-
-  const filteredWallpapers =
-    selectedCategory === 'all'
-      ? WALLPAPER_CATALOG
-      : WALLPAPER_CATALOG.filter((w) => w.categorySlug === selectedCategory);
 
   const themeLabel =
     preferences.theme === 'dark'
@@ -870,44 +862,20 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             )}
           </section>
 
-          {/* 2. Coleção de Wallpapers por Categoria */}
+          {/* 2. Coleção de 70 Wallpapers Originais em Alta Definição (1280x1280) */}
           <section className="surface-editorial rounded-3xl p-4 sm:p-5 space-y-4">
-            <div>
-              <h3 className="text-sm font-bold font-serif text-graphite-800 dark:text-cream-50">
-                Coleção de Paisagens
-              </h3>
-              <p className="text-[11px] text-graphite-500 dark:text-sand-300/85">
-                Seu papel de parede permanece salvo automaticamente mesmo após atualizações do aplicativo.
-              </p>
-            </div>
-
-            {/* Abas de Categorias */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5">
-              <button
-                type="button"
-                onClick={() => setSelectedCategory('all')}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                  selectedCategory === 'all'
-                    ? 'btn-tactile-sage shadow-2xs'
-                    : 'bg-sand-100 dark:bg-graphite-850 text-graphite-600 dark:text-sand-300 hover:bg-sand-200'
-                }`}
-              >
-                Todos ({WALLPAPER_CATALOG.length})
-              </button>
-              {WALLPAPER_CATEGORIES.map((cat) => (
-                <button
-                  key={cat.slug}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat.slug)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                    selectedCategory === cat.slug
-                      ? 'btn-tactile-sage shadow-2xs'
-                      : 'bg-sand-100 dark:bg-graphite-850 text-graphite-600 dark:text-sand-300 hover:bg-sand-200'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-bold font-serif text-graphite-800 dark:text-cream-50">
+                  Coleção de Fundos ({WALLPAPER_CATALOG.length})
+                </h3>
+                <p className="text-[11px] text-graphite-500 dark:text-sand-300/85">
+                  Imagens originais em alta resolução (1280×1280) sem perda de qualidade.
+                </p>
+              </div>
+              <span className="px-2.5 py-1 rounded-full bg-sage-100 dark:bg-graphite-800 text-sage-800 dark:text-sand-200 text-[10px] font-bold shrink-0">
+                HD Original
+              </span>
             </div>
 
             {/* Card especial caso o usuário tenha enviado foto da galeria */}
@@ -926,14 +894,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     <img
                       src={customGalleryUrl}
                       alt="Minha foto da galeria"
-                      className="w-12 h-16 rounded-xl object-cover border border-white/20 shrink-0"
+                      className="w-14 h-14 rounded-xl object-cover border border-white/20 shrink-0"
                     />
                     <div className="text-left">
                       <span className="text-xs font-bold text-graphite-800 dark:text-cream-50 block">
                         Minha Foto da Galeria
                       </span>
                       <span className="text-[11px] text-graphite-500 dark:text-sand-300">
-                        Salva neste dispositivo
+                        Salva em qualidade original neste dispositivo
                       </span>
                     </div>
                   </div>
@@ -946,35 +914,34 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               </div>
             )}
 
-            {/* Grid de Miniaturas */}
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
-              {filteredWallpapers.map((item) => {
+            {/* Grid de Miniaturas em Aspecto 1:1 Nativo (1280x1280) sem sobreposição escura */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {WALLPAPER_CATALOG.map((item) => {
                 const isSelected = activeWallpaperId === item.id;
                 return (
                   <button
                     key={item.id}
                     type="button"
                     onClick={() => handleSelectWallpaper(item.id)}
-                    className={`group relative aspect-[9/14] rounded-2xl overflow-hidden border-2 transition-all cursor-pointer ${
+                    className={`group relative aspect-square rounded-2xl overflow-hidden border-2 transition-all cursor-pointer bg-graphite-900 ${
                       isSelected
-                        ? 'border-sage-700 dark:border-sand-300 ring-2 ring-sage-600/40 dark:ring-sand-300/40 scale-[1.02]'
-                        : 'border-transparent hover:border-sand-300/70'
+                        ? 'border-sage-700 dark:border-sand-300 ring-2 ring-sage-600/45 dark:ring-sand-300/45 scale-[1.01]'
+                        : 'border-sand-200/40 dark:border-graphite-700/60 hover:border-sand-300'
                     }`}
                   >
                     <img
                       src={item.url}
                       alt={item.title}
                       loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      decoding="async"
+                      className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
                     />
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent p-2 text-left">
-                      <span className="text-[10px] font-semibold text-white leading-tight block truncate">
-                        {item.title}
-                      </span>
-                    </div>
+                    <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/55 backdrop-blur-xs text-[10px] font-semibold text-white/95">
+                      #{item.number}
+                    </span>
                     {isSelected && (
-                      <div className="absolute top-2 right-2 w-6 h-6 rounded-full btn-tactile-sage flex items-center justify-center shadow-md">
-                        <Check className="w-3.5 h-3.5" />
+                      <div className="absolute top-2 right-2 w-7 h-7 rounded-full btn-tactile-sage flex items-center justify-center shadow-lg">
+                        <Check className="w-4 h-4" />
                       </div>
                     )}
                   </button>

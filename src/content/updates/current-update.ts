@@ -18,9 +18,9 @@ export interface AppUpdateInfo {
  * ==============================================================================
  */
 export const CURRENT_UPDATE: AppUpdateInfo = {
-  version: '2.4.1',
+  version: '2.4.2',
   releaseDate: '18 de Novembro de 2026',
-  badge: 'v2.4.1 • Papéis de Parede HD & UX',
+  badge: 'v2.4.2 • 70 Novos Fundos HD',
   title: 'Nova Atualização Disponível',
   subtitle: 'Atualize para ter a versão mais recente do Amanhecer.',
   summary: 'Nova galeria de Papéis de Parede com prévia ao vivo e envio da galeria, barra inferior com animação líquida, ícones animados e Configurações organizadas em seções.',

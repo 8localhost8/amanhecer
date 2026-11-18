@@ -1,80 +1,25 @@
-export type WallpaperCategorySlug =
-  | 'amanhecer'
-  | 'ceu-estrelado'
-  | 'desertos'
-  | 'florestas'
-  | 'montanhas'
-  | 'oceanos';
+export type WallpaperCategorySlug = 'all';
 
 export interface WallpaperItem {
   id: string;
-  categorySlug: WallpaperCategorySlug;
-  categoryLabel: string;
   title: string;
   url: string;
+  number: number;
 }
 
-export interface WallpaperCategoryInfo {
-  slug: WallpaperCategorySlug;
-  label: string;
-  subtitle: string;
-}
-
-export const WALLPAPER_CATEGORIES: WallpaperCategoryInfo[] = [
-  {
-    slug: 'amanhecer',
-    label: 'Amanhecer',
-    subtitle: 'Luz da alvorada e horizontes serenos',
-  },
-  {
-    slug: 'ceu-estrelado',
-    label: 'Céu Estrelado',
-    subtitle: 'A imensidão da criação à noite',
-  },
-  {
-    slug: 'montanhas',
-    label: 'Montanhas',
-    subtitle: 'Cumes firmes e refúgio nas alturas',
-  },
-  {
-    slug: 'florestas',
-    label: 'Florestas',
-    subtitle: 'Bosques tranquilos e veredas de paz',
-  },
-  {
-    slug: 'oceanos',
-    label: 'Oceanos',
-    subtitle: 'Águas profundas e brisa marinha',
-  },
-  {
-    slug: 'desertos',
-    label: 'Desertos',
-    subtitle: 'Dunas douradas e silêncio contemplativo',
-  },
-];
-
-function buildCategoryItems(
-  slug: WallpaperCategorySlug,
-  label: string,
-  count: number
-): WallpaperItem[] {
-  return Array.from({ length: count }, (_, idx) => ({
-    id: `${slug}-${idx + 1}`,
-    categorySlug: slug,
-    categoryLabel: label,
-    title: `${label} ${idx + 1}`,
-    url: `/wallpapers/${slug}/${slug}-${idx + 1}.jpg?v=2.4.1`,
-  }));
-}
-
-export const WALLPAPER_CATALOG: WallpaperItem[] = [
-  ...buildCategoryItems('amanhecer', 'Amanhecer', 9),
-  ...buildCategoryItems('ceu-estrelado', 'Céu Estrelado', 4),
-  ...buildCategoryItems('montanhas', 'Montanhas', 8),
-  ...buildCategoryItems('florestas', 'Florestas', 8),
-  ...buildCategoryItems('oceanos', 'Oceanos', 4),
-  ...buildCategoryItems('desertos', 'Desertos', 5),
-];
+/**
+ * Catálogo completo com os 70 fundos originais em alta definição (1280x1280)
+ * copiados byte-a-byte sem recompressão de `/wallpapers/verse_bgs/bg_1.jpg` a `bg_70.jpg`.
+ */
+export const WALLPAPER_CATALOG: WallpaperItem[] = Array.from({ length: 70 }, (_, idx) => {
+  const num = idx + 1;
+  return {
+    id: `bg-${num}`,
+    title: `Fundo ${num}`,
+    url: `/wallpapers/verse_bgs/bg_${num}.jpg`,
+    number: num,
+  };
+});
 
 export const CUSTOM_WALLPAPER_STORAGE_KEY = 'amanhecer_custom_wallpaper_v1';
 const IDB_NAME = 'amanhecer-wallpaper-storage-v1';
@@ -180,8 +125,8 @@ export function removeCustomWallpaperDataUrl(): void {
 }
 
 /**
- * Mantém a qualidade 100% original da imagem enviada da galeria (até 4K 3840px, qualidade 0.98
- * ou DataURL bruto sem perda para arquivos até 3.5MB), evitando qualquer compressão agressiva.
+ * Mantém os bytes 100% originais da imagem enviada da galeria (arquivos até 6MB não sofrem
+ * nenhuma recompressão; arquivos maiores mantêm resolução 4K 3840px com qualidade 0.98).
  */
 export function compressGalleryImageToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -190,13 +135,11 @@ export function compressGalleryImageToDataUrl(file: File): Promise<string> {
     reader.onload = () => {
       const rawDataUrl = String(reader.result);
 
-      // Se a foto original tem até 3.5 MB, preserva os bytes 100% originais sem re-encodar!
-      if (file.size <= 3.5 * 1024 * 1024) {
+      if (file.size <= 6 * 1024 * 1024) {
         resolve(rawDataUrl);
         return;
       }
 
-      // Para fotos gigantes (> 3.5MB), preserva resolução Ultra HD (até 3840px 4K) com qualidade 0.96
       const img = new Image();
       img.onerror = () => resolve(rawDataUrl);
       img.onload = () => {
@@ -223,7 +166,7 @@ export function compressGalleryImageToDataUrl(file: File): Promise<string> {
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = 'high';
           ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', 0.96));
+          resolve(canvas.toDataURL('image/jpeg', 0.98));
         } catch {
           resolve(rawDataUrl);
         }
@@ -243,5 +186,7 @@ export function resolveActiveWallpaperUrl(
     return wallpaperCustomUrl || getCustomWallpaperDataUrl() || null;
   }
   const found = WALLPAPER_CATALOG.find((w) => w.id === wallpaperId);
-  return found ? found.url : null;
+  if (found) return found.url;
+  // Caso o usuário tivesse um ID antigo salvo antes da substituição pelos 70 fundos novos
+  return WALLPAPER_CATALOG[0]?.url || null;
 }
