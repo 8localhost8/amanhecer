@@ -8,15 +8,15 @@ export interface WallpaperItem {
 }
 
 /**
- * Catálogo completo com os 70 fundos originais em alta definição (1280x1280)
- * copiados byte-a-byte sem recompressão de `/wallpapers/verse_bgs/bg_1.jpg` a `bg_70.jpg`.
+ * Catálogo completo com os 70 fundos originais em Full HD Vertical (1080x1920, 4:4:4 Q1)
+ * em `/wallpapers/verse_bgs/bg_1.jpg` a `bg_70.jpg`.
  */
 export const WALLPAPER_CATALOG: WallpaperItem[] = Array.from({ length: 70 }, (_, idx) => {
   const num = idx + 1;
   return {
     id: `bg-${num}`,
     title: `Fundo ${num}`,
-    url: `/wallpapers/verse_bgs/bg_${num}.jpg`,
+    url: `/wallpapers/verse_bgs/bg_${num}.jpg?v=2.4.3`,
     number: num,
   };
 });

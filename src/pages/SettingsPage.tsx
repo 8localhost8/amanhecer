@@ -862,7 +862,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             )}
           </section>
 
-          {/* 2. Coleção de 70 Wallpapers Originais em Alta Definição (1280x1280) */}
+          {/* 2. Coleção de 70 Wallpapers Originais em Full HD Vertical (1080x1920) */}
           <section className="surface-editorial rounded-3xl p-4 sm:p-5 space-y-4">
             <div className="flex items-center justify-between gap-2">
               <div>
@@ -870,11 +870,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   Coleção de Fundos ({WALLPAPER_CATALOG.length})
                 </h3>
                 <p className="text-[11px] text-graphite-500 dark:text-sand-300/85">
-                  Imagens originais em alta resolução (1280×1280) sem perda de qualidade.
+                  Imagens em proporção vertical Full HD (1080×1920) sem cortes nem perda de nitidez.
                 </p>
               </div>
               <span className="px-2.5 py-1 rounded-full bg-sage-100 dark:bg-graphite-800 text-sage-800 dark:text-sand-200 text-[10px] font-bold shrink-0">
-                HD Original
+                1080×1920 HD
               </span>
             </div>
 
@@ -894,7 +894,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     <img
                       src={customGalleryUrl}
                       alt="Minha foto da galeria"
-                      className="w-14 h-14 rounded-xl object-cover border border-white/20 shrink-0"
+                      className="w-12 h-16 rounded-xl object-cover border border-white/20 shrink-0"
                     />
                     <div className="text-left">
                       <span className="text-xs font-bold text-graphite-800 dark:text-cream-50 block">
@@ -914,8 +914,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               </div>
             )}
 
-            {/* Grid de Miniaturas em Aspecto 1:1 Nativo (1280x1280) sem sobreposição escura */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {/* Grid de Miniaturas em Aspecto 9:16 Vertical Nativo (1080x1920) sem sobreposição escura */}
+            <div className="grid grid-cols-3 gap-2.5">
               {WALLPAPER_CATALOG.map((item) => {
                 const isSelected = activeWallpaperId === item.id;
                 return (
@@ -923,7 +923,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     key={item.id}
                     type="button"
                     onClick={() => handleSelectWallpaper(item.id)}
-                    className={`group relative aspect-square rounded-2xl overflow-hidden border-2 transition-all cursor-pointer bg-graphite-900 ${
+                    className={`group relative aspect-[9/16] rounded-2xl overflow-hidden border-2 transition-all cursor-pointer bg-graphite-900 ${
                       isSelected
                         ? 'border-sage-700 dark:border-sand-300 ring-2 ring-sage-600/45 dark:ring-sand-300/45 scale-[1.01]'
                         : 'border-sand-200/40 dark:border-graphite-700/60 hover:border-sand-300'
