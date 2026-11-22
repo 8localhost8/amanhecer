@@ -2,16 +2,21 @@ name: Web Push Notifications Scheduler
 
 on:
   schedule:
-    # 06:06 Horário de Brasília (America/Sao_Paulo) -> 09:06 UTC (Versículo do Dia)
+    # Gatilhos antecipados (minuto 52 foge do congestionamento global do minuto 0 no GitHub Actions)
+    # + gatilhos de segurança nos horários de Brasília (UTC-3):
+    # Manhã (06:00 e 06:06 BRT -> 08:52, 09:02 e 09:06 UTC)
+    - cron: '52 8 * * *'
+    - cron: '2 9 * * *'
     - cron: '6 9 * * *'
-    # 06:00 Brasília -> 09:00 UTC (Lembrete Matinal se versículo desativado)
-    - cron: '0 9 * * *'
-    # 11:00 Brasília -> 14:00 UTC (Lembrete Meio-dia)
-    - cron: '0 14 * * *'
-    # 16:00 Brasília -> 19:00 UTC (Lembrete Tarde)
-    - cron: '0 19 * * *'
-    # 21:00 Brasília -> 00:00 UTC (Lembrete Noite)
-    - cron: '0 0 * * *'
+    # Meio-dia (11:00 BRT -> 13:52 e 14:02 UTC)
+    - cron: '52 13 * * *'
+    - cron: '2 14 * * *'
+    # Fim de Tarde (16:00 BRT -> 18:52 e 19:02 UTC)
+    - cron: '52 18 * * *'
+    - cron: '2 19 * * *'
+    # Noite (21:00 BRT -> 23:52 e 00:02 UTC)
+    - cron: '52 23 * * *'
+    - cron: '2 0 * * *'
   workflow_dispatch:
     inputs:
       type:
@@ -27,44 +32,116 @@ jobs:
   dispatch-push:
     runs-on: ubuntu-latest
     steps:
-      - name: Executar Envio Seguro de Web Push
+      - name: Executar Envio Pontual Validado pelo Relógio de Brasília
         env:
           APP_URL: ${{ secrets.APP_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
-          SCHEDULE: ${{ github.event.schedule }}
           INPUT_TYPE: ${{ github.event.inputs.type }}
           INPUT_SLOT: ${{ github.event.inputs.slot }}
         run: |
+          export TZ="America/Sao_Paulo"
           TARGET_URL="${APP_URL:-https://amanhecer-beta.vercel.app}"
-          # Remove barra final se houver
           TARGET_URL="${TARGET_URL%/}"
+          if [ "$TARGET_URL" = "https://amanhecer.app" ]; then
+            TARGET_URL="https://amanhecer-beta.vercel.app"
+          fi
 
+          # 1. Disparo Manual (workflow_dispatch)
           if [ "$INPUT_TYPE" = "reminder" ]; then
             echo "Disparando Lembrete Manual ($INPUT_SLOT)..."
-            curl -sS -X POST "$TARGET_URL/api/push/send-reminders?slot=${INPUT_SLOT:-11:00}" \
+            curl -sS -X POST "$TARGET_URL/api/push/send-reminders?slot=${INPUT_SLOT:-11:00}&force=1" \
               -H "Authorization: Bearer $CRON_SECRET"
+            exit 0
           elif [ "$INPUT_TYPE" = "daily-verse" ]; then
             echo "Disparando Versículo do Dia Manual..."
-            curl -sS -X POST "$TARGET_URL/api/push/send-daily-verse" \
+            curl -sS -X POST "$TARGET_URL/api/push/send-daily-verse?force=1" \
               -H "Authorization: Bearer $CRON_SECRET"
-          elif [ "$SCHEDULE" = "0 9 * * *" ]; then
-            echo "Disparando Lembrete Agendado (06:00 BRT)..."
+            exit 0
+          fi
+
+          # 2. Disparo Agendado: Verifica o horário REAL em Brasília (America/Sao_Paulo)
+          # Nunca confia em $SCHEDULE se o GitHub Actions tiver atrasado horas!
+          HOUR=$(date +%-H)
+          MIN=$(date +%-M)
+          SEC=$(date +%-S)
+          TOTAL_MIN=$((HOUR * 60 + MIN))
+          echo "Horário real em Brasília no início do runner: $(date '+%Y-%m-%d %H:%M:%S %Z')"
+
+          wait_until_brt() {
+            TARGET_H=$1
+            TARGET_M=$2
+            TARGET_TOTAL=$((TARGET_H * 60 + TARGET_M))
+            while true; do
+              CUR_H=$(date +%-H)
+              CUR_M=$(date +%-M)
+              CUR_TOTAL=$((CUR_H * 60 + CUR_M))
+              if [ "$CUR_TOTAL" -ge "$TARGET_TOTAL" ]; then
+                break
+              fi
+              DIFF_SEC=$(( (TARGET_TOTAL - CUR_TOTAL) * 60 - $(date +%-S) ))
+              if [ "$DIFF_SEC" -le 0 ] || [ "$DIFF_SEC" -gt 900 ]; then
+                break
+              fi
+              echo "Aguardando ${DIFF_SEC}s para o horário pontual $(printf '%02d:%02d' $TARGET_H $TARGET_M) BRT..."
+              sleep "$DIFF_SEC"
+            done
+          }
+
+          # Janela da Manhã: 05:50 às 07:30 BRT -> 06:00 (Lembrete) e 06:06 (Versículo do Dia)
+          if [ "$TOTAL_MIN" -ge 350 ] && [ "$TOTAL_MIN" -le 450 ]; then
+            if [ "$TOTAL_MIN" -lt 360 ]; then
+              wait_until_brt 6 0
+            fi
+            echo "Disparando Lembrete Matinal 06:00 BRT (para quem desativou versículo)..."
             curl -sS -X POST "$TARGET_URL/api/push/send-reminders?slot=06:00" \
               -H "Authorization: Bearer $CRON_SECRET"
-          elif [ "$SCHEDULE" = "0 14 * * *" ]; then
-            echo "Disparando Lembrete Agendado (11:00 BRT)..."
-            curl -sS -X POST "$TARGET_URL/api/push/send-reminders?slot=11:00" \
-              -H "Authorization: Bearer $CRON_SECRET"
-          elif [ "$SCHEDULE" = "0 19 * * *" ]; then
-            echo "Disparando Lembrete Agendado (16:00 BRT)..."
-            curl -sS -X POST "$TARGET_URL/api/push/send-reminders?slot=16:00" \
-              -H "Authorization: Bearer $CRON_SECRET"
-          elif [ "$SCHEDULE" = "0 0 * * *" ]; then
-            echo "Disparando Lembrete Agendado (21:00 BRT)..."
-            curl -sS -X POST "$TARGET_URL/api/push/send-reminders?slot=21:00" \
-              -H "Authorization: Bearer $CRON_SECRET"
-          else
-            echo "Disparando Versículo do Dia Agendado (06:06 BRT)..."
+            echo ""
+
+            CUR_TOTAL=$(( $(date +%-H) * 60 + $(date +%-M) ))
+            if [ "$CUR_TOTAL" -lt 366 ]; then
+              wait_until_brt 6 6
+            fi
+            echo "Disparando Versículo do Dia 06:06 BRT..."
             curl -sS -X POST "$TARGET_URL/api/push/send-daily-verse" \
               -H "Authorization: Bearer $CRON_SECRET"
+            echo ""
+            exit 0
           fi
+
+          # Janela do Meio-Dia: 10:50 às 12:30 BRT -> 11:00 BRT
+          if [ "$TOTAL_MIN" -ge 650 ] && [ "$TOTAL_MIN" -le 750 ]; then
+            if [ "$TOTAL_MIN" -lt 660 ]; then
+              wait_until_brt 11 0
+            fi
+            echo "Disparando Lembrete 11:00 BRT (Pausa do Meio-Dia)..."
+            curl -sS -X POST "$TARGET_URL/api/push/send-reminders?slot=11:00" \
+              -H "Authorization: Bearer $CRON_SECRET"
+            echo ""
+            exit 0
+          fi
+
+          # Janela do Fim de Tarde: 15:50 às 17:30 BRT -> 16:00 BRT
+          if [ "$TOTAL_MIN" -ge 950 ] && [ "$TOTAL_MIN" -le 1050 ]; then
+            if [ "$TOTAL_MIN" -lt 960 ]; then
+              wait_until_brt 16 0
+            fi
+            echo "Disparando Lembrete 16:00 BRT (Fim de Tarde)..."
+            curl -sS -X POST "$TARGET_URL/api/push/send-reminders?slot=16:00" \
+              -H "Authorization: Bearer $CRON_SECRET"
+            echo ""
+            exit 0
+          fi
+
+          # Janela da Noite: 20:50 às 22:30 BRT -> 21:00 BRT
+          if [ "$TOTAL_MIN" -ge 1250 ] && [ "$TOTAL_MIN" -le 1350 ]; then
+            if [ "$TOTAL_MIN" -lt 1260 ]; then
+              wait_until_brt 21 0
+            fi
+            echo "Disparando Lembrete 21:00 BRT (Oração da Noite)..."
+            curl -sS -X POST "$TARGET_URL/api/push/send-reminders?slot=21:00" \
+              -H "Authorization: Bearer $CRON_SECRET"
+            echo ""
+            exit 0
+          fi
+
+          echo "Runner iniciou fora das janelas de envio ($(date '+%H:%M') BRT) devido a atraso na fila do GitHub Actions. Nenhuma notificação atrasada será enviada."

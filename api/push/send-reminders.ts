@@ -1,9 +1,57 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import webpush from 'web-push';
-import { getAllSubscriptions, updateSubscription, removeSubscription, getStorageMode } from './_store.js';
+import {
+  getAllSubscriptions,
+  updateSubscription,
+  removeSubscription,
+  getStorageMode,
+} from './_store.js';
 import { getSaoPauloDateString } from './_verse.js';
 
-export default async function handler(req: IncomingMessage & { body?: any }, res: ServerResponse) {
+function getSaoPauloClock(): { hour: number; minute: number; totalMinutes: number } {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(new Date());
+  const map: Record<string, string> = {};
+  for (const p of parts) map[p.type] = p.value;
+  const hour = parseInt(map.hour || '0', 10) % 24;
+  const minute = parseInt(map.minute || '0', 10);
+  return { hour, minute, totalMinutes: hour * 60 + minute };
+}
+
+/**
+ * Resolve o slot válido EXCLUSIVAMENTE com base no relógio real de Brasília (`America/Sao_Paulo`).
+ * Se um cron do GitHub Actions atrasar horas (ex: cron das 16:00 rodando às 20:45 ou às 00:57),
+ * NUNCA envia uma mensagem de "Fim de Tarde" às 21:00 nem envia notificações de madrugada!
+ */
+function resolveValidSlotForCurrentTime(totalMinutes: number): '06:00' | '11:00' | '16:00' | '21:00' | null {
+  // 05:45 às 07:30 -> 06:00 (Bom dia)
+  if (totalMinutes >= 5 * 60 + 45 && totalMinutes <= 7 * 60 + 30) {
+    return '06:00';
+  }
+  // 10:45 às 12:40 -> 11:00 (Pausa do Meio-Dia)
+  if (totalMinutes >= 10 * 60 + 45 && totalMinutes <= 12 * 60 + 40) {
+    return '11:00';
+  }
+  // 15:45 às 17:40 -> 16:00 (Fim de Tarde)
+  if (totalMinutes >= 15 * 60 + 45 && totalMinutes <= 17 * 60 + 40) {
+    return '16:00';
+  }
+  // 20:45 às 22:30 -> 21:00 (Oração da Noite)
+  if (totalMinutes >= 20 * 60 + 45 && totalMinutes <= 22 * 60 + 30) {
+    return '21:00';
+  }
+  return null;
+}
+
+export default async function handler(
+  req: IncomingMessage & { body?: any },
+  res: ServerResponse
+) {
   // Authorization
   const authHeader = req.headers['authorization'];
   const expectedSecret = process.env.CRON_SECRET || process.env.NOTIFICATIONS_API_KEY;
@@ -15,24 +63,37 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
     return;
   }
 
-  // Parse slot from query or current hour
   const urlObj = new URL(req.url || '/', 'http://localhost');
-  const slotParam = urlObj.searchParams.get('slot'); // e.g. '06:00', '11:00', '16:00', '21:00'
+  const requestedSlot = urlObj.searchParams.get('slot');
+  const forceManual = urlObj.searchParams.get('force') === '1';
 
-  const nowSP = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
-  const currentHour = nowSP.getHours();
+  const { hour, minute, totalMinutes } = getSaoPauloClock();
+  const saoPauloTimeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+  const clockSlot = resolveValidSlotForCurrentTime(totalMinutes);
 
-  let activeSlot = slotParam;
+  // Se não for forçado manualmente (?force=1), o horário real de Brasília manda!
+  // Isso impede que um job atrasado das 16:00 dispare "Fim de Tarde" às 21:00 ou de madrugada.
+  const activeSlot = forceManual ? requestedSlot || clockSlot || '11:00' : clockSlot;
+
   if (!activeSlot) {
-    if (currentHour >= 5 && currentHour < 10) activeSlot = '06:00';
-    else if (currentHour >= 10 && currentHour < 14) activeSlot = '11:00';
-    else if (currentHour >= 14 && currentHour < 19) activeSlot = '16:00';
-    else activeSlot = '21:00';
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(
+      JSON.stringify({
+        success: true,
+        skippedOutOfWindow: true,
+        requestedSlot,
+        saoPauloTime: saoPauloTimeStr,
+        reason:
+          'Cron executado fora das janelas válidas de envio (06:00, 11:00, 16:00, 21:00 BRT). Nenhuma notificação atrasada foi enviada.',
+      })
+    );
+    return;
   }
 
   const todayStr = getSaoPauloDateString();
 
-  // Configure VAPID (sanitize any accidental quotes or whitespace from Env Vars)
+  // Configure VAPID
   const clean = (v?: string) => (v || '').replace(/["'\s]/g, '').trim();
   const vapidPublicKey =
     clean(process.env.VAPID_PUBLIC_KEY) ||
@@ -48,13 +109,20 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
   if (!(vapidPublicKey && vapidPrivateKey)) {
     res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ success: false, error: 'VAPID_PRIVATE_KEY n?o configurada no servidor: nenhum push foi enviado.' }));
+    res.end(
+      JSON.stringify({
+        success: false,
+        error: 'VAPID_PRIVATE_KEY não configurada no servidor: nenhum push foi enviado.',
+      })
+    );
     return;
   }
 
   const subscriptions = await getAllSubscriptions();
   const results = {
     slot: activeSlot,
+    requestedSlot,
+    saoPauloTime: saoPauloTimeStr,
     storage: getStorageMode(),
     total: subscriptions.length,
     sent: 0,
@@ -68,35 +136,37 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
   const reminderMessages: Record<string, { title: string; body: string }> = {
     '06:00': {
       title: 'Amanhecer • Bom dia!',
-      body: 'Inicie seu dia na presença de Deus. Seu devocional matinal já está disponível.'
+      body: 'Inicie seu dia na presença de Deus. Seu devocional matinal já está disponível.',
     },
     '11:00': {
       title: 'Amanhecer • Pausa do Meio-Dia',
-      body: 'Uma pausa serena no meio das tarefas. Reserve alguns minutos para a Palavra e oração.'
+      body: 'Uma pausa serena no meio das tarefas. Reserve alguns minutos para a Palavra e oração.',
     },
     '16:00': {
       title: 'Amanhecer • Fim de Tarde',
-      body: 'Refrigere a sua alma neste fim de tarde com uma reflexão bíblica edificante.'
+      body: 'Refrigere a sua alma neste fim de tarde com uma reflexão bíblica edificante.',
     },
     '21:00': {
       title: 'Amanhecer • Oração da Noite',
-      body: 'Entregue as lutas de hoje e descanse na fidelidade de Deus antes de dormir.'
-    }
+      body: 'Entregue as lutas de hoje e descanse na fidelidade de Deus antes de dormir.',
+    },
   };
 
   const message = reminderMessages[activeSlot] || reminderMessages['11:00'];
+  const slotKey = `${todayStr}_${activeSlot}`;
 
   const payload = JSON.stringify({
     title: message.title,
     body: message.body,
     icon: '/icons/icon-192x192.png',
     badge: '/icons/icon-192x192.png',
+    tag: `amanhecer-reminder-${slotKey}`,
     data: {
       url: `/?date=${todayStr}&source=push-reminder-${activeSlot}`,
       date: todayStr,
       type: 'reading-reminder',
       slot: activeSlot,
-    }
+    },
   });
 
   for (const sub of subscriptions) {
@@ -120,27 +190,28 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
 
     // 4. Duplicate check for this slot today
     sub.sentRemindersToday = sub.sentRemindersToday || [];
-    if (sub.sentRemindersToday.includes(`${todayStr}_${activeSlot}`)) {
+    if (!forceManual && sub.sentRemindersToday.includes(slotKey)) {
       results.skippedDuplicate++;
       continue;
     }
 
-    // 5. Send notification
+    // 5. Send notification (TTL de 90 minutos: se o celular estiver desligado às 16:00,
+    // a mensagem de Fim de Tarde expira às 17:30 e jamais será entregue às 21:00!)
     try {
-      if (vapidPublicKey && vapidPrivateKey) {
-        await webpush.sendNotification(
-          {
-            endpoint: sub.endpoint,
-            keys: sub.keys,
-          },
-          payload,
-          {
-            TTL: 86400,
-            urgency: 'high',
-          }
-        );
+      await webpush.sendNotification(
+        {
+          endpoint: sub.endpoint,
+          keys: sub.keys,
+        },
+        payload,
+        {
+          TTL: 5400,
+          urgency: 'high',
+        }
+      );
+      if (!sub.sentRemindersToday.includes(slotKey)) {
+        sub.sentRemindersToday.push(slotKey);
       }
-      sub.sentRemindersToday.push(`${todayStr}_${activeSlot}`);
       await updateSubscription(sub);
       results.sent++;
     } catch (err: any) {
@@ -155,10 +226,12 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
 
   res.statusCode = 200;
   res.setHeader('Content-Type', 'application/json');
-  res.end(JSON.stringify({
-    success: true,
-    date: todayStr,
-    slot: activeSlot,
-    results
-  }));
+  res.end(
+    JSON.stringify({
+      success: true,
+      date: todayStr,
+      slot: activeSlot,
+      results,
+    })
+  );
 }

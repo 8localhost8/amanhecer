@@ -584,6 +584,9 @@ export async function syncNotificationScheduleWithSW(): Promise<void> {
   if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     try {
       const reg = await navigator.serviceWorker.getRegistration();
+      const sub = await reg?.pushManager?.getSubscription().catch(() => null);
+      const hasWebPushSub = Boolean(sub || prefs.pushSubscriptionToken);
+
       if (reg?.active) {
         reg.active.postMessage({
           type: 'SYNC_NOTIFICATION_SCHEDULE',
@@ -591,6 +594,7 @@ export async function syncNotificationScheduleWithSW(): Promise<void> {
             notificationsEnabled: prefs.notificationsEnabled && Notification.permission === 'granted',
             dailyVerseEnabled: prefs.dailyVerseEnabled,
             reminderEnabled: prefs.reminderEnabled,
+            hasWebPushSub,
             lastReadDate: completion ? todayStr : null,
             verseReference: verse.reference,
             verseText: verse.text,
@@ -615,8 +619,6 @@ export async function syncNotificationScheduleWithSW(): Promise<void> {
       // ignore SW sync errors
     }
   }
-
-  await checkAndTriggerLocalScheduledNotifications();
 }
 
 function getSaoPauloTimeParts(): { dateStr: string; totalMinutes: number } {
@@ -642,7 +644,9 @@ function getSaoPauloTimeParts(): { dateStr: string; totalMinutes: number } {
 }
 
 /**
- * Checks in-app / background timer if 06:06 Daily Verse or 11:00/16:00/21:00 Reminder is due
+ * Checks in-app / background timer if 06:06 Daily Verse or 11:00/16:00/21:00 Reminder is due.
+ * Nunca dispara quando o usuário acabou de abrir o app fora do minuto exato ou quando o Web Push
+ * do servidor já está ativo, evitando notificações atrasadas ao abrir o app.
  */
 export async function checkAndTriggerLocalScheduledNotifications(): Promise<void> {
   if (!checkPushSupport() || Notification.permission !== 'granted') return;
@@ -650,16 +654,29 @@ export async function checkAndTriggerLocalScheduledNotifications(): Promise<void
   const prefs = loadUserPreferences();
   if (!prefs.notificationsEnabled) return;
 
+  // Se o dispositivo já possui inscrição Web Push ativa no servidor, não dispara duplicatas locais no cliente
+  if (prefs.pushSubscriptionToken) return;
+  if (typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window) {
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      const sub = await reg?.pushManager?.getSubscription();
+      if (sub) return;
+    } catch {
+      // ignore
+    }
+  }
+
   const { dateStr, totalMinutes } = getSaoPauloTimeParts();
   const state = loadLocalNotifState(dateStr);
   const verse = selectDailyVerse(dateStr);
   const completion = await getCompletion(dateStr);
   let mutated = false;
 
-  // 1. 06:06 Daily Verse
+  // 1. 06:06 Daily Verse (janela estrita de 15 minutos: 06:06 às 06:21)
   if (
     prefs.dailyVerseEnabled &&
     totalMinutes >= 6 * 60 + 6 &&
+    totalMinutes <= 6 * 60 + 21 &&
     state.lastVerseSentDate !== dateStr
   ) {
     const sent = await showAppNotification('☀️ Versículo do Dia — Amanhecer', {
@@ -673,13 +690,13 @@ export async function checkAndTriggerLocalScheduledNotifications(): Promise<void
     }
   }
 
-  // 2. Reading Reminders (06:00, 11:00, 16:00, 21:00) if today's devotional is not read
+  // 2. Reading Reminders (06:00, 11:00, 16:00, 21:00 — janelas estritas de 15 minutos)
   if (prefs.reminderEnabled && !completion) {
     const slots = [
       {
         id: '06:00',
         start: 6 * 60,
-        end: 10 * 60 + 59,
+        end: 6 * 60 + 15,
         skipIfDailyVerse: true,
         title: 'Amanhecer • Bom dia!',
         body: 'Inicie seu dia na presença de Deus. Seu devocional matinal já está disponível.',
@@ -687,7 +704,7 @@ export async function checkAndTriggerLocalScheduledNotifications(): Promise<void
       {
         id: '11:00',
         start: 11 * 60,
-        end: 15 * 60 + 59,
+        end: 11 * 60 + 15,
         skipIfDailyVerse: false,
         title: 'Amanhecer • Pausa do Meio-Dia',
         body: 'Uma pausa serena no meio das tarefas. Reserve alguns minutos para a Palavra e oração.',
@@ -695,7 +712,7 @@ export async function checkAndTriggerLocalScheduledNotifications(): Promise<void
       {
         id: '16:00',
         start: 16 * 60,
-        end: 20 * 60 + 59,
+        end: 16 * 60 + 15,
         skipIfDailyVerse: false,
         title: 'Amanhecer • Fim de Tarde',
         body: 'Refrigere a sua alma neste fim de tarde com uma reflexão bíblica edificante.',
@@ -703,7 +720,7 @@ export async function checkAndTriggerLocalScheduledNotifications(): Promise<void
       {
         id: '21:00',
         start: 21 * 60,
-        end: 23 * 60 + 59,
+        end: 21 * 60 + 15,
         skipIfDailyVerse: false,
         title: 'Amanhecer • Oração da Noite',
         body: 'Entregue as lutas de hoje e descanse na fidelidade de Deus antes de dormir.',

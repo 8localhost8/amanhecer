@@ -46,19 +46,25 @@ function getSaoPauloNow() {
     map[p.type] = p.value;
   }
   const dateStr = `${map.year}-${map.month}-${map.day}`;
-  const hour = parseInt(map.hour || '0', 10);
+  const hour = parseInt(map.hour || '0', 10) % 24;
   const minute = parseInt(map.minute || '0', 10);
   return { dateStr, hour, minute, totalMinutes: hour * 60 + minute };
 }
 
+/**
+ * Fallback local em background (Periodic Sync) apenas para aparelhos sem Web Push ativo
+ * e estritamente dentro da janela de 45 minutos de cada horário para jamais atrasar notificações.
+ */
 async function checkAndDispatchDueNotifications() {
   const state = await readScheduleState();
   if (!state || !state.notificationsEnabled) return;
 
+  // Se o dispositivo possui inscrição Web Push ativa no servidor, o disparo vem via evento 'push'
+  if (state.hasWebPushSub) return;
+
   const { dateStr, totalMinutes } = getSaoPauloNow();
   let mutated = false;
 
-  // Reset daily tracking if date changed
   if (state.trackingDate !== dateStr) {
     state.trackingDate = dateStr;
     state.notifiedSlotsToday = [];
@@ -67,10 +73,11 @@ async function checkAndDispatchDueNotifications() {
 
   state.notifiedSlotsToday = state.notifiedSlotsToday || [];
 
-  // 1. Check 06:06 Daily Verse (between 06:06 and 10:59 if not sent today)
+  // 1. Check 06:06 Daily Verse (estritamente entre 06:06 e 06:50 BRT)
   if (
     state.dailyVerseEnabled &&
     totalMinutes >= 6 * 60 + 6 &&
+    totalMinutes <= 6 * 60 + 50 &&
     state.lastVerseSentDate !== dateStr
   ) {
     const verseRef = state.verseReference || 'Provérbios 3:5-6';
@@ -92,13 +99,13 @@ async function checkAndDispatchDueNotifications() {
     mutated = true;
   }
 
-  // 2. Check Reading Reminders (stop immediately if today's devotional is completed)
+  // 2. Check Reading Reminders (janelas estritas de 45 minutos para nunca disparar Fim de Tarde às 21:00)
   if (state.reminderEnabled && state.lastReadDate !== dateStr) {
     const slots = [
       {
         id: '06:00',
         start: 6 * 60,
-        end: 10 * 60 + 59,
+        end: 6 * 60 + 45,
         skipIfDailyVerse: true,
         title: 'Amanhecer • Bom dia!',
         body: 'Inicie seu dia na presença de Deus. Seu devocional matinal já está disponível.',
@@ -106,7 +113,7 @@ async function checkAndDispatchDueNotifications() {
       {
         id: '11:00',
         start: 11 * 60,
-        end: 15 * 60 + 59,
+        end: 11 * 60 + 45,
         skipIfDailyVerse: false,
         title: 'Amanhecer • Pausa do Meio-Dia',
         body: 'Uma pausa serena no meio das tarefas. Reserve alguns minutos para a Palavra e oração.',
@@ -114,7 +121,7 @@ async function checkAndDispatchDueNotifications() {
       {
         id: '16:00',
         start: 16 * 60,
-        end: 20 * 60 + 59,
+        end: 16 * 60 + 45,
         skipIfDailyVerse: false,
         title: 'Amanhecer • Fim de Tarde',
         body: 'Refrigere a sua alma neste fim de tarde com uma reflexão bíblica edificante.',
@@ -122,7 +129,7 @@ async function checkAndDispatchDueNotifications() {
       {
         id: '21:00',
         start: 21 * 60,
-        end: 23 * 60 + 59,
+        end: 21 * 60 + 45,
         skipIfDailyVerse: false,
         title: 'Amanhecer • Oração da Noite',
         body: 'Entregue as lutas de hoje e descanse na fidelidade de Deus antes de dormir.',
@@ -157,7 +164,7 @@ async function checkAndDispatchDueNotifications() {
   }
 }
 
-// 1. Web Push Event Listener
+// 1. Web Push Event Listener (Recebe notificações da nuvem com o app 100% fechado)
 self.addEventListener('push', (event) => {
   event.waitUntil(
     (async () => {
@@ -173,9 +180,40 @@ self.addEventListener('push', (event) => {
         }
       }
 
+      const { dateStr } = getSaoPauloNow();
+      const notifType = data.data?.type;
+      const notifSlot = data.data?.slot;
+
+      // Atualiza imediatamente o estado local do Service Worker para evitar qualquer duplicidade
+      try {
+        const state = (await readScheduleState()) || {};
+        if (state.trackingDate !== dateStr) {
+          state.trackingDate = dateStr;
+          state.notifiedSlotsToday = [];
+        }
+        state.notifiedSlotsToday = state.notifiedSlotsToday || [];
+        if (notifType === 'daily-verse') {
+          state.lastVerseSentDate = dateStr;
+        } else if (notifType === 'reading-reminder' && notifSlot) {
+          const key = `${dateStr}_${notifSlot}`;
+          if (!state.notifiedSlotsToday.includes(key)) {
+            state.notifiedSlotsToday.push(key);
+          }
+        }
+        await writeScheduleState(state);
+      } catch {
+        // ignore state update errors
+      }
+
       const title = data.title || 'Amanhecer • Devocional Diário';
       const targetUrl = data.data?.url || '/';
-      const tag = data.tag || `amanhecer-push-${Date.now()}`;
+      const tag =
+        data.tag ||
+        (notifType === 'daily-verse'
+          ? `amanhecer-verse-${dateStr}`
+          : notifType === 'reading-reminder' && notifSlot
+          ? `amanhecer-reminder-${dateStr}_${notifSlot}`
+          : `amanhecer-push-${Date.now()}`);
 
       const options = {
         body: data.body || 'Um momento com Deus para hoje.',
@@ -194,7 +232,6 @@ self.addEventListener('push', (event) => {
       try {
         await self.registration.showNotification(title, options);
       } catch (err) {
-        // Fallback resiliente caso o browser mobile rejeite vibrate ou actions
         try {
           await self.registration.showNotification(title, {
             body: options.body,
@@ -231,7 +268,7 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// 3. Client Message Listener (Immediate Notification & Schedule Sync)
+// 3. Client Message Listener (Salva estado de leitura sem disparar notificação atrasada ao abrir o app!)
 self.addEventListener('message', (event) => {
   if (!event.data) return;
 
@@ -267,7 +304,6 @@ self.addEventListener('message', (event) => {
             incoming.notifiedSlotsToday || existing.notifiedSlotsToday || [],
         };
         await writeScheduleState(merged);
-        await checkAndDispatchDueNotifications();
       })()
     );
   }
