@@ -418,9 +418,10 @@ export const App: React.FC = () => {
         {currentView === 'audit' && <EvaluationDashboardPage devotional={devotional} />}
       </main>
 
-      {/* Floating Bottom Bar Navigation (Matching UX Reference) */}
+      {/* Floating Bottom Bar Navigation (Apple Liquid Glass) */}
       <BottomNav
         currentView={currentView as AppView}
+        hasWallpaper={hasActiveWallpaper}
         onNavigate={(view) => {
           if (view === 'home') {
             setDevotional(getDevotionalForDate(todayStr));

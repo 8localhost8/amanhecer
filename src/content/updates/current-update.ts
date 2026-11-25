@@ -18,16 +18,16 @@ export interface AppUpdateInfo {
  * ==============================================================================
  */
 export const CURRENT_UPDATE: AppUpdateInfo = {
-  version: '2.4.4',
-  releaseDate: '22 de Novembro de 2026',
-  badge: 'v2.4.4 • Correção de Notificações & Wallpapers HD',
+  version: '2.4.5',
+  releaseDate: '25 de Novembro de 2026',
+  badge: 'v2.4.5 • Nova Barra Liquid Glass & Física de Mola',
   title: 'Nova Atualização Disponível',
   subtitle: 'Atualize para ter a versão mais recente do Amanhecer.',
-  summary: 'Nova galeria de Papéis de Parede com prévia ao vivo e envio da galeria, barra inferior com animação líquida, ícones animados e Configurações organizadas em seções.',
+  summary: 'Nova barra inferior com efeito Liquid Glass real (refratando o papel de parede e os cards da interface), gota de lente interativa ao tocar ou arrastar e física de mola fluida.',
   changes: [
-    '🖼️ Papéis de Parede (Wallpapers): escolha entre 38 paisagens (Amanhecer, Céu Estrelado, Montanhas, Florestas, Oceanos e Desertos) ou suba sua própria foto da galeria com controle de opacidade e prévia real.',
-    '⚙️ Configurações em Seções: novo menu organizado estilo ajustes do celular para acesso rápido e limpo.',
-    '✨ Barra Inferior Líquida & Ícones Animados: nova animação fluida na navegação principal e microinterações nos ícones.',
+    '💧 Barra Inferior Liquid Glass: novo acabamento translúcido com refração óptica real sobre o papel de parede e os cards da HUD, com suporte a toque e arraste contínuo e física de mola.',
+    '🖼️ Papéis de Parede Full HD (1080×1920): 70 paisagens sem perda de nitidez, prévia real da interface, ajuste de opacidade e envio da galeria.',
+    '🔔 Pontualidade nas Notificações: envio sincronizado rigorosamente com o horário de Brasília.',
     '🔄 Persistência Garantida: seu papel de parede, nome, diário e notas continuam 100% salvos após atualizar.'
   ]
 };

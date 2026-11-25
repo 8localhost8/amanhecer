@@ -450,26 +450,26 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             </div>
           </div>
 
-          {/* 3. Barra Inferior Real no Preview */}
+          {/* 3. Barra Inferior Real no Preview (Apple Liquid Glass) */}
           <div className="px-3 pb-2.5 pt-1">
-            <div className="surface-editorial backdrop-blur-xl rounded-full px-3 py-1.5 flex items-center justify-around">
-              <div className="flex flex-col items-center text-sage-900 dark:text-cream-100">
+            <div className="apple-liquid-glass-bar backdrop-blur-md rounded-full px-2 py-1 flex items-center justify-around relative">
+              <div className="relative px-2.5 py-1 rounded-full apple-liquid-droplet-lens flex flex-col items-center text-graphite-900 dark:text-white">
                 <AnimatedBookOpenIcon className="w-3.5 h-3.5" active={true} />
                 <span className="text-[8px] font-bold mt-0.5">Hoje</span>
               </div>
-              <div className="flex flex-col items-center text-graphite-400 dark:text-sand-300/80">
+              <div className="flex flex-col items-center text-graphite-700/80 dark:text-white/75">
                 <AnimatedClockHistoryIcon className="w-3.5 h-3.5" />
                 <span className="text-[8px] mt-0.5">Histórico</span>
               </div>
-              <div className="flex flex-col items-center text-graphite-400 dark:text-sand-300/80">
+              <div className="flex flex-col items-center text-graphite-700/80 dark:text-white/75">
                 <AnimatedHeartIcon className="w-3.5 h-3.5" />
                 <span className="text-[8px] mt-0.5">Favoritos</span>
               </div>
-              <div className="flex flex-col items-center text-graphite-400 dark:text-sand-300/80">
+              <div className="flex flex-col items-center text-graphite-700/80 dark:text-white/75">
                 <AnimatedBookmarkDiaryIcon className="w-3.5 h-3.5" />
                 <span className="text-[8px] mt-0.5">Diário</span>
               </div>
-              <div className="flex flex-col items-center text-graphite-400 dark:text-sand-300/80">
+              <div className="flex flex-col items-center text-graphite-700/80 dark:text-white/75">
                 <AnimatedSettingsIcon className="w-3.5 h-3.5" />
                 <span className="text-[8px] mt-0.5">Ajustes</span>
               </div>
