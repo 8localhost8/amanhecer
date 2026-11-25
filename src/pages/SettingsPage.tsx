@@ -14,7 +14,15 @@ import {
   Clock,
   Play,
   Share2,
+  Droplets,
+  Sliders,
 } from 'lucide-react';
+import {
+  DEFAULT_LIQUID_GLASS_CONFIG,
+  LIQUID_GLASS_PRESETS,
+  LiquidGlassConfig,
+  resolveLiquidGlassConfig,
+} from '../utils/liquidGlassOptics';
 import {
   UserPreferences,
   saveUserPreferences,
@@ -72,6 +80,7 @@ export type SettingsSectionId =
   | 'menu'
   | 'profile'
   | 'wallpaper'
+  | 'bottombar'
   | 'theme'
   | 'typography'
   | 'notifications'
@@ -171,6 +180,27 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     const opacity = Math.max(0, Math.min(100, parseInt(e.target.value, 10) || 0));
     const updated = saveUserPreferences({ wallpaperOpacity: opacity });
     onUpdatePreferences(updated);
+  };
+
+  const lgConfig = resolveLiquidGlassConfig(preferences.liquidGlassConfig);
+
+  const updateLiquidGlassParam = <K extends keyof LiquidGlassConfig>(
+    key: K,
+    value: LiquidGlassConfig[K]
+  ) => {
+    const nextCfg: LiquidGlassConfig = {
+      ...lgConfig,
+      [key]: value,
+    };
+    const updated = saveUserPreferences({ liquidGlassConfig: nextCfg });
+    onUpdatePreferences(updated);
+  };
+
+  const applyLiquidGlassPreset = (presetConfig: LiquidGlassConfig) => {
+    const updated = saveUserPreferences({ liquidGlassConfig: { ...presetConfig } });
+    onUpdatePreferences(updated);
+    window.dispatchEvent(new CustomEvent('amanhecer:test-liquid-hop'));
+    trackEvent('settings_changed', { setting: 'liquid_glass_preset', value: 'applied' });
   };
 
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -551,6 +581,34 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                     </div>
                     <p className="text-xs text-graphite-500 dark:text-sand-300/85 truncate mt-0.5">
                       {activeWallpaperTitle}
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-graphite-400 dark:text-sand-300 group-hover:translate-x-0.5 transition-transform shrink-0" />
+              </button>
+
+              {/* Barra Inferior (Liquid Glass) */}
+              <button
+                type="button"
+                onClick={() => openSection('bottombar')}
+                data-testid="open-bottombar-settings-btn"
+                className="w-full p-4 sm:px-5 flex items-center justify-between gap-3 text-left hover:bg-sand-100/50 dark:hover:bg-white/[0.03] transition-colors group cursor-pointer"
+              >
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-10 h-10 rounded-2xl bg-sky-500/15 dark:bg-sky-400/15 text-sky-700 dark:text-sky-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <Droplets className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-graphite-800 dark:text-cream-50">
+                        Barra Inferior (Liquid Glass)
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-sky-500/15 dark:bg-sky-400/20 text-sky-800 dark:text-sky-200 text-[9px] font-bold uppercase tracking-wider">
+                        Novo
+                      </span>
+                    </div>
+                    <p className="text-xs text-graphite-500 dark:text-sand-300/85 truncate mt-0.5">
+                      Refração óptica, desfoque, gota e mola ({Math.round(lgConfig.edgeIntensity * 100)}%)
                     </p>
                   </div>
                 </div>
@@ -1422,6 +1480,260 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 <span>Ler Termos de Uso e Política de Privacidade (LGPD)</span>
               </button>
             </div>
+          </section>
+        </div>
+      )}
+
+      {/* =====================================================================
+          SEÇÃO: BARRA INFERIOR (LIQUID GLASS CONTROLS & FÍSICA DE MOLA)
+         ===================================================================== */}
+      {activeSection === 'bottombar' && (
+        <div className="space-y-5 ae-reveal-up">
+          {renderSectionBackHeader(
+            'Barra Inferior (Liquid Glass)',
+            'Personalize a refração óptica, o reflexo do vidro e a física da gota em tempo real'
+          )}
+
+          {/* 1. Perfis Rápidos + Botão de Teste ao Vivo na Barra */}
+          <section className="surface-editorial rounded-3xl p-4 sm:p-5 space-y-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center space-x-2">
+                <Sparkles className="w-4 h-4 text-sky-600 dark:text-sky-300" />
+                <span className="text-xs font-bold uppercase tracking-wider text-graphite-800 dark:text-cream-100">
+                  Estilos Prontos
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent('amanhecer:test-liquid-hop'))}
+                className="ae-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full btn-tactile-sage text-[11px] font-bold cursor-pointer"
+              >
+                <Play className="w-3 h-3 fill-current" />
+                <span>Testar Gota na Barra</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              {(
+                Object.entries(LIQUID_GLASS_PRESETS) as [
+                  keyof typeof LIQUID_GLASS_PRESETS,
+                  (typeof LIQUID_GLASS_PRESETS)[keyof typeof LIQUID_GLASS_PRESETS]
+                ][]
+              ).map(([presetKey, preset]) => (
+                <button
+                  key={presetKey}
+                  type="button"
+                  onClick={() => applyLiquidGlassPreset(preset.config)}
+                  className="p-3 rounded-2xl border border-sand-200 dark:border-graphite-700 bg-sand-50/70 dark:bg-graphite-900/60 hover:border-sage-600 dark:hover:border-sand-300 text-left transition-all cursor-pointer"
+                >
+                  <span className="text-xs font-bold text-graphite-800 dark:text-cream-50 block">
+                    {preset.label}
+                  </span>
+                  <span className="text-[10px] text-graphite-500 dark:text-sand-300/80 leading-snug block mt-0.5">
+                    {preset.description}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* 2. Painel Completo Liquid Glass Controls (Óptica & Refração) */}
+          <section className="surface-editorial rounded-3xl p-4 sm:p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Sliders className="w-4 h-4 text-sage-700 dark:text-sand-300" />
+                <span className="text-xs font-bold uppercase tracking-wider text-graphite-800 dark:text-cream-100">
+                  Controles do Liquid Glass
+                </span>
+              </div>
+              <span className="text-[10px] font-semibold text-graphite-400 dark:text-sand-300/80">
+                Ao vivo na barra abaixo
+              </span>
+            </div>
+
+            <div className="space-y-4">
+              {(
+                [
+                  {
+                    key: 'edgeIntensity' as const,
+                    label: 'Intensidade da Borda (Edge Intensity)',
+                    min: 0,
+                    max: 1,
+                    step: 0.01,
+                    fmt: (v: number) => v.toFixed(2),
+                  },
+                  {
+                    key: 'rimIntensity' as const,
+                    label: 'Intensidade do Aro (Rim Intensity)',
+                    min: 0,
+                    max: 1,
+                    step: 0.01,
+                    fmt: (v: number) => v.toFixed(2),
+                  },
+                  {
+                    key: 'baseIntensity' as const,
+                    label: 'Intensidade da Base (Base Intensity)',
+                    min: 0,
+                    max: 1,
+                    step: 0.01,
+                    fmt: (v: number) => v.toFixed(2),
+                  },
+                  {
+                    key: 'edgeDistance' as const,
+                    label: 'Distância da Borda (Edge Distance)',
+                    min: 0.05,
+                    max: 0.5,
+                    step: 0.01,
+                    fmt: (v: number) => v.toFixed(2),
+                  },
+                  {
+                    key: 'rimDistance' as const,
+                    label: 'Alcance do Aro (Rim Distance)',
+                    min: 0.1,
+                    max: 1.0,
+                    step: 0.02,
+                    fmt: (v: number) => v.toFixed(2),
+                  },
+                  {
+                    key: 'baseDistance' as const,
+                    label: 'Alcance da Base (Base Distance)',
+                    min: 0.05,
+                    max: 0.6,
+                    step: 0.01,
+                    fmt: (v: number) => v.toFixed(2),
+                  },
+                  {
+                    key: 'cornerBoost' as const,
+                    label: 'Reforço nos Cantos (Corner Boost)',
+                    min: 0,
+                    max: 1,
+                    step: 0.02,
+                    fmt: (v: number) => v.toFixed(2),
+                  },
+                  {
+                    key: 'rippleEffect' as const,
+                    label: 'Onda Líquida & Gota (Ripple Effect)',
+                    min: 0,
+                    max: 1,
+                    step: 0.02,
+                    fmt: (v: number) => v.toFixed(2),
+                  },
+                  {
+                    key: 'blurRadius' as const,
+                    label: 'Desfoque do Vidro (Blur Radius)',
+                    min: 0,
+                    max: 16,
+                    step: 0.2,
+                    fmt: (v: number) => `${v.toFixed(1)}px`,
+                  },
+                  {
+                    key: 'tintOpacity' as const,
+                    label: 'Opacidade da Película (Tint Opacity)',
+                    min: 0,
+                    max: 0.65,
+                    step: 0.01,
+                    fmt: (v: number) => v.toFixed(2),
+                  },
+                  {
+                    key: 'springBounce' as const,
+                    label: 'Elasticidade da Mola (Spring Bounce)',
+                    min: 0,
+                    max: 1,
+                    step: 0.02,
+                    fmt: (v: number) => `${Math.round(v * 100)}%`,
+                  },
+                ] as const
+              ).map((ctrl) => {
+                const val = lgConfig[ctrl.key];
+                return (
+                  <div key={ctrl.key} className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-graphite-700 dark:text-cream-100">
+                        {ctrl.label}
+                      </label>
+                      <span className="px-2 py-0.5 rounded-full bg-sand-100 dark:bg-graphite-800 text-[11px] font-bold tabular-nums text-sage-800 dark:text-sand-200">
+                        {ctrl.fmt(val)}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={ctrl.min}
+                      max={ctrl.max}
+                      step={ctrl.step}
+                      value={val}
+                      onChange={(e) =>
+                        updateLiquidGlassParam(ctrl.key, parseFloat(e.target.value))
+                      }
+                      className="w-full h-2 bg-sand-200 dark:bg-graphite-800 rounded-lg appearance-none cursor-pointer accent-sage-700 dark:accent-sand-300"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Opções Booleanas (Center Warp, Rótulos, Modo Ultra Leve) */}
+            <div className="pt-3 border-t border-sand-200/70 dark:border-graphite-800 space-y-2.5">
+              {(
+                [
+                  {
+                    key: 'enableCenterWarp' as const,
+                    title: 'Ativar Distorção Central (Enable Center Warp)',
+                    desc: 'Transforma também o centro da gota em lente de aumento convexa',
+                  },
+                  {
+                    key: 'hideTabLabels' as const,
+                    title: 'Ocultar Nomes das Abas',
+                    desc: 'Exibe apenas os ícones minimalistas dentro da barra',
+                  },
+                  {
+                    key: 'ecoGpuMode' as const,
+                    title: 'Modo Ultra Leve (Aparelhos Antigos)',
+                    desc: 'Desativa o deslocamento óptico SVG mantendo o vidro e a mola a 120fps',
+                  },
+                ] as const
+              ).map((toggle) => {
+                const checked = lgConfig[toggle.key];
+                return (
+                  <button
+                    key={toggle.key}
+                    type="button"
+                    onClick={() => updateLiquidGlassParam(toggle.key, !checked)}
+                    className="w-full p-3 rounded-2xl bg-sand-50/70 dark:bg-graphite-900/60 border border-sand-200/70 dark:border-graphite-800 flex items-center justify-between gap-3 text-left cursor-pointer"
+                  >
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold text-graphite-800 dark:text-cream-50 block">
+                        {toggle.title}
+                      </span>
+                      <span className="text-[10px] text-graphite-500 dark:text-sand-300/80 block mt-0.5">
+                        {toggle.desc}
+                      </span>
+                    </div>
+                    <div
+                      className={`w-11 h-6 rounded-full p-0.5 transition-colors shrink-0 ${
+                        checked
+                          ? 'bg-sage-700 dark:bg-sand-300'
+                          : 'bg-sand-300 dark:bg-graphite-700'
+                      }`}
+                    >
+                      <div
+                        className={`w-5 h-5 rounded-full bg-white dark:bg-sage-950 shadow-xs transition-transform ${
+                          checked ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => applyLiquidGlassPreset(DEFAULT_LIQUID_GLASS_CONFIG)}
+              className="ae-btn w-full py-3 px-4 rounded-full border border-sand-300 dark:border-graphite-700 bg-transparent hover:bg-sand-100/70 dark:hover:bg-graphite-800 text-xs font-semibold text-graphite-700 dark:text-cream-100 flex items-center justify-center space-x-2 cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Restaurar Padrão do Liquid Glass</span>
+            </button>
           </section>
         </div>
       )}

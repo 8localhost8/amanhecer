@@ -422,6 +422,7 @@ export const App: React.FC = () => {
       <BottomNav
         currentView={currentView as AppView}
         hasWallpaper={hasActiveWallpaper}
+        liquidGlassConfig={preferences.liquidGlassConfig}
         onNavigate={(view) => {
           if (view === 'home') {
             setDevotional(getDevotionalForDate(todayStr));

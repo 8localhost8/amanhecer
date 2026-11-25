@@ -1,3 +1,8 @@
+import {
+  DEFAULT_LIQUID_GLASS_CONFIG,
+  LiquidGlassConfig,
+} from '../utils/liquidGlassOptics';
+
 export type AppTheme = 'light' | 'dark' | 'auto';
 export type FontSizePreset = 'small' | 'medium' | 'large' | 'xlarge';
 
@@ -23,6 +28,7 @@ export interface UserPreferences {
   featureShareImageV6Seen?: boolean;
   wallpaperId?: string; // 'none' | catalog id | 'custom'
   wallpaperOpacity?: number; // 0 (preto total) a 100 (imagem sólida)
+  liquidGlassConfig?: Partial<LiquidGlassConfig>;
 }
 
 const PREF_STORAGE_KEY = 'amanhecer_user_preferences_v1';
@@ -49,6 +55,7 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   featureShareImageV6Seen: false,
   wallpaperId: 'none',
   wallpaperOpacity: 55,
+  liquidGlassConfig: { ...DEFAULT_LIQUID_GLASS_CONFIG },
 };
 
 export function loadUserPreferences(): UserPreferences {

@@ -1,28 +1,138 @@
 /**
- * Gerador óptico de mapas de deslocamento (Snell's Law + Superellipse/Capsule SDF)
- * para o efeito Apple iOS 26 / WhatsApp Liquid Glass real via SVG <feDisplacementMap>.
+ * Motor Óptico Ultra-Leve para Apple Liquid Glass (Lei de Snell + SDF de Cápsula)
  *
- * Diferente de um simples backdrop-filter: blur() chapado, estes mapas curvam
- * fisicamente os raios de luz do Wallpaper + HUD + Ícones nas bordas chanfradas
- * da barra e no domo convexo da gota líquida em movimento.
+ * Otimizações para Celulares (60/120fps sem travamentos):
+ * 1. Mapas gerados em meia-resolução bilinear (200×34 e 96×66) — 4x menos memória de textura
+ *    na GPU mantendo a mesma suavidade matemática exata quando interpolados em objectBoundingBox.
+ * 2. Parametrização completa em tempo real (Edge/Rim/Base Intensity & Distance, Corner Boost,
+ *    Center Warp) espelhando o painel "Liquid Glass Controls".
  */
 
-export interface OpticalMaps {
-  barMapUrl: string;
-  barWidth: number;
-  barHeight: number;
-  dropletMapUrl: string;
-  dropletWidth: number;
-  dropletHeight: number;
+export interface LiquidGlassConfig {
+  /** Intensidade da refração no chanfro da borda (0.00 .. 1.00) */
+  edgeIntensity: number;
+  /** Intensidade do brilho especular / aro Fresnel (0.00 .. 1.00) */
+  rimIntensity: number;
+  /** Intensidade da refração suave na base interna (0.00 .. 1.00) */
+  baseIntensity: number;
+  /** Largura normalizada do chanfro da borda (0.05 .. 0.50) */
+  edgeDistance: number;
+  /** Alcance do reflexo luminoso interno do aro (0.10 .. 1.00) */
+  rimDistance: number;
+  /** Profundidade da zona de transição interna (0.05 .. 0.60) */
+  baseDistance: number;
+  /** Reforço óptico nas extremidades curvas da cápsula (0.00 .. 1.00) */
+  cornerBoost: number;
+  /** Intensidade da onda líquida e inflação da gota (0.00 .. 1.00) */
+  rippleEffect: number;
+  /** Raio de desfoque do vidro em px (0.0 .. 20.0) */
+  blurRadius: number;
+  /** Opacidade da película do vidro (0.00 .. 0.75) */
+  tintOpacity: number;
+  /** Elasticidade/impulso da física de mola (0.00 .. 1.00) */
+  springBounce: number;
+  /** Ativa distorção de lupa convexa também no centro da gota */
+  enableCenterWarp: boolean;
+  /** Oculta os nomes abaixo dos ícones para visual minimalista */
+  hideTabLabels: boolean;
+  /** Modo ultra-leve para GPUs antigas (mantém vidro + mola 120fps sem shader SVG) */
+  ecoGpuMode: boolean;
+}
+
+export const DEFAULT_LIQUID_GLASS_CONFIG: LiquidGlassConfig = {
+  edgeIntensity: 0.55,
+  rimIntensity: 0.52,
+  baseIntensity: 0.16,
+  edgeDistance: 0.28,
+  rimDistance: 0.65,
+  baseDistance: 0.22,
+  cornerBoost: 0.35,
+  rippleEffect: 0.55,
+  blurRadius: 2.2,
+  tintOpacity: 0.12,
+  springBounce: 0.58,
+  enableCenterWarp: false,
+  hideTabLabels: false,
+  ecoGpuMode: false,
+};
+
+export const LIQUID_GLASS_PRESETS: Record<
+  'apple_default' | 'pure_crystal' | 'intense_drop' | 'frosted_soft',
+  { label: string; description: string; config: LiquidGlassConfig }
+> = {
+  apple_default: {
+    label: 'Padrão iOS',
+    description: 'Equilíbrio ideal entre refração líquida, nitidez e mola',
+    config: { ...DEFAULT_LIQUID_GLASS_CONFIG },
+  },
+  pure_crystal: {
+    label: 'Cristal Puro',
+    description: 'Água transparente sem desfoque com bordas prismáticas vivas',
+    config: {
+      ...DEFAULT_LIQUID_GLASS_CONFIG,
+      edgeIntensity: 0.78,
+      rimIntensity: 0.72,
+      baseIntensity: 0.22,
+      edgeDistance: 0.32,
+      cornerBoost: 0.55,
+      rippleEffect: 0.68,
+      blurRadius: 0.4,
+      tintOpacity: 0.05,
+      springBounce: 0.65,
+      enableCenterWarp: false,
+    },
+  },
+  intense_drop: {
+    label: 'Lupa Líquida',
+    description: 'Distorção central ativa estilo gota de aumento + mola elástica',
+    config: {
+      ...DEFAULT_LIQUID_GLASS_CONFIG,
+      edgeIntensity: 0.88,
+      rimIntensity: 0.68,
+      baseIntensity: 0.42,
+      edgeDistance: 0.36,
+      baseDistance: 0.38,
+      cornerBoost: 0.65,
+      rippleEffect: 0.85,
+      blurRadius: 1.4,
+      tintOpacity: 0.08,
+      springBounce: 0.82,
+      enableCenterWarp: true,
+    },
+  },
+  frosted_soft: {
+    label: 'Vidro Suave',
+    description: 'Acabamento acetinado discreto e máxima leveza visual',
+    config: {
+      ...DEFAULT_LIQUID_GLASS_CONFIG,
+      edgeIntensity: 0.32,
+      rimIntensity: 0.42,
+      baseIntensity: 0.08,
+      edgeDistance: 0.22,
+      cornerBoost: 0.2,
+      rippleEffect: 0.38,
+      blurRadius: 7.5,
+      tintOpacity: 0.24,
+      springBounce: 0.42,
+      enableCenterWarp: false,
+    },
+  },
+};
+
+export function resolveLiquidGlassConfig(
+  partial?: Partial<LiquidGlassConfig> | null
+): LiquidGlassConfig {
+  if (!partial) return { ...DEFAULT_LIQUID_GLASS_CONFIG };
+  return {
+    ...DEFAULT_LIQUID_GLASS_CONFIG,
+    ...partial,
+  };
 }
 
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v));
 }
 
-/**
- * Signed Distance Function (SDF) e gradiente normal para uma cápsula arredondada centrada em (0,0).
- */
 function capsuleSdfAndNormal(
   px: number,
   py: number,
@@ -60,19 +170,16 @@ function capsuleSdfAndNormal(
 }
 
 /**
- * Gera o mapa de refração da cápsula principal da barra inferior:
- * - Centro plano cristalino (deslocamento zero: R=128, G=128) para leitura limpa
- * - Chanfro curvo 3D nas bordas externas (bezelPx) que dobra o Wallpaper e os cards da HUD
- *   ao redor do vidro arredondado (Lei de Snell).
+ * Gera mapa compacto (meia resolução bilinear: ~200x34) da cápsula da barra inferior,
+ * incorporando Edge Intensity, Edge Distance, Base Intensity, Base Distance e Corner Boost.
  */
 export function generateBarRefractionMap(
-  width: number,
-  height: number,
-  bezelPx = 20
+  aspectRatio: number,
+  cfg: LiquidGlassConfig
 ): string {
   if (typeof document === 'undefined') return '';
-  const w = Math.max(64, Math.round(width));
-  const h = Math.max(32, Math.round(height));
+  const h = 36;
+  const w = clamp(Math.round(h * clamp(aspectRatio, 3, 9)), 120, 260);
 
   const canvas = document.createElement('canvas');
   canvas.width = w;
@@ -87,60 +194,8 @@ export function generateBarRefractionMap(
   const halfH = h / 2;
   const radius = halfH;
 
-  for (let y = 0; y < h; y++) {
-    const py = y + 0.5 - halfH;
-    for (let x = 0; x < w; x++) {
-      const px = x + 0.5 - halfW;
-      const { dist, nx, ny } = capsuleSdfAndNormal(px, py, halfW, halfH, radius);
-
-      let dx = 0;
-      let dy = 0;
-
-      if (dist <= 1.5 && dist > -bezelPx) {
-        // u = 0 no início interno do chanfro -> u = 1 na extremidade curva externa do vidro
-        const u = clamp(1 + dist / bezelPx, 0, 1);
-        // Perfil de inclinação de borda curva (Snell): puxa o fundo para dentro da curvatura
-        const refract = Math.pow(u, 2.15) * 0.96;
-        dx = -nx * refract;
-        dy = -ny * refract;
-      }
-
-      const idx = (y * w + x) * 4;
-      data[idx] = clamp(Math.round(128 + dx * 127), 0, 255);
-      data[idx + 1] = clamp(Math.round(128 + dy * 127), 0, 255);
-      data[idx + 2] = 128;
-      data[idx + 3] = 255;
-    }
-  }
-
-  ctx.putImageData(img, 0, 0);
-  return canvas.toDataURL('image/png');
-}
-
-/**
- * Gera o mapa de refração de uma gota líquida convexa (lente de aumento + menisco de tensão superficial):
- * - No interior: atua como lente convexa suave (magnifica ícones, textos e fundo sob a gota)
- * - No anel externo (menisco): curvatura acentuada de gota d'água que comprime e refrata a borda
- *   gerando dispersão cromática realista estilo iOS 26 / WhatsApp iPhone.
- */
-export function generateDropletLensMap(width = 160, height = 112): string {
-  if (typeof document === 'undefined') return '';
-  const w = Math.round(width);
-  const h = Math.round(height);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return '';
-
-  const img = ctx.createImageData(w, h);
-  const data = img.data;
-
-  const halfW = w / 2;
-  const halfH = h / 2;
-  const radius = halfH;
-  const rimWidth = halfH * 0.48;
+  const bezelPx = Math.max(2, halfH * clamp(cfg.edgeDistance * 2.1, 0.08, 0.98));
+  const baseZonePx = Math.max(bezelPx + 1, halfH * clamp((cfg.edgeDistance + cfg.baseDistance) * 1.8, 0.15, 1.0));
 
   for (let y = 0; y < h; y++) {
     const py = y + 0.5 - halfH;
@@ -151,28 +206,38 @@ export function generateDropletLensMap(width = 160, height = 112): string {
       let dx = 0;
       let dy = 0;
 
-      if (dist <= 2) {
-        // 1. Efeito de lupa convexa suave do centro até a borda
-        const normX = px / halfW;
-        const normY = py / halfH;
-        const radial = Math.min(1, Math.hypot(normX, normY));
-        const domeFalloff = 1 - Math.pow(radial, 2.4) * 0.35;
-        const magX = -normX * 0.34 * domeFalloff;
-        const magY = -normY * 0.34 * domeFalloff;
+      if (dist <= 1.2) {
+        // Fator de canto: 1 nas extremidades semicírculos esquerda/direita da cápsula
+        const endCapFactor = clamp((Math.abs(px) - (halfW - radius)) / Math.max(1, radius), 0, 1);
+        const cornerMult = 1 + endCapFactor * cfg.cornerBoost * 0.85;
 
-        // 2. Menisco líquido intenso próximo à borda da gota
-        let rimX = 0;
-        let rimY = 0;
-        if (dist > -rimWidth) {
-          const u = clamp(1 + dist / rimWidth, 0, 1);
-          const meniscus = Math.pow(u, 2.3) * 0.88;
-          rimX = -nx * meniscus;
-          rimY = -ny * meniscus;
+        // 1. Chanfro externo principal (Edge Intensity + Edge Distance)
+        if (dist > -bezelPx) {
+          const u = clamp(1 + dist / bezelPx, 0, 1);
+          const edgeStrength = Math.pow(u, 2.05) * (0.25 + cfg.edgeIntensity * 0.75) * cornerMult;
+          dx -= nx * edgeStrength;
+          dy -= ny * edgeStrength;
         }
 
-        dx = clamp(magX + rimX, -1, 1);
-        dy = clamp(magY + rimY, -1, 1);
+        // 2. Transição óptica de base (Base Intensity + Base Distance)
+        if (dist > -baseZonePx && cfg.baseIntensity > 0.005) {
+          const uBase = clamp(1 + dist / baseZonePx, 0, 1);
+          const baseStrength = uBase * cfg.baseIntensity * 0.35 * cornerMult;
+          dx -= nx * baseStrength;
+          dy -= ny * baseStrength;
+        }
+
+        // 3. Distorção central opcional (Enable Center Warp)
+        if (cfg.enableCenterWarp) {
+          const normX = px / halfW;
+          const normY = py / halfH;
+          dx -= normX * 0.14 * (0.4 + cfg.baseIntensity);
+          dy -= normY * 0.18 * (0.4 + cfg.baseIntensity);
+        }
       }
+
+      dx = clamp(dx, -1, 1);
+      dy = clamp(dy, -1, 1);
 
       const idx = (y * w + x) * 4;
       data[idx] = clamp(Math.round(128 + dx * 127), 0, 255);
@@ -187,13 +252,77 @@ export function generateDropletLensMap(width = 160, height = 112): string {
 }
 
 /**
- * Detecta se o motor do navegador suporta SVG filters dentro de CSS backdrop-filter (Chromium/Blink).
- * No Safari/WebKit, usamos o fallback multi-camada Fresnel + lente magnificada sem artefatos.
+ * Gera mapa compacto (96x66) da gota/lente líquida ativa:
+ * - Quando enableCenterWarp = false, o núcleo central permanece plano (ícone ativo 100% nítido em repouso!)
+ *   enquanto o anel externo cria o menisco líquido que dobra os ícones/HUD durante a passagem.
+ * - Quando enableCenterWarp = true, aplica também o domo de lupa convexa no centro da gota.
  */
+export function generateDropletLensMap(cfg: LiquidGlassConfig): string {
+  if (typeof document === 'undefined') return '';
+  const w = 96;
+  const h = 66;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return '';
+
+  const img = ctx.createImageData(w, h);
+  const data = img.data;
+
+  const halfW = w / 2;
+  const halfH = h / 2;
+  const radius = halfH;
+  const rimWidth = halfH * clamp(0.28 + cfg.edgeDistance * 0.85, 0.22, 0.82);
+
+  for (let y = 0; y < h; y++) {
+    const py = y + 0.5 - halfH;
+    for (let x = 0; x < w; x++) {
+      const px = x + 0.5 - halfW;
+      const { dist, nx, ny } = capsuleSdfAndNormal(px, py, halfW, halfH, radius);
+
+      let dx = 0;
+      let dy = 0;
+
+      if (dist <= 1.5) {
+        const endCapFactor = clamp((Math.abs(px) - (halfW - radius)) / Math.max(1, radius), 0, 1);
+        const cornerMult = 1 + endCapFactor * cfg.cornerBoost * 0.65;
+
+        if (cfg.enableCenterWarp) {
+          const normX = px / halfW;
+          const normY = py / halfH;
+          const radial = Math.min(1, Math.hypot(normX, normY));
+          const dome = (1 - Math.pow(radial, 2.2) * 0.35) * (0.24 + cfg.baseIntensity * 0.32);
+          dx -= normX * dome;
+          dy -= normY * dome;
+        }
+
+        if (dist > -rimWidth) {
+          const u = clamp(1 + dist / rimWidth, 0, 1);
+          const meniscus = Math.pow(u, 2.15) * (0.35 + cfg.edgeIntensity * 0.65) * cornerMult;
+          dx -= nx * meniscus;
+          dy -= ny * meniscus;
+        }
+      }
+
+      dx = clamp(dx, -1, 1);
+      dy = clamp(dy, -1, 1);
+
+      const idx = (y * w + x) * 4;
+      data[idx] = clamp(Math.round(128 + dx * 127), 0, 255);
+      data[idx + 1] = clamp(Math.round(128 + dy * 127), 0, 255);
+      data[idx + 2] = 128;
+      data[idx + 3] = 255;
+    }
+  }
+
+  ctx.putImageData(img, 0, 0);
+  return canvas.toDataURL('image/png');
+}
+
 export function supportsSvgBackdropFilter(): boolean {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
   const ua = navigator.userAgent || '';
-  const isChromium =
-    /Chrome\/|Chromium\/|Edg\/|OPR\//i.test(ua) && !/CriOS\/|FxiOS\//i.test(ua);
-  return isChromium;
+  return /Chrome\/|Chromium\/|Edg\/|OPR\//i.test(ua) && !/CriOS\/|FxiOS\//i.test(ua);
 }

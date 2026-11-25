@@ -9,6 +9,8 @@ import {
 import {
   generateBarRefractionMap,
   generateDropletLensMap,
+  LiquidGlassConfig,
+  resolveLiquidGlassConfig,
   supportsSvgBackdropFilter,
 } from '../utils/liquidGlassOptics';
 
@@ -26,6 +28,7 @@ interface BottomNavProps {
   onNavigate: (view: AppView) => void;
   favoritesCount?: number;
   hasWallpaper?: boolean;
+  liquidGlassConfig?: Partial<LiquidGlassConfig>;
 }
 
 const BAR_HEIGHT = 64;
@@ -33,19 +36,14 @@ const DROPLET_W = 104;
 const DROPLET_H = 72;
 
 interface SpringPhysicsState {
-  /** Posição horizontal normalizada (em fração 0..1 da largura da barra) */
   xPct: number;
   vxPct: number;
-  /** Rastro viscoso secundário para deformação líquida (gota esticando) */
   trailXPct: number;
   trailVxPct: number;
-  /** Inflação da lente líquida: 0 = pílula em repouso, 1 = gota de aumento inflada */
   inflation: number;
   vInflation: number;
-  /** Oscilação elástica de tensão superficial (squash & stretch ao pousar) */
   wobble: number;
   vWobble: number;
-  /** Inclinação 3D sutil da barra inteira reagindo ao toque e impacto */
   barTiltDeg: number;
   vBarTilt: number;
   barPressScale: number;
@@ -61,7 +59,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onNavigate,
   favoritesCount = 0,
   hasWallpaper = false,
+  liquidGlassConfig,
 }) => {
+  const cfg = useMemo(() => resolveLiquidGlassConfig(liquidGlassConfig), [liquidGlassConfig]);
+  const cfgRef = useRef<LiquidGlassConfig>(cfg);
+  cfgRef.current = cfg;
+
   const tabs = useMemo(
     () => [
       { id: 'home' as AppView, label: 'Hoje', Icon: AnimatedBookOpenIcon, badge: null },
@@ -91,58 +94,27 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     return (pad + ((idx + 0.5) / tabs.length) * inner) / Math.max(1, width);
   };
 
+  // Refs diretos de DOM (ZERO re-renders do React durante os 60/120fps da mola e do arraste!)
   const containerRef = useRef<HTMLDivElement>(null);
-  const [barWidth, setBarWidth] = useState<number>(392);
+  const dropletRef = useRef<HTMLDivElement>(null);
+  const dropletSpecularRef = useRef<HTMLDivElement>(null);
+  const rimPathRef = useRef<SVGPathElement>(null);
+  const rimGradRef = useRef<SVGRadialGradientElement>(null);
+  const iconWrapRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const labelRefs = useRef<(HTMLSpanElement | null)[]>([]);
+
+  const barWidthRef = useRef<number>(392);
+  const [barAspect, setBarAspect] = useState<number>(392 / BAR_HEIGHT);
   const [svgBackdropSupported] = useState<boolean>(() => supportsSvgBackdropFilter());
   const [barMapUrl, setBarMapUrl] = useState<string>('');
-  const [dropletMapUrl] = useState<string>(() => generateDropletLensMap(DROPLET_W, DROPLET_H));
+  const [dropletMapUrl, setDropletMapUrl] = useState<string>('');
+  const [highlightedIdx, setHighlightedIdx] = useState<number>(resolvedIndex);
+  const highlightedIdxRef = useRef<number>(resolvedIndex);
 
-  // Mede largura real da barra para alinhar 1:1 o mapa óptico SVG <feDisplacementMap>
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const updateSize = () => {
-      const rect = el.getBoundingClientRect();
-      const nextW = Math.max(280, Math.round(rect.width));
-      setBarWidth((prev) => (Math.abs(prev - nextW) > 1 ? nextW : prev));
-    };
-
-    updateSize();
-    const ro = new ResizeObserver(updateSize);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const url = generateBarRefractionMap(barWidth, BAR_HEIGHT, 20);
-    if (url) setBarMapUrl(url);
-  }, [barWidth]);
-
-  // Estado visual renderizado a 60/120fps pela engine de física de mola
-  const [renderState, setRenderState] = useState<SpringPhysicsState>(() => {
-    const initPct = tabCenterPct(resolvedIndex);
-    return {
-      xPct: initPct,
-      vxPct: 0,
-      trailXPct: initPct,
-      trailVxPct: 0,
-      inflation: 0,
-      vInflation: 0,
-      wobble: 0,
-      vWobble: 0,
-      barTiltDeg: 0,
-      vBarTilt: 0,
-      barPressScale: 1,
-      vBarPress: 0,
-    };
-  });
-
-  // Referências mutáveis da simulação física contínua (evita recriar loops RAF)
   const physicsRef = useRef<SpringPhysicsState>({
-    xPct: tabCenterPct(resolvedIndex),
+    xPct: tabCenterPct(resolvedIndex, 392),
     vxPct: 0,
-    trailXPct: tabCenterPct(resolvedIndex),
+    trailXPct: tabCenterPct(resolvedIndex, 392),
     trailVxPct: 0,
     inflation: 0,
     vInflation: 0,
@@ -160,7 +132,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     isDragging: boolean;
     flightBoostUntil: number;
   }>({
-    targetXPct: tabCenterPct(resolvedIndex),
+    targetXPct: tabCenterPct(resolvedIndex, 392),
     isPointerDown: false,
     isDragging: false,
     flightBoostUntil: 0,
@@ -170,6 +142,125 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   const lastFrameTimeRef = useRef<number>(0);
   const prevResolvedIndexRef = useRef<number>(resolvedIndex);
 
+  /**
+   * Aplica a geometria de mola e deformação líquida diretamente na GPU via DOM refs,
+   * sem disparar NENHUM re-render do React por quadro.
+   */
+  const applyFrameToDom = () => {
+    const s = physicsRef.current;
+    const c = cfgRef.current;
+    const w = barWidthRef.current;
+
+    const rippleMult = 0.25 + c.rippleEffect * 1.15;
+    const inf = clamp(s.inflation * rippleMult, -0.15, 1.35);
+    const infPositive = clamp(inf, 0, 1.25);
+
+    const dropletCenterX = s.xPct * w;
+    const trailCenterX = s.trailXPct * w;
+    const speedNorm = Math.min(1.4, Math.abs(s.vxPct) * 0.45);
+    const liquidLagStretch = Math.min(0.25, Math.abs(dropletCenterX - trailCenterX) / 260) * rippleMult;
+
+    const baseScaleX = 0.72 + inf * 0.29;
+    const baseScaleY = 0.72 + inf * 0.30;
+
+    const stretchFactor = 1 + (speedNorm * 0.14 + liquidLagStretch + s.wobble * 0.06) * (0.4 + c.springBounce);
+    const squashFactor = 1 / Math.sqrt(Math.max(0.76, Math.min(1.22, stretchFactor)));
+
+    const sx = clamp(baseScaleX * stretchFactor, 0.58, 1.34);
+    const sy = clamp(baseScaleY * squashFactor, 0.58, 1.16);
+
+    if (containerRef.current) {
+      containerRef.current.style.transform = `perspective(900px) rotateZ(${s.barTiltDeg.toFixed(
+        2
+      )}deg) scale3d(${s.barPressScale.toFixed(4)}, ${s.barPressScale.toFixed(4)}, 1)`;
+    }
+
+    if (dropletRef.current) {
+      const tx = dropletCenterX - DROPLET_W / 2;
+      dropletRef.current.style.transform = `translate3d(${tx.toFixed(
+        2
+      )}px, 0, 0) scale3d(${sx.toFixed(4)}, ${sy.toFixed(4)}, 1)`;
+      if (infPositive > 0.18) {
+        dropletRef.current.classList.add('apple-liquid-droplet-inflated');
+      } else {
+        dropletRef.current.classList.remove('apple-liquid-droplet-inflated');
+      }
+    }
+
+    if (dropletSpecularRef.current) {
+      const specOp = clamp((0.35 + infPositive * 0.65) * (0.35 + c.rimIntensity * 1.1), 0, 1);
+      dropletSpecularRef.current.style.opacity = specOp.toFixed(3);
+    }
+
+    // Onda líquida especular nas bordas da barra (leve: apenas atualiza atributo SVG 'd')
+    if (rimPathRef.current) {
+      const bulgeAmp = infPositive * 4.6;
+      const bulgeHalfSpan = 52;
+      const bx0 = clamp(dropletCenterX - bulgeHalfSpan, 32, w - 32);
+      const bx3 = clamp(dropletCenterX + bulgeHalfSpan, 32, w - 32);
+      const cx = clamp(dropletCenterX, 34, w - 34);
+      const topY = -bulgeAmp;
+      const botY = BAR_HEIGHT + bulgeAmp;
+      const rBar = BAR_HEIGHT / 2;
+
+      const d = `M ${rBar} 0 L ${bx0.toFixed(1)} 0 C ${(cx - 25).toFixed(1)} 0, ${(
+        cx - 19
+      ).toFixed(1)} ${topY.toFixed(1)}, ${cx.toFixed(1)} ${topY.toFixed(1)} C ${(
+        cx + 19
+      ).toFixed(1)} ${topY.toFixed(1)}, ${(cx + 25).toFixed(1)} 0, ${bx3.toFixed(1)} 0 L ${(
+        w - rBar
+      ).toFixed(1)} 0 A ${rBar} ${rBar} 0 0 1 ${w} ${rBar} A ${rBar} ${rBar} 0 0 1 ${(
+        w - rBar
+      ).toFixed(1)} ${BAR_HEIGHT} L ${bx3.toFixed(1)} ${BAR_HEIGHT} C ${(cx + 25).toFixed(
+        1
+      )} ${BAR_HEIGHT}, ${(cx + 19).toFixed(1)} ${botY.toFixed(1)}, ${cx.toFixed(
+        1
+      )} ${botY.toFixed(1)} C ${(cx - 19).toFixed(1)} ${botY.toFixed(1)}, ${(
+        cx - 25
+      ).toFixed(1)} ${BAR_HEIGHT}, ${bx0.toFixed(1)} ${BAR_HEIGHT} L ${rBar} ${BAR_HEIGHT} A ${rBar} ${rBar} 0 0 1 0 ${rBar} A ${rBar} ${rBar} 0 0 1 ${rBar} 0 Z`;
+
+      rimPathRef.current.setAttribute('d', d);
+      rimPathRef.current.setAttribute('stroke-width', (0.9 + c.rimIntensity * 0.9 + infPositive * 0.45).toFixed(2));
+    }
+
+    if (rimGradRef.current) {
+      rimGradRef.current.setAttribute('cx', `${(s.xPct * 100).toFixed(1)}%`);
+    }
+
+    // Elevação suave dos 5 ícones conforme proximidade da gota (GPU transform direto)
+    let nearestIdx = 0;
+    let minDist = Infinity;
+    for (let idx = 0; idx < tabs.length; idx++) {
+      const tabPct = tabCenterPct(idx, w);
+      const dist = Math.abs(s.xPct - tabPct);
+      if (dist < minDist) {
+        minDist = dist;
+        nearestIdx = idx;
+      }
+      const distInTabs = dist * tabs.length;
+      const proximity = clamp(1 - distInTabs, 0, 1);
+      const liftY = -proximity * (c.hideTabLabels ? 0.8 : 1.3 + infPositive * 1.5);
+      const iconScale = 1 + proximity * (0.08 + infPositive * 0.08);
+
+      const iconEl = iconWrapRefs.current[idx];
+      if (iconEl) {
+        iconEl.style.transform = `translate3d(0, ${liftY.toFixed(2)}px, 0) scale3d(${iconScale.toFixed(
+          3
+        )}, ${iconScale.toFixed(3)}, 1)`;
+      }
+      const labelEl = labelRefs.current[idx];
+      if (labelEl) {
+        labelEl.style.transform = `translate3d(0, ${(liftY * 0.4).toFixed(2)}px, 0)`;
+      }
+    }
+
+    // Só atualiza classe de destaque quando a gota realmente cruza para outra aba (máx 1x por aba!)
+    if (nearestIdx !== highlightedIdxRef.current) {
+      highlightedIdxRef.current = nearestIdx;
+      setHighlightedIdx(nearestIdx);
+    }
+  };
+
   const ensurePhysicsLoop = () => {
     if (rafIdRef.current !== null) return;
     lastFrameTimeRef.current = performance.now();
@@ -177,70 +268,66 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     const step = (now: number) => {
       const rawDt = (now - lastFrameTimeRef.current) / 1000;
       lastFrameTimeRef.current = now;
-      // Sub-stepping garante estabilidade numérica absoluta em telas 60Hz, 90Hz e 120Hz
       const dt = Math.min(rawDt, 0.032);
       const subSteps = 2;
       const h = dt / subSteps;
 
       const s = physicsRef.current;
       const tgt = targetRef.current;
+      const bounce = cfgRef.current.springBounce;
+
+      // Damping ajustado dinamicamente pelo controle de Elasticidade da Mola (sem perder rapidez)
+      const tapStiffness = 290 + bounce * 85;
+      const tapDamping = 28 - bounce * 11.5; // bounce=0 -> crítico suave (28), bounce=1 -> mola viva (16.5)
 
       for (let i = 0; i < subSteps; i++) {
-        // 1. Mola Horizontal Principal (estilo Apple SwiftUI .interactiveSpring)
-        const kX = tgt.isDragging ? 880 : 325;
-        const cX = tgt.isDragging ? 46 : 21.5; // sub-amortecida (overshoot elástico suave!)
+        const kX = tgt.isDragging ? 880 : tapStiffness;
+        const cX = tgt.isDragging ? 46 : tapDamping;
         const prevVx = s.vxPct;
         const ax = (tgt.targetXPct - s.xPct) * kX - s.vxPct * cX;
         s.vxPct += ax * h;
         s.xPct += s.vxPct * h;
 
-        // Impulso de aceleração alimenta a oscilação gelatinosa da gota d'água
         const dv = s.vxPct - prevVx;
-        s.vWobble += clamp(dv * 8.5, -18, 18);
+        s.vWobble += clamp(dv * (4 + bounce * 6.5), -16, 16);
 
-        // 2. Rastro Líquido Viscoso (estica atrás da gota principal durante saltos rápidos)
-        const kTrail = 185;
-        const cTrail = 17.5;
-        const aTrail = (s.xPct - s.trailXPct) * kTrail - s.trailVxPct * cTrail;
+        const aTrail = (s.xPct - s.trailXPct) * 185 - s.trailVxPct * 17.5;
         s.trailVxPct += aTrail * h;
         s.trailXPct += s.trailVxPct * h;
 
-        // 3. Mola de Inflação da Lente Líquida (sobe ao tocar/viajar, pousa elástica ao chegar)
         const distRemaining = Math.abs(tgt.targetXPct - s.xPct);
         const speed = Math.abs(s.vxPct);
         const shouldInflate =
           tgt.isPointerDown ||
           now < tgt.flightBoostUntil ||
-          distRemaining > 0.035 ||
-          speed > 0.22;
+          distRemaining > 0.032 ||
+          speed > 0.2;
 
         const targetInflation = shouldInflate ? 1 : 0;
-        const kInf = shouldInflate ? 460 : 215;
-        const cInf = shouldInflate ? 22 : 14.5; // bounce elástico ao assentar na aba!
+        const kInf = shouldInflate ? 450 : 215;
+        const cInf = shouldInflate ? 22 : 19 - bounce * 6;
         const aInf = (targetInflation - s.inflation) * kInf - s.vInflation * cInf;
         s.vInflation += aInf * h;
         s.inflation += s.vInflation * h;
 
-        // 4. Mola de Tensão Superficial (Wobble / Squash & Stretch)
-        const aWob = (0 - s.wobble) * 540 - s.vWobble * 15;
+        const aWob = (0 - s.wobble) * 520 - s.vWobble * 15.5;
         s.vWobble += aWob * h;
         s.wobble += s.vWobble * h;
 
-        // 5. Física de Massa da Barra Inteira (inclinação 3D e compressão tátil)
         const targetTilt = tgt.isPointerDown
-          ? (s.xPct - 0.5) * 2.4
-          : clamp(s.vxPct * 0.45, -1.2, 1.2);
+          ? (s.xPct - 0.5) * (1.2 + bounce * 1.6)
+          : clamp(s.vxPct * 0.4, -1.1, 1.1);
         const aTilt = (targetTilt - s.barTiltDeg) * 280 - s.vBarTilt * 19;
         s.vBarTilt += aTilt * h;
         s.barTiltDeg += s.vBarTilt * h;
 
-        const targetScale = tgt.isPointerDown ? 0.988 : 1;
+        const targetScale = tgt.isPointerDown ? 0.989 : 1;
         const aScale = (targetScale - s.barPressScale) * 360 - s.vBarPress * 22;
         s.vBarPress += aScale * h;
         s.barPressScale += s.vBarPress * h;
       }
 
-      setRenderState({ ...s });
+      applyFrameToDom();
 
       const atRest =
         !tgt.isPointerDown &&
@@ -267,7 +354,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         s.vBarTilt = 0;
         s.barPressScale = 1;
         s.vBarPress = 0;
-        setRenderState({ ...s });
+        applyFrameToDom();
         rafIdRef.current = null;
       } else {
         rafIdRef.current = requestAnimationFrame(step);
@@ -277,24 +364,94 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     rafIdRef.current = requestAnimationFrame(step);
   };
 
-  // Quando a view muda (via toque na barra ou navegação externa do app), dispara o voo líquido!
+  // Mede largura real da barra sem re-renderizar a cada pixel
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const updateSize = () => {
+      const rect = el.getBoundingClientRect();
+      const nextW = Math.max(280, Math.round(rect.width));
+      if (Math.abs(barWidthRef.current - nextW) > 1) {
+        barWidthRef.current = nextW;
+        setBarAspect(nextW / BAR_HEIGHT);
+        targetRef.current.targetXPct = tabCenterPct(resolvedIndex, nextW);
+        if (rafIdRef.current === null) {
+          physicsRef.current.xPct = targetRef.current.targetXPct;
+          physicsRef.current.trailXPct = targetRef.current.targetXPct;
+          applyFrameToDom();
+        }
+      }
+    };
+
+    updateSize();
+    applyFrameToDom();
+    const ro = new ResizeObserver(updateSize);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [resolvedIndex]);
+
+  // Regenera os mapas ópticos compactos (meia resolução) com debounce leve ao mover sliders
+  useEffect(() => {
+    if (cfg.ecoGpuMode || !svgBackdropSupported) return;
+    const timer = window.setTimeout(() => {
+      setBarMapUrl(generateBarRefractionMap(barAspect, cfg));
+      setDropletMapUrl(generateDropletLensMap(cfg));
+    }, 24);
+    return () => window.clearTimeout(timer);
+  }, [
+    barAspect,
+    svgBackdropSupported,
+    cfg.ecoGpuMode,
+    cfg.edgeIntensity,
+    cfg.edgeDistance,
+    cfg.baseIntensity,
+    cfg.baseDistance,
+    cfg.cornerBoost,
+    cfg.enableCenterWarp,
+  ]);
+
+  useEffect(() => {
+    applyFrameToDom();
+  }, [cfg.rimIntensity, cfg.rippleEffect, cfg.hideTabLabels]);
+
+  // Voo líquido ao mudar de aba
   useEffect(() => {
     const prevIdx = prevResolvedIndexRef.current;
     prevResolvedIndexRef.current = resolvedIndex;
     if (targetRef.current.isPointerDown) return;
 
-    const nextPct = tabCenterPct(resolvedIndex, barWidth);
+    const nextPct = tabCenterPct(resolvedIndex, barWidthRef.current);
     targetRef.current.targetXPct = nextPct;
 
     if (prevIdx !== resolvedIndex) {
       const dir = Math.sign(nextPct - physicsRef.current.xPct);
-      // Impulso inicial orgânico estilo gota se desprendendo
-      physicsRef.current.vInflation = Math.max(physicsRef.current.vInflation, 3.6);
-      physicsRef.current.vWobble += dir * 2.4;
-      targetRef.current.flightBoostUntil = performance.now() + 280;
+      physicsRef.current.vInflation = Math.max(
+        physicsRef.current.vInflation,
+        2.5 + cfgRef.current.rippleEffect * 2.2
+      );
+      physicsRef.current.vWobble += dir * (1.2 + cfgRef.current.springBounce * 2.0);
+      targetRef.current.flightBoostUntil = performance.now() + 260;
     }
     ensurePhysicsLoop();
-  }, [resolvedIndex, barWidth]);
+  }, [resolvedIndex]);
+
+  // Evento opcional disparado pelas Configurações para testar o salto líquido ao vivo sem sair dos Ajustes!
+  useEffect(() => {
+    const onTestPulse = () => {
+      const w = barWidthRef.current;
+      const demoStartPct = tabCenterPct(1, w);
+      const returnPct = tabCenterPct(resolvedIndex, w);
+      physicsRef.current.xPct = demoStartPct;
+      physicsRef.current.trailXPct = tabCenterPct(0, w);
+      physicsRef.current.vInflation = 4.2;
+      targetRef.current.targetXPct = returnPct;
+      targetRef.current.flightBoostUntil = performance.now() + 340;
+      ensurePhysicsLoop();
+    };
+    window.addEventListener('amanhecer:test-liquid-hop', onTestPulse);
+    return () => window.removeEventListener('amanhecer:test-liquid-hop', onTestPulse);
+  }, [resolvedIndex]);
 
   useEffect(() => {
     return () => {
@@ -306,37 +463,32 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   }, []);
 
   // =========================================================================
-  // INTERAÇÃO TÁTIL COMPLETA: TOQUE OU SEGURAR & DESLIZAR (ESTILO WHATSAPP iOS)
+  // INTERAÇÃO DE TOQUE E ARRASTE CONTÍNUO (ESTILO WHATSAPP iOS)
   // =========================================================================
   const pointerStateRef = useRef<{
     pointerId: number | null;
     startX: number;
-    lastHoveredIdx: number;
   }>({
     pointerId: null,
     startX: 0,
-    lastHoveredIdx: resolvedIndex,
   });
 
   const clientXToPctWithRubberBand = (clientX: number): number => {
     const el = containerRef.current;
-    if (!el) return tabCenterPct(resolvedIndex, barWidth);
+    const w = barWidthRef.current;
+    if (!el) return tabCenterPct(resolvedIndex, w);
     const rect = el.getBoundingClientRect();
     const raw = (clientX - rect.left) / Math.max(1, rect.width);
     const minCenter = tabCenterPct(0, rect.width);
     const maxCenter = tabCenterPct(tabs.length - 1, rect.width);
 
-    if (raw < minCenter) {
-      return minCenter - (minCenter - raw) * 0.28;
-    }
-    if (raw > maxCenter) {
-      return maxCenter + (raw - maxCenter) * 0.28;
-    }
+    if (raw < minCenter) return minCenter - (minCenter - raw) * 0.28;
+    if (raw > maxCenter) return maxCenter + (raw - maxCenter) * 0.28;
     return raw;
   };
 
   const pctToNearestTabIndex = (pct: number): number => {
-    const pad = 6 / Math.max(1, barWidth);
+    const pad = 6 / Math.max(1, barWidthRef.current);
     const inner = Math.max(0.01, 1 - pad * 2);
     const norm = (pct - pad) / inner;
     const idx = Math.round(norm * tabs.length - 0.5);
@@ -347,16 +499,14 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     const pct = clientXToPctWithRubberBand(clientX);
     const nearestIdx = pctToNearestTabIndex(pct);
 
-    pointerStateRef.current = {
-      pointerId: id,
-      startX: clientX,
-      lastHoveredIdx: nearestIdx,
-    };
-
+    pointerStateRef.current = { pointerId: id, startX: clientX };
     targetRef.current.isPointerDown = true;
     targetRef.current.isDragging = false;
-    targetRef.current.targetXPct = tabCenterPct(nearestIdx, barWidth);
-    physicsRef.current.vInflation = Math.max(physicsRef.current.vInflation, 4.0);
+    targetRef.current.targetXPct = tabCenterPct(nearestIdx, barWidthRef.current);
+    physicsRef.current.vInflation = Math.max(
+      physicsRef.current.vInflation,
+      3.2 + cfgRef.current.rippleEffect * 1.6
+    );
     ensurePhysicsLoop();
   };
 
@@ -376,15 +526,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       if (pointerStateRef.current.pointerId === null) return;
       if (id !== pointerStateRef.current.pointerId) return;
 
-      const movedPx = Math.abs(clientX - pointerStateRef.current.startX);
-      if (movedPx > 5) {
+      if (Math.abs(clientX - pointerStateRef.current.startX) > 5) {
         targetRef.current.isDragging = true;
       }
-
       if (targetRef.current.isDragging) {
-        const pct = clientXToPctWithRubberBand(clientX);
-        targetRef.current.targetXPct = pct;
-        pointerStateRef.current.lastHoveredIdx = pctToNearestTabIndex(pct);
+        targetRef.current.targetXPct = clientXToPctWithRubberBand(clientX);
         ensurePhysicsLoop();
       }
     };
@@ -401,10 +547,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       pointerStateRef.current.pointerId = null;
       targetRef.current.isPointerDown = false;
       targetRef.current.isDragging = false;
-      targetRef.current.targetXPct = tabCenterPct(finalIdx, barWidth);
-      targetRef.current.flightBoostUntil = performance.now() + 200;
+      targetRef.current.targetXPct = tabCenterPct(finalIdx, barWidthRef.current);
+      targetRef.current.flightBoostUntil = performance.now() + 190;
 
-      physicsRef.current.vWobble -= 1.6;
+      physicsRef.current.vWobble -= 1.4 * (0.4 + cfgRef.current.springBounce);
       ensurePhysicsLoop();
 
       if (wasDragging && finalTab && finalIdx !== resolvedIndex) {
@@ -439,72 +585,30 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       window.removeEventListener('touchend', onWinTouchEnd);
       window.removeEventListener('touchcancel', onWinTouchEnd);
     };
-  }, [barWidth, resolvedIndex, tabs, onNavigate]);
+  }, [resolvedIndex, tabs, onNavigate]);
 
-  // =========================================================================
-  // GEOMETRIA ÓPTICA E DEFORMAÇÃO LÍQUIDA POR FRAME
-  // =========================================================================
-  const inf = clamp(renderState.inflation, -0.18, 1.35);
-  const infPositive = clamp(inf, 0, 1.25);
+  // Shaders ópticos estáticos por configuração (NUNCA mutam durante os frames de animação!)
+  const useSvgShader = svgBackdropSupported && !cfg.ecoGpuMode;
+  const barDispScale = Number((0.015 + cfg.edgeIntensity * 0.095).toFixed(4));
+  const dropDispScale = Number((0.04 + cfg.edgeIntensity * 0.24).toFixed(4));
+  const blurCss = `${cfg.blurRadius.toFixed(1)}px`;
+  const dropBlurCss = `${Math.max(0, cfg.blurRadius * 0.35).toFixed(1)}px`;
 
-  const dropletCenterX = renderState.xPct * barWidth;
-  const trailCenterX = renderState.trailXPct * barWidth;
-  const speedNorm = Math.min(1.4, Math.abs(renderState.vxPct) * 0.45);
+  // Película e reflexos dinâmicos controlados pelos sliders (Rim Intensity, Rim Distance, Tint Opacity)
+  const rimAlpha = clamp(0.15 + cfg.rimIntensity * 0.8, 0.05, 0.98);
+  const rimSpreadPx = Math.round(6 + cfg.rimDistance * 24);
+  const tintTop = clamp(cfg.tintOpacity * 1.45, 0, 0.82);
+  const tintMid = clamp(cfg.tintOpacity * 0.75, 0, 0.7);
+  const tintBot = clamp(cfg.tintOpacity * 1.1, 0, 0.78);
 
-  // Squash & Stretch conservando volume líquido:
-  // Em repouso: ~74x52px dentro da barra de 64px.
-  // Inflada/em movimento: ~106..132px x 72px (ultrapassa topo e base da barra igual WhatsApp iOS 26 / Imagem 1!)
-  const liquidLagStretch = Math.min(0.26, Math.abs(dropletCenterX - trailCenterX) / 260);
-  const baseScaleX = 0.72 + inf * 0.30;
-  const baseScaleY = 0.72 + inf * 0.32;
+  const activeToneClass = hasWallpaper
+    ? 'text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)]'
+    : 'text-graphite-900 dark:text-white drop-shadow-[0_1px_6px_rgba(255,255,255,0.3)]';
+  const inactiveToneClass = hasWallpaper
+    ? 'text-white/85 drop-shadow-[0_1px_4px_rgba(0,0,0,0.55)]'
+    : 'text-graphite-700/80 dark:text-white/85 drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]';
 
-  const stretchFactor = 1 + speedNorm * 0.15 + liquidLagStretch + renderState.wobble * 0.06;
-  const squashFactor = 1 / Math.sqrt(Math.max(0.76, Math.min(1.22, stretchFactor)));
-
-  const dropletScaleX = clamp(baseScaleX * stretchFactor, 0.58, 1.34);
-  const dropletScaleY = clamp(baseScaleY * squashFactor, 0.58, 1.16);
-
-  // Potência dinâmica da refração cromática na gota (em unidades objectBoundingBox 0..1, 100% Retina-independente!):
-  // Em repouso (infPositive = 0) o ícone ativo fica 100% nítido;
-  // Quando inflada/em movimento (infPositive -> 1) atua como lente d'água convexa suave estilo iOS 26!
-  const dropDispG = infPositive * 0.25;
-  const dropDispR = dropDispG * 1.14;
-  const dropDispB = dropDispG * 0.87;
-
-  // Caminho SVG de onda líquida especular na borda da barra (a barra reage fluidamente à passagem da gota)
-  const bulgeAmp = infPositive * 4.8;
-  const bulgeHalfSpan = 54;
-  const bx0 = clamp(dropletCenterX - bulgeHalfSpan, 32, barWidth - 32);
-  const bx3 = clamp(dropletCenterX + bulgeHalfSpan, 32, barWidth - 32);
-  const cx = clamp(dropletCenterX, 34, barWidth - 34);
-  const topBulgeY = -bulgeAmp;
-  const botBulgeY = BAR_HEIGHT + bulgeAmp;
-  const rBar = BAR_HEIGHT / 2;
-
-  const liquidRimPath = [
-    `M ${rBar} 0`,
-    `L ${bx0.toFixed(1)} 0`,
-    `C ${(cx - 26).toFixed(1)} 0, ${(cx - 20).toFixed(1)} ${topBulgeY.toFixed(1)}, ${cx.toFixed(
-      1
-    )} ${topBulgeY.toFixed(1)}`,
-    `C ${(cx + 20).toFixed(1)} ${topBulgeY.toFixed(1)}, ${(cx + 26).toFixed(
-      1
-    )} 0, ${bx3.toFixed(1)} 0`,
-    `L ${(barWidth - rBar).toFixed(1)} 0`,
-    `A ${rBar} ${rBar} 0 0 1 ${barWidth} ${rBar}`,
-    `A ${rBar} ${rBar} 0 0 1 ${(barWidth - rBar).toFixed(1)} ${BAR_HEIGHT}`,
-    `L ${bx3.toFixed(1)} ${BAR_HEIGHT}`,
-    `C ${(cx + 26).toFixed(1)} ${BAR_HEIGHT}, ${(cx + 20).toFixed(1)} ${botBulgeY.toFixed(
-      1
-    )}, ${cx.toFixed(1)} ${botBulgeY.toFixed(1)}`,
-    `C ${(cx - 20).toFixed(1)} ${botBulgeY.toFixed(1)}, ${(cx - 26).toFixed(
-      1
-    )} ${BAR_HEIGHT}, ${bx0.toFixed(1)} ${BAR_HEIGHT}`,
-    `L ${rBar} ${BAR_HEIGHT}`,
-    `A ${rBar} ${rBar} 0 0 1 0 ${rBar}`,
-    `A ${rBar} ${rBar} 0 0 1 ${rBar} 0`,
-    'Z',
-  ].join(' ');
+  const currentWidthForSvg = Math.round(barAspect * BAR_HEIGHT);
 
   return (
     <nav
@@ -512,233 +616,155 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       role="navigation"
       aria-label="Navegação Principal"
     >
-      {/* Filtros Ópticos SVG (color-interpolation-filters="sRGB" garante alinhamento 0px exato no centro e refração pura nas bordas) */}
-      <svg
-        width="0"
-        height="0"
-        aria-hidden="true"
-        className="pointer-events-none fixed top-0 left-0 opacity-0"
-      >
-        <defs>
-          {barMapUrl && (
-            <filter
-              id="amanhecer-lg-bar-filter"
-              x="0"
-              y="0"
-              width="1"
-              height="1"
-              filterUnits="objectBoundingBox"
-              primitiveUnits="objectBoundingBox"
-              colorInterpolationFilters="sRGB"
-            >
-              <feGaussianBlur in="SourceGraphic" stdDeviation="0.005 0.032" result="softBackdrop" />
-              <feImage
-                href={barMapUrl}
+      {/* Filtros Ópticos Estáticos de Passe Único (1x <feDisplacementMap> — até 8x mais leve na GPU mobile!) */}
+      {useSvgShader && (
+        <svg
+          width="0"
+          height="0"
+          aria-hidden="true"
+          className="pointer-events-none fixed top-0 left-0 opacity-0"
+        >
+          <defs>
+            {barMapUrl && (
+              <filter
+                id="amanhecer-lg-bar-filter"
                 x="0"
                 y="0"
                 width="1"
                 height="1"
-                preserveAspectRatio="none"
-                result="barMap"
-              />
-              {/* Dispersão cromática sutil nas bordas curvas de vidro da barra */}
-              <feDisplacementMap
-                in="softBackdrop"
-                in2="barMap"
-                scale={0.072}
-                xChannelSelector="R"
-                yChannelSelector="G"
-                result="dispR"
-              />
-              <feColorMatrix
-                in="dispR"
-                type="matrix"
-                values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
-                result="chanR"
-              />
-              <feDisplacementMap
-                in="softBackdrop"
-                in2="barMap"
-                scale={0.062}
-                xChannelSelector="R"
-                yChannelSelector="G"
-                result="dispG"
-              />
-              <feColorMatrix
-                in="dispG"
-                type="matrix"
-                values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
-                result="chanG"
-              />
-              <feDisplacementMap
-                in="softBackdrop"
-                in2="barMap"
-                scale={0.052}
-                xChannelSelector="R"
-                yChannelSelector="G"
-                result="dispB"
-              />
-              <feColorMatrix
-                in="dispB"
-                type="matrix"
-                values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
-                result="chanB"
-              />
-              <feBlend in="chanR" in2="chanG" mode="screen" result="chanRG" />
-              <feBlend in="chanRG" in2="chanB" mode="screen" />
-            </filter>
-          )}
+                filterUnits="objectBoundingBox"
+                primitiveUnits="objectBoundingBox"
+                colorInterpolationFilters="sRGB"
+              >
+                <feImage
+                  href={barMapUrl}
+                  x="0"
+                  y="0"
+                  width="1"
+                  height="1"
+                  preserveAspectRatio="none"
+                  result="barMap"
+                />
+                <feDisplacementMap
+                  in="SourceGraphic"
+                  in2="barMap"
+                  scale={barDispScale}
+                  xChannelSelector="R"
+                  yChannelSelector="G"
+                />
+              </filter>
+            )}
 
-          {dropletMapUrl && (
-            <filter
-              id="amanhecer-lg-droplet-filter"
-              x="0"
-              y="0"
-              width="1"
-              height="1"
-              filterUnits="objectBoundingBox"
-              primitiveUnits="objectBoundingBox"
-              colorInterpolationFilters="sRGB"
-            >
-              <feImage
-                href={dropletMapUrl}
+            {dropletMapUrl && (
+              <filter
+                id="amanhecer-lg-droplet-filter"
                 x="0"
                 y="0"
                 width="1"
                 height="1"
-                preserveAspectRatio="none"
-                result="dropMap"
-              />
-              {/* Refração de lente d'água + aberração cromática prismática no menisco */}
-              <feDisplacementMap
-                in="SourceGraphic"
-                in2="dropMap"
-                scale={dropDispR}
-                xChannelSelector="R"
-                yChannelSelector="G"
-                result="dR"
-              />
-              <feColorMatrix
-                in="dR"
-                type="matrix"
-                values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
-                result="cR"
-              />
-              <feDisplacementMap
-                in="SourceGraphic"
-                in2="dropMap"
-                scale={dropDispG}
-                xChannelSelector="R"
-                yChannelSelector="G"
-                result="dG"
-              />
-              <feColorMatrix
-                in="dG"
-                type="matrix"
-                values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
-                result="cG"
-              />
-              <feDisplacementMap
-                in="SourceGraphic"
-                in2="dropMap"
-                scale={dropDispB}
-                xChannelSelector="R"
-                yChannelSelector="G"
-                result="dB"
-              />
-              <feColorMatrix
-                in="dB"
-                type="matrix"
-                values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
-                result="cB"
-              />
-              <feBlend in="cR" in2="cG" mode="screen" result="cRG" />
-              <feBlend in="cRG" in2="cB" mode="screen" />
-            </filter>
-          )}
-        </defs>
-      </svg>
+                filterUnits="objectBoundingBox"
+                primitiveUnits="objectBoundingBox"
+                colorInterpolationFilters="sRGB"
+              >
+                <feImage
+                  href={dropletMapUrl}
+                  x="0"
+                  y="0"
+                  width="1"
+                  height="1"
+                  preserveAspectRatio="none"
+                  result="dropMap"
+                />
+                <feDisplacementMap
+                  in="SourceGraphic"
+                  in2="dropMap"
+                  scale={dropDispScale}
+                  xChannelSelector="R"
+                  yChannelSelector="G"
+                />
+              </filter>
+            )}
+          </defs>
+        </svg>
+      )}
 
       <div className="max-w-md mx-auto px-3.5 pb-3 sm:pb-4 pointer-events-auto">
-        {/* IMPORTANTE: Este wrapper NÃO aplica opacity < 1, filter nem backdrop-filter,
-            para que TANTO a barra (z-10) QUANTO a gota líquida (z-30) sejam irmãs no mesmo
-            Backdrop Root global e refratem em tempo real o Wallpaper + HUD + Ícones! */}
         <div
           ref={containerRef}
           onPointerDown={handlePointerDown}
           onTouchStart={handleTouchStart}
           style={{
             height: `${BAR_HEIGHT}px`,
-            transform: `perspective(900px) rotateZ(${renderState.barTiltDeg.toFixed(
-              3
-            )}deg) scale(${renderState.barPressScale.toFixed(4)})`,
+            willChange: 'transform',
           }}
           className="liquid-physics-node relative w-full touch-none cursor-pointer"
         >
-          {/* =================================================================
-              CAMADA 1 (z-10): CÁPSULA PRINCIPAL APPLE LIQUID GLASS
-              Refrata o Papel de Parede (z-0) + Cards/Textos da HUD (z-10 do App)
-             ================================================================= */}
+          {/* CAMADA 1 (z-10): Cápsula Principal Liquid Glass */}
           <div
             style={{
               backdropFilter:
-                svgBackdropSupported && barMapUrl
-                  ? 'url(#amanhecer-lg-bar-filter) saturate(185%) brightness(1.04)'
-                  : 'blur(16px) saturate(190%) brightness(1.06)',
-              WebkitBackdropFilter: 'blur(16px) saturate(190%) brightness(1.06)',
+                useSvgShader && barMapUrl
+                  ? `url(#amanhecer-lg-bar-filter) blur(${blurCss}) saturate(185%) brightness(1.04)`
+                  : `blur(${Math.max(4, cfg.blurRadius * 2.2).toFixed(1)}px) saturate(190%) brightness(1.05)`,
+              WebkitBackdropFilter: `blur(${Math.max(4, cfg.blurRadius * 2.2).toFixed(
+                1
+              )}px) saturate(190%) brightness(1.05)`,
+              background: `linear-gradient(180deg, rgba(255,255,255,${tintTop.toFixed(
+                3
+              )}) 0%, rgba(16,20,28,${tintMid.toFixed(3)}) 52%, rgba(255,255,255,${tintBot.toFixed(
+                3
+              )}) 100%)`,
+              borderColor: `rgba(255,255,255,${(rimAlpha * 0.55).toFixed(3)})`,
+              boxShadow: `0 20px 44px -12px rgba(0,0,0,0.45), inset 0 1.25px 0.5px rgba(255,255,255,${rimAlpha.toFixed(
+                3
+              )}), inset 0 -1.25px 2px rgba(255,255,255,${(rimAlpha * 0.48).toFixed(
+                3
+              )}), inset ${rimSpreadPx}px 6px ${rimSpreadPx + 6}px -12px rgba(255,255,255,${(
+                rimAlpha * 0.62
+              ).toFixed(3)}), inset -${rimSpreadPx}px -6px ${
+                rimSpreadPx + 6
+              }px -12px rgba(175,222,255,${(rimAlpha * 0.45).toFixed(3)})`,
             }}
-            className="liquid-physics-node pointer-events-none absolute inset-0 z-10 rounded-full apple-liquid-glass-bar"
+            className="liquid-physics-node pointer-events-none absolute inset-0 z-10 rounded-full border"
           />
 
-          {/* Onda Líquida Especular Dinâmica nas Bordas da Barra (acompanha a gota) */}
+          {/* Onda Líquida Especular nas Bordas */}
           <svg
-            viewBox={`0 0 ${barWidth} ${BAR_HEIGHT}`}
+            viewBox={`0 0 ${currentWidthForSvg} ${BAR_HEIGHT}`}
             preserveAspectRatio="none"
             aria-hidden="true"
             className="liquid-physics-node pointer-events-none absolute inset-0 z-[15] w-full h-full overflow-visible"
           >
             <defs>
               <radialGradient
-                id="lgWaveGlow"
-                cx={`${(renderState.xPct * 100).toFixed(1)}%`}
+                ref={rimGradRef}
+                id="lgWaveGlowFast"
+                cx="10%"
                 cy="50%"
-                r="38%"
+                r={`${Math.round(22 + cfg.rimDistance * 28)}%`}
               >
-                <stop offset="0%" stopColor="rgba(255,255,255,0.88)" />
-                <stop offset="45%" stopColor="rgba(210,235,255,0.36)" />
-                <stop offset="100%" stopColor="rgba(255,255,255,0.12)" />
+                <stop offset="0%" stopColor={`rgba(255,255,255,${rimAlpha.toFixed(2)})`} />
+                <stop offset="50%" stopColor={`rgba(195,232,255,${(rimAlpha * 0.45).toFixed(2)})`} />
+                <stop offset="100%" stopColor="rgba(255,255,255,0.06)" />
               </radialGradient>
             </defs>
             <path
-              d={liquidRimPath}
-              fill="rgba(255, 255, 255, 0.015)"
-              stroke="url(#lgWaveGlow)"
-              strokeWidth={1.15 + infPositive * 0.55}
+              ref={rimPathRef}
+              d={`M 32 0 L ${currentWidthForSvg - 32} 0 A 32 32 0 0 1 ${currentWidthForSvg} 32 A 32 32 0 0 1 ${
+                currentWidthForSvg - 32
+              } 64 L 32 64 A 32 32 0 0 1 0 32 A 32 32 0 0 1 32 0 Z`}
+              fill="none"
+              stroke="url(#lgWaveGlowFast)"
+              strokeWidth="1.2"
             />
           </svg>
 
-          {/* =================================================================
-              CAMADA 2 (z-20): ÍCONES VIVOS E RÓTULOS DAS 5 ABAS
-              Ficam ACIMA da barra (z-10) e ABAIXO da lente da gota (z-30),
-              para que a gota inflada magnifique e refrate os ícones ao passar!
-             ================================================================= */}
+          {/* CAMADA 2 (z-20): Ícones Vivos & Rótulos */}
           <div className="relative z-20 h-full flex items-center justify-around px-[6px]">
             {tabs.map((tab, idx) => {
               const Icon = tab.Icon;
               const isSelected = idx === resolvedIndex;
-              const tabPct = tabCenterPct(idx, barWidth);
-              // Proximidade contínua ao centro da gota líquida (0..1)
-              const distInTabs = Math.abs(renderState.xPct - tabPct) * tabs.length;
-              const proximity = clamp(1 - distInTabs, 0, 1);
-              const liftY = -proximity * (1.2 + infPositive * 1.8);
-              const iconScale = 1 + proximity * (0.07 + infPositive * 0.09);
-
-              const activeToneClass = hasWallpaper
-                ? 'text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)]'
-                : 'text-graphite-900 dark:text-white drop-shadow-[0_1px_6px_rgba(255,255,255,0.3)]';
-              const inactiveToneClass = hasWallpaper
-                ? 'text-white/85 drop-shadow-[0_1px_4px_rgba(0,0,0,0.55)]'
-                : 'text-graphite-700/80 dark:text-white/85 drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]';
+              const isNear = idx === highlightedIdx;
 
               return (
                 <button
@@ -754,16 +780,18 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                   className="liquid-physics-node touch-none relative flex-1 h-full flex flex-col items-center justify-center gap-0.5 focus:outline-none cursor-pointer"
                 >
                   <div
-                    style={{
-                      transform: `translate3d(0, ${liftY.toFixed(2)}px, 0) scale(${iconScale.toFixed(
-                        3
-                      )})`,
+                    ref={(el) => {
+                      iconWrapRefs.current[idx] = el;
                     }}
+                    style={{ willChange: 'transform' }}
                     className={`liquid-physics-node relative ${
-                      proximity > 0.45 ? activeToneClass : inactiveToneClass
+                      isNear ? activeToneClass : inactiveToneClass
                     }`}
                   >
-                    <Icon className="w-[21px] h-[21px]" active={isSelected || proximity > 0.55} />
+                    <Icon
+                      className={cfg.hideTabLabels ? 'w-[23px] h-[23px]' : 'w-[21px] h-[21px]'}
+                      active={isSelected || isNear}
+                    />
                     {tab.badge && (
                       <span className="absolute -top-1.5 -right-2.5 px-1.5 py-0.2 bg-emerald-500 text-white rounded-full text-[8px] font-bold shadow-sm">
                         {tab.badge}
@@ -771,61 +799,42 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                     )}
                   </div>
 
-                  <span
-                    style={{
-                      transform: `translate3d(0, ${(liftY * 0.45).toFixed(2)}px, 0)`,
-                    }}
-                    className={`liquid-physics-node text-[10px] tracking-tight leading-none mt-0.5 ${
-                      proximity > 0.45
-                        ? `font-bold ${activeToneClass}`
-                        : `font-medium ${inactiveToneClass}`
-                    }`}
-                  >
-                    {tab.label}
-                  </span>
+                  {!cfg.hideTabLabels && (
+                    <span
+                      ref={(el) => {
+                        labelRefs.current[idx] = el;
+                      }}
+                      className={`liquid-physics-node text-[10px] tracking-tight leading-none mt-0.5 ${
+                        isNear ? `font-bold ${activeToneClass}` : `font-medium ${inactiveToneClass}`
+                      }`}
+                    >
+                      {tab.label}
+                    </span>
+                  )}
                 </button>
               );
             })}
           </div>
 
-          {/* =================================================================
-              CAMADA 3 (z-30): GOTA / LENTE ATIVA DE LIQUID GLASS
-              Irmã direta da barra: refrata Wallpaper + HUD + Barra + Ícones!
-             ================================================================= */}
+          {/* CAMADA 3 (z-30): Gota / Lente Líquida Ativa (Composta 100% na GPU via translate3d + scale3d!) */}
           <div
+            ref={dropletRef}
             style={{
               width: `${DROPLET_W}px`,
               height: `${DROPLET_H}px`,
               left: 0,
               top: `${(BAR_HEIGHT - DROPLET_H) / 2}px`,
-              transform: `translate3d(${(dropletCenterX - DROPLET_W / 2).toFixed(
-                2
-              )}px, 0, 0) scale(${dropletScaleX.toFixed(4)}, ${dropletScaleY.toFixed(4)})`,
+              willChange: 'transform',
               backdropFilter:
-                svgBackdropSupported && dropletMapUrl
-                  ? `url(#amanhecer-lg-droplet-filter) saturate(${Math.round(
-                      165 + infPositive * 45
-                    )}%) brightness(${(1.05 + infPositive * 0.08).toFixed(2)}) contrast(${(
-                      1.02 +
-                      infPositive * 0.06
-                    ).toFixed(2)})`
-                  : `blur(${(1.5 - infPositive * 1.2).toFixed(
-                      1
-                    )}px) saturate(200%) brightness(1.12) contrast(1.06)`,
-              WebkitBackdropFilter: `blur(${Math.max(
-                0,
-                1.5 - infPositive * 1.2
-              ).toFixed(1)}px) saturate(200%) brightness(1.12) contrast(1.06)`,
+                useSvgShader && dropletMapUrl
+                  ? `url(#amanhecer-lg-droplet-filter) blur(${dropBlurCss}) saturate(195%) brightness(1.08)`
+                  : `blur(${dropBlurCss}) saturate(195%) brightness(1.08)`,
+              WebkitBackdropFilter: `blur(${dropBlurCss}) saturate(195%) brightness(1.08)`,
             }}
-            className={`liquid-physics-node pointer-events-none absolute z-30 rounded-full apple-liquid-droplet-lens ${
-              infPositive > 0.2 ? 'apple-liquid-droplet-inflated' : ''
-            }`}
+            className="liquid-physics-node pointer-events-none absolute z-30 rounded-full apple-liquid-droplet-lens"
           >
-            {/* Reflexo especular curvo de menisco d'água (topo-esquerdo + caustica inferior + dispersão prismática) */}
             <div
-              style={{
-                opacity: 0.55 + clamp(infPositive, 0, 1) * 0.45,
-              }}
+              ref={dropletSpecularRef}
               className="liquid-physics-node absolute inset-0 rounded-full apple-liquid-droplet-specular"
             />
           </div>
